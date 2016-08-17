@@ -1,10 +1,17 @@
 ;;; nix-mode.el --- Major mode for editing Nix expressions
 
 ;; Author: Eelco Dolstra
-;; URL: https://github.com/NixOS/nix/tree/master/misc/emacs
-;; Version: 1.0
+;; Maintainer: Matthew Bauer <mjbauer95@gmail.com>
+;; Homepage: https://github.com/matthewbauer/nix-mode
+;; Version: 1.1
+;; Keywords: nix
+
+;; This file is NOT part of GNU Emacs.
 
 ;;; Commentary:
+
+;; A major mode for editing Nix expressions (.nix files). See the Nix manual
+;; for more information available at https://nixos.org/nix/manual/.
 
 ;;; Code:
 
