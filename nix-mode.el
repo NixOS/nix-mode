@@ -62,7 +62,7 @@
     ;; variable assignments
     ;; warn on upper case variable names
     ("\\<\\([A-Z_][a-zA-Z0-9_'\-\.]*\\)[ \t]*="
-     (1 font-lock-warning-face nil nil) ;; capitalized
+     (1 font-lock-warning-face nil nil)) ;; capitalized
     ("\\<\\([a-z][a-zA-Z0-9_'\-\.]*\\)[ \t]*="
      (1 font-lock-variable-name-face nil nil)) ;; uncapitalized
 
