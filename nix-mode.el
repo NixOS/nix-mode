@@ -70,15 +70,10 @@
     ("\\_<abort\\_>" . font-lock-warning-face)
     ("\\_<throw\\_>" . font-lock-warning-face)
 
-    ;; variable assignments
-    ;; warn on upper case variable names
-    ("\\<\\([A-Z_][a-zA-Z0-9_'\-\.]*\\)[ \t]*="
-     (1 font-lock-warning-face nil nil)) ;; capitalized
-    ("\\<\\([a-z][a-zA-Z0-9_'\-\.]*\\)[ \t]*="
-     (1 font-lock-variable-name-face nil nil)) ;; uncapitalized
-
     ("[a-zA-Z][a-zA-Z0-9\\+-\\.]*:[a-zA-Z0-9%/\\?:@&=\\+\\$,_\\.!~\\*'-]+"
      . font-lock-constant-face)
+    ("\\<\\([a-zA-Z_][a-zA-Z0-9_'\-\.]*\\)[ \t]*="
+     (1 font-lock-variable-name-face nil nil))
     ("<[a-zA-Z0-9._\\+-]+\\(/[a-zA-Z0-9._\\+-]+\\)*>"
      . font-lock-constant-face)
     ("[a-zA-Z0-9._\\+-]*\\(/[a-zA-Z0-9._\\+-]+\\)+"
