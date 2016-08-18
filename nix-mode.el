@@ -37,8 +37,17 @@
         t))))
 
 (defconst nix-font-lock-keywords
-  '("\\_<if\\_>" "\\_<then\\_>" "\\_<else\\_>" "\\_<with\\_>"
-    "\\_<let\\_>" "\\_<in\\_>" "\\_<rec\\_>" "\\_<inherit\\_>" "\\_<or\\_>"
+  '(
+    ;; keywords
+    ("\\_<if\\_>" . font-lock-keyword-face)
+    ("\\_<then\\_>" . font-lock-keyword-face)
+    ("\\_<else\\_>" . font-lock-keyword-face)
+    ("\\_<with\\_>" . font-lock-keyword-face)
+    ("\\_<let\\_>" . font-lock-keyword-face)
+    ("\\_<in\\_>" . font-lock-keyword-face)
+    ("\\_<rec\\_>" . font-lock-keyword-face)
+    ("\\_<inherit\\_>" . font-lock-keyword-face)
+    ("\\_<or\\_>" . font-lock-keyword-face)
 
     ;; builtin functions
     ;; taken from http://nixos.org/nix/manual/#ssec-builtins
