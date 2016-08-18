@@ -37,13 +37,11 @@
         t))))
 
 (defconst nix-font-lock-keywords
-  '("\\_<if\\_>" "\\_<then\\_>" "\\_<else\\_>" "\\_<assert\\_>" "\\_<with\\_>"
+  '("\\_<if\\_>" "\\_<then\\_>" "\\_<else\\_>" "\\_<with\\_>"
     "\\_<let\\_>" "\\_<in\\_>" "\\_<rec\\_>" "\\_<inherit\\_>" "\\_<or\\_>"
-
 
     ;; builtin functions
     ;; taken from http://nixos.org/nix/manual/#ssec-builtins
-    ("\\_<abort\\_>" . font-lock-builtin-face)
     ("\\_<builtins\\(\.[a-zA-Z]+\\)?\\_>" . font-lock-builtin-face)
     ("\\_<baseNameOf\\_>" . font-lock-builtin-face)
     ("\\_<derivation\\_>" . font-lock-builtin-face)
@@ -55,9 +53,13 @@
     ("\\_<map\\_>" . font-lock-builtin-face)
     ("\\_<null\\_>" . font-lock-builtin-face)
     ("\\_<removeAttrs\\_>" . font-lock-builtin-face)
-    ("\\_<throw\\_>" . font-lock-builtin-face)
     ("\\_<toString\\_>" . font-lock-builtin-face)
     ("\\_<true\\_>" . font-lock-builtin-face)
+
+    ;; warnings
+    ("\\_<assert\\_>" . font-lock-warning-face)
+    ("\\_<abort\\_>" . font-lock-warning-face)
+    ("\\_<throw\\_>" . font-lock-warning-face)
 
     ;; variable assignments
     ;; warn on upper case variable names
