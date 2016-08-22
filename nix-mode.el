@@ -209,6 +209,7 @@ The hook `nix-mode-hook' is run when Nix mode is started.
   (setq-local comment-start "# ")
   (setq-local comment-end "")
   (setq-local comment-start-skip "\\(^\\|\\s-\\);?#+ *")
+  (setq-local comment-multi-line t)
 
   ;; Filling of comments.
   (setq-local adaptive-fill-mode t)
