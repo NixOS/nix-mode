@@ -156,13 +156,14 @@ If a close brace `}' ends an antiquote, the next character begins a string."
   (interactive)
   (indent-relative-maybe))
 
-(defvar nix-mode-map nil "Keymap for nix-mode.")
 
-(let ((menuMap (make-sparse-keymap "Nix")))
-  (define-key nix-mode-map [menu-bar] (make-sparse-keymap))
-  (define-key nix-mode-map [menu-bar nix] (cons "Nix" menuMap))
-  (define-key menuMap [about]
-    '("Indent line" . nix-indent-line)))
+(defvar nix-mode-map
+  (let ((map (make-sparse-keymap "Nix")))
+    (define-key nix-mode-map [menu-bar] (make-sparse-keymap))
+    (define-key nix-mode-map [menu-bar nix] (cons "Nix" map))
+    (define-key map [about]
+      '("Indent line" . nix-indent-line)))
+ "Keymap for nix-mode.")
 
 ;;;###autoload
 (define-derived-mode nix-mode prog-mode "Nix"
@@ -216,7 +217,7 @@ The hook `nix-mode-hook' is run when Nix mode is started.
   (setq-local paragraph-start "[ \t]*\\(#+[ \t]*\\)?$")
   (setq-local paragraph-separate paragraph-start)
 
-  ;; Local keymp and menu
+  ;; Local keymap and menu
   (use-local-map nix-mode-map))
 
 ;;;###autoload
