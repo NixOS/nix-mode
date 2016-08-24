@@ -166,7 +166,7 @@ If a close brace `}' ends an antiquote, the next character begins a string."
   (interactive)
   (cond
    ;; string
-   ((nth 3 (syntax-ppss)) nil)
+   ((nth 3 (syntax-ppss)) (indent-relative))
 
    ;; comment
    ((nth 4 (syntax-ppss)) nil)
