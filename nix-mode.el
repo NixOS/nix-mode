@@ -36,39 +36,32 @@
         (set-match-data (list pos (point)))
         t))))
 
+(defconst nix-keywords
+  '("if" "then"
+    "else" "with"
+    "let" "in"
+    "rec" "inherit"
+    "or"
+    ))
+
+(defconst nix-builtins
+  '("builtins" "baseNameOf"
+    "derivation" "dirOf"
+    "false" "fetchTarball"
+    "import" "isNull"
+    "map" "removeAttrs"
+    "toString" "true"))
+
+(defconst nix-warning-keywords
+  '("assert" "abort" "throw"))
+
 (defconst nix-font-lock-keywords
-  '(
-    ;; keywords
-    ("\\_<if\\_>" . font-lock-keyword-face)
-    ("\\_<then\\_>" . font-lock-keyword-face)
-    ("\\_<else\\_>" . font-lock-keyword-face)
-    ("\\_<with\\_>" . font-lock-keyword-face)
-    ("\\_<let\\_>" . font-lock-keyword-face)
-    ("\\_<in\\_>" . font-lock-keyword-face)
-    ("\\_<rec\\_>" . font-lock-keyword-face)
-    ("\\_<inherit\\_>" . font-lock-keyword-face)
-    ("\\_<or\\_>" . font-lock-keyword-face)
+  `(
+    (,(regexp-opt nix-keywords 'symbols) . font-lock-keyword-face)
 
-    ;; builtin functions
-    ;; taken from http://nixos.org/nix/manual/#ssec-builtins
-    ("\\_<builtins\\(\.[a-zA-Z]+\\)?\\_>" . font-lock-builtin-face)
-    ("\\_<baseNameOf\\_>" . font-lock-builtin-face)
-    ("\\_<derivation\\_>" . font-lock-builtin-face)
-    ("\\_<dirOf\\_>" . font-lock-builtin-face)
-    ("\\_<false\\_>" . font-lock-builtin-face)
-    ("\\_<fetchTarball\\_>" . font-lock-builtin-face)
-    ("\\_<import\\_>" . font-lock-builtin-face)
-    ("\\_<isNull\\_>" . font-lock-builtin-face)
-    ("\\_<map\\_>" . font-lock-builtin-face)
-    ("\\_<null\\_>" . font-lock-builtin-face)
-    ("\\_<removeAttrs\\_>" . font-lock-builtin-face)
-    ("\\_<toString\\_>" . font-lock-builtin-face)
-    ("\\_<true\\_>" . font-lock-builtin-face)
+    (,(regexp-opt nix-warning-keywords 'symbols) . font-lock-warning-face)
 
-    ;; warnings
-    ("\\_<assert\\_>" . font-lock-warning-face)
-    ("\\_<abort\\_>" . font-lock-warning-face)
-    ("\\_<throw\\_>" . font-lock-warning-face)
+    (,(regexp-opt nix-builtins 'symbols) . font-lock-builtin-face)
 
     ("[a-zA-Z][a-zA-Z0-9\\+-\\.]*:[a-zA-Z0-9%/\\?:@&=\\+\\$,_\\.!~\\*'-]+"
      . font-lock-constant-face)
@@ -78,7 +71,8 @@
      . font-lock-constant-face)
     ("[a-zA-Z0-9._\\+-]*\\(/[a-zA-Z0-9._\\+-]+\\)+"
      . font-lock-constant-face)
-    (nix-syntax-match-antiquote 0 font-lock-preprocessor-face t))
+    (nix-syntax-match-antiquote 0 font-lock-preprocessor-face t)
+  )
   "Font lock keywords for nix.")
 
 (defvar nix-mode-syntax-table
