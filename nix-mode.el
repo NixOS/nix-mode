@@ -151,12 +151,16 @@ If a close brace `}' ends an antiquote, the next character begins a string."
      (0 (ignore (nix-syntax-propertize-close-brace)))))
    start end))
 
+(defun nix-paren-level ()
+  "Get current parenthesis level."
+  (* 2 (nth 0 (syntax-ppss))))
+
 (defun nix-indent-level ()
   "Get current indent level."
   (save-excursion
     (beginning-of-line)
     (skip-chars-forward "[:space:]")
-    (let ((baseline (* 2 (nth 0 (syntax-ppss)))))
+    (let ((baseline (nix-paren-level)))
       (cond
        ((looking-at "[]})]") (- baseline tab-width))
        ;; ((nix-inside-args) (- baseline tab-width))
