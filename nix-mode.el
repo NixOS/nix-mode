@@ -168,11 +168,10 @@ If a close brace `}' ends an antiquote, the next character begins a string."
   (interactive)
   (save-excursion
     (cond
-     ;; string
-     ;; ((nth 3 (syntax-ppss)) (indent-relative))
-
      ;; comment
-     ((nth 4 (syntax-ppss)) nil)
+     ((save-excursion
+	(beginning-of-line)
+	(nth 4 (syntax-ppss))) nil)
 
      ;; else
      (t (indent-line-to (nix-indent-level))))))
