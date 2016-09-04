@@ -157,8 +157,10 @@ If a close brace `}' ends an antiquote, the next character begins a string."
 		     (* tab-width (nth 0 (syntax-ppss)))
 		     (if (nth 3 (syntax-ppss)) tab-width 0))))
       (cond
+       ;; ((looking-at "})") (- baseline (* 2 tab-width)))
        ((looking-at "[]})]") (- baseline tab-width))
        ((looking-at "''") (- baseline tab-width))
+       ((looking-at ", ") (- baseline tab-width))
        ;; ((nix-inside-args) (- baseline tab-width))
        ;; ((nix-inside-let) (+ baseline tab-width))
        (t baseline)))))
