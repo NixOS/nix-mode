@@ -58,6 +58,9 @@
 (defconst nix-re-file-path
   "[a-zA-Z0-9._\\+-]*\\(/[a-zA-Z0-9._\\+-]+\\)+")
 
+(defconst nix-re-url
+  "[a-zA-Z][a-zA-Z0-9\\+-\\.]*:[a-zA-Z0-9%/\\?:@&=\\+\\$,_\\.!~\\*'-]+")
+
 (defconst nix-font-lock-keywords
   `(
     (,(regexp-opt nix-keywords 'symbols) . font-lock-keyword-face)
@@ -66,14 +69,14 @@
 
     (,(regexp-opt nix-builtins 'symbols) . font-lock-builtin-face)
 
-    ("[a-zA-Z][a-zA-Z0-9\\+-\\.]*:[a-zA-Z0-9%/\\?:@&=\\+\\$,_\\.!~\\*'-]+"
-     . font-lock-constant-face)
+    (,nix-re-url . font-lock-constant-face)
+    (,nix-re-file-path . font-lock-constant-face)
+
     ("\\<\\([a-zA-Z_][a-zA-Z0-9_'\-\.]*\\)[ \t]*="
      (1 font-lock-variable-name-face nil nil))
     ("<[a-zA-Z0-9._\\+-]+\\(/[a-zA-Z0-9._\\+-]+\\)*>"
      . font-lock-constant-face)
-    (,nix-re-file-path
-     . font-lock-constant-face)
+
     (nix-syntax-match-antiquote 0 font-lock-preprocessor-face t)
   )
   "Font lock keywords for nix.")
