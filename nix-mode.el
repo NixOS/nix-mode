@@ -186,14 +186,26 @@ If a close brace `}' ends an antiquote, the next character begins a string."
     (if (looking-at nix-re-file-path)
 	(find-file (match-string-no-properties 0)))))
 
+(defvar nix-mode-menu (make-sparse-keymap "Nix")
+  "Menu for Nix mode.")
 
-(defvar nix-mode-map
-  (let ((map (make-sparse-keymap "Nix")))
-    (define-key nix-mode-map [menu-bar] (make-sparse-keymap))
-    (define-key nix-mode-map [menu-bar nix] (cons "Nix" map))
-    (define-key map [about]
-      '("Indent line" . nix-indent-line)))
- "Keymap for nix-mode.")
+(defvar nix-mode-map (make-sparse-keymap)
+  "Local keymap used for Nix mode.")
+
+(defun nix-create-keymap ()
+  "Create the keymap associated with the Nix mode."
+
+  (define-key nix-mode-map "\C-c\C-f" 'nix-visit-file))
+
+(defun nix-create-menu ()
+  "Create the Nix menu as shown in the menu bar."
+  (let ((m '("Nix"
+	     ["Goto file" nix-visit-file t])
+	   ))
+    (easy-menu-define ada-mode-menu nix-mode-map "Menu keymap for Nix mode" m)))
+
+(nix-create-keymap)
+(nix-create-menu)
 
 ;;;###autoload
 (define-derived-mode nix-mode prog-mode "Nix"
@@ -247,8 +259,7 @@ The hook `nix-mode-hook' is run when Nix mode is started.
   (setq-local paragraph-start "[ \t]*\\(#+[ \t]*\\)?$")
   (setq-local paragraph-separate paragraph-start)
 
-  ;; Local keymap and menu
-  (use-local-map nix-mode-map))
+  (easy-menu-add nix-mode-menu nix-mode-map))
 
 ;;;###autoload
 (progn
