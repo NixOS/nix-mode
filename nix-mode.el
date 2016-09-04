@@ -77,8 +77,7 @@
     ("<[a-zA-Z0-9._\\+-]+\\(/[a-zA-Z0-9._\\+-]+\\)*>"
      . font-lock-constant-face)
 
-    (nix-syntax-match-antiquote 0 font-lock-preprocessor-face t)
-  )
+    (nix-syntax-match-antiquote 0 font-lock-preprocessor-face t))
   "Font lock keywords for nix.")
 
 (defvar nix-mode-syntax-table
