@@ -148,18 +148,17 @@ If a close brace `}' ends an antiquote, the next character begins a string."
      (0 (ignore (nix-syntax-propertize-close-brace)))))
    start end))
 
-(defun nix-paren-level ()
-  "Get current parenthesis level."
-  (* 2 (nth 0 (syntax-ppss))))
-
 (defun nix-indent-level ()
   "Get current indent level."
   (save-excursion
     (beginning-of-line)
     (skip-chars-forward "[:space:]")
-    (let ((baseline (nix-paren-level)))
+    (let ((baseline (+
+		     (* tab-width (nth 0 (syntax-ppss)))
+		     (if (nth 3 (syntax-ppss)) tab-width 0))))
       (cond
        ((looking-at "[]})]") (- baseline tab-width))
+       ((looking-at "''") (- baseline tab-width))
        ;; ((nix-inside-args) (- baseline tab-width))
        ;; ((nix-inside-let) (+ baseline tab-width))
        (t baseline)))))
@@ -167,15 +166,16 @@ If a close brace `}' ends an antiquote, the next character begins a string."
 (defun nix-indent-line ()
   "Indent current line in a Nix expression."
   (interactive)
-  (cond
-   ;; string
-   ((nth 3 (syntax-ppss)) (indent-relative))
+  (save-excursion
+    (cond
+     ;; string
+     ;; ((nth 3 (syntax-ppss)) (indent-relative))
 
-   ;; comment
-   ((nth 4 (syntax-ppss)) nil)
+     ;; comment
+     ((nth 4 (syntax-ppss)) nil)
 
-   ;; else
-   (t (indent-line-to (nix-indent-level)))))
+     ;; else
+     (t (indent-line-to (nix-indent-level))))))
 
 (defun nix-visit-file ()
   "Go to file under cursor."
