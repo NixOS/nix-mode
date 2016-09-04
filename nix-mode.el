@@ -177,6 +177,15 @@ If a close brace `}' ends an antiquote, the next character begins a string."
    ;; else
    (t (indent-line-to (nix-indent-level)))))
 
+(defun nix-visit-file ()
+  "Go to file under cursor."
+  (interactive)
+  (save-excursion
+    (forward-whitespace -1)
+    (skip-chars-forward " \t")
+    (if (looking-at nix-re-file-path)
+	(find-file (match-string-no-properties 0)))))
+
 
 (defvar nix-mode-map
   (let ((map (make-sparse-keymap "Nix")))
