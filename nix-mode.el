@@ -150,22 +150,60 @@ If a close brace `}' ends an antiquote, the next character begins a string."
      (0 (ignore (nix-syntax-propertize-close-brace)))))
    start end))
 
-(defun nix-indent-level ()
-  "Get current indent level."
+(defun nix-indent-level-parens (p1)
+  "Find indent level based on parens."
+  (save-excursion
+    (beginning-of-line)
+    (let ((p2 (nth 1 (syntax-ppss))))
+      (if p2 (progn
+               (goto-char p2)
+               (backward-char)
+               (let ((l1 (line-number-at-pos p1))
+                     (l2 (line-number-at-pos p2)))
+                 (+ (if (eq l1 l2) 0 1) (nix-indent-level-parens p2))))
+        0))))
+
+(defun nix-indent-level-is-closing ()
+  "Go forward from beginning of line."
   (save-excursion
     (beginning-of-line)
     (skip-chars-forward "[:space:]")
-    (let ((baseline (+
-		     (* tab-width (nth 0 (syntax-ppss)))
-		     (if (nth 3 (syntax-ppss)) tab-width 0))))
-      (cond
-       ;; ((looking-at "})") (- baseline (* 2 tab-width)))
-       ((looking-at "[]})]") (- baseline tab-width))
-       ((looking-at "''") (- baseline tab-width))
-       ((looking-at ", ") (- baseline tab-width))
-       ;; ((nix-inside-args) (- baseline tab-width))
-       ;; ((nix-inside-let) (+ baseline tab-width))
-       (t baseline)))))
+    (or
+     (looking-at ")")
+     (looking-at "}")
+     (looking-at "''")
+     (looking-at ","))))
+
+(defun nix-indent-level-is-hanging ()
+  "Is hanging?"
+  (save-excursion
+    (beginning-of-line)
+    (skip-chars-forward "[:space:]")
+    (unless (or
+             (looking-at "}")
+             (looking-at ")"))
+      (forward-line -1)
+      (end-of-line)
+      (skip-chars-backward "\n[:space:]")
+      (while (nth 4 (syntax-ppss))
+	(goto-char (nth 8 (syntax-ppss)))
+	(skip-chars-backward "\n[:space:]"))
+      (forward-char -1)
+      (unless (or
+	       (and (looking-at "/") (looking-back "*"))
+	       (looking-at ";")
+	       (looking-at ":")
+	       (looking-at "{")
+	       (looking-at "(")
+	       (looking-at ","))
+	  t))))
+
+(defun nix-indent-level ()
+  "Get current indent level."
+  (* tab-width (+
+                (nix-indent-level-parens (point))
+                (if (nix-indent-level-is-closing) -1
+		  (if (nix-indent-level-is-hanging) 1 0)))))
 
 (defun nix-indent-line ()
   "Indent current line in a Nix expression."
