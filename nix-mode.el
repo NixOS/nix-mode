@@ -170,15 +170,15 @@ If a close brace `}' ends an antiquote, the next character begins a string."
 (defun nix-indent-line ()
   "Indent current line in a Nix expression."
   (interactive)
-  (save-excursion
-    (cond
-     ;; comment
-     ((save-excursion
-	(beginning-of-line)
-	(nth 4 (syntax-ppss))) nil)
+  (cond
+   ;; comment
+   ((save-excursion
+      (beginning-of-line)
+      (nth 4 (syntax-ppss))) nil)
 
-     ;; else
-     (t (indent-line-to (nix-indent-level))))))
+   ;; else
+   (t
+    (indent-line-to (nix-indent-level)))))
 
 (defun nix-visit-file ()
   "Go to file under cursor."
