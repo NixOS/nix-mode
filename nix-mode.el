@@ -180,8 +180,10 @@ If a close brace `}' ends an antiquote, the next character begins a string."
     (beginning-of-line)
     (skip-chars-forward "[:space:]")
     (unless (or
-             (looking-at "}")
-             (looking-at ")"))
+    	     (looking-at "}")
+	     (looking-at ")")
+	     (looking-at "{")
+	     (looking-at ")"))
       (forward-line -1)
       (end-of-line)
       (skip-chars-backward "\n[:space:]")
