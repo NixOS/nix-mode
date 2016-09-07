@@ -168,7 +168,7 @@ If a close brace `}' ends an antiquote, the next character begins a string."
   (save-excursion
     (beginning-of-line)
     (skip-chars-forward "[:space:]")
-    (or
+    (or ;; any of these should -1 indent level
      (looking-at ")")
      (looking-at "}")
      (looking-at "''")
@@ -185,10 +185,15 @@ If a close brace `}' ends an antiquote, the next character begins a string."
       (forward-line -1)
       (end-of-line)
       (skip-chars-backward "\n[:space:]")
+
+      ;; skip through any comments in the way
       (while (nth 4 (syntax-ppss))
 	(goto-char (nth 8 (syntax-ppss)))
 	(skip-chars-backward "\n[:space:]"))
+
       (forward-char -1)
+
+      ;; any of these should be ignored
       (unless (or
 	       (and (looking-at "/") (looking-back "*"))
 	       (looking-at ";")
