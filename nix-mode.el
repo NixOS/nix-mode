@@ -208,8 +208,8 @@ If a close brace `}' ends an antiquote, the next character begins a string."
 (defun nix-indent-level ()
   "Get current indent level."
   (* tab-width (+
-                (nix-indent-level-parens (point))
-                (if (nix-indent-level-is-closing) -1
+		(nix-indent-level-parens (point))
+		(if (nix-indent-level-is-closing) -1
 		  (if (nix-indent-level-is-hanging) 1 0)))))
 
 (defun nix-indent-line ()
