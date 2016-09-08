@@ -150,7 +150,8 @@ If a close brace `}' ends an antiquote, the next character begins a string."
    start end))
 
 (defun nix-indent-level-parens (p1)
-  "Find indent level based on parens."
+  "Find indent level based on parens.
+P1 current position"
   (save-excursion
     (beginning-of-line)
     (let ((p2 (nth 1 (syntax-ppss))))
@@ -196,7 +197,7 @@ If a close brace `}' ends an antiquote, the next character begins a string."
 
       ;; any of these should be ignored
       (unless (or
-	       (and (looking-at "/") (looking-back "*"))
+	       (and (looking-at "/") (looking-back "*" -1 nil))
 	       (looking-at ";")
 	       (looking-at ":")
 	       (looking-at "{")
@@ -269,8 +270,7 @@ If a close brace `}' ends an antiquote, the next character begins a string."
 (defvar nix-mode-map (make-sparse-keymap)
   "Local keymap used for Nix mode.")
 
-(defun nix-create-keymap ()
-  "Create the keymap associated with the Nix mode."
+(defun nix-create-keymap ()  "Create the keymap associated with the Nix mode."
 
   (define-key nix-mode-map "\C-c\C-g" 'nix-visit-file)
   (define-key nix-mode-map "\C-c\C-f" 'nix-format-buffer))
@@ -324,16 +324,16 @@ The hook `nix-mode-hook' is run when Nix mode is started.
   ;; Look at text properties when parsing
   (setq-local parse-sexp-lookup-properties t)
 
-  ;; Automatic indentation [C-j].
+  ;; Automatic indentation [C-j]
   (setq-local indent-line-function 'nix-indent-line)
 
-  ;; Indenting of comments.
+  ;; Indenting of comments
   (setq-local comment-start "# ")
   (setq-local comment-end "")
   (setq-local comment-start-skip "\\(^\\|\\s-\\);?#+ *")
   (setq-local comment-multi-line t)
 
-  ;; Filling of comments.
+  ;; Filling of comments
   (setq-local adaptive-fill-mode t)
   (setq-local paragraph-start "[ \t]*\\(#+[ \t]*\\)?$")
   (setq-local paragraph-separate paragraph-start)
