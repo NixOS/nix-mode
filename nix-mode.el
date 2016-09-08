@@ -238,6 +238,31 @@ If a close brace `}' ends an antiquote, the next character begins a string."
     (if (looking-at nix-re-file-path)
 	(find-file (match-string-no-properties 0)))))
 
+(defcustom nix-nixfmt-bin "nixfmt"
+  "Path to nixfmt executable."
+  :group 'nix
+  :type 'string)
+
+(defun nix--format-call (buf)
+  "Format BUF using nixfmt."
+  (with-current-buffer (get-buffer-create "*nixfmt*")
+    (erase-buffer)
+    (insert-buffer-substring buf)
+    (if (zerop (call-process-region (point-min) (point-max) nix-nixfmt-bin t t nil))
+        (progn
+          (if (not (string= (buffer-string) (with-current-buffer buf (buffer-string))))
+              (copy-to-buffer buf (point-min) (point-max)))
+          (kill-buffer))
+      (error "Nixfmt failed, see *nixfmt* buffer for details"))))
+
+(defun nix-format-buffer ()
+  "Format the current buffer using nixfmt."
+  (interactive)
+  (unless (executable-find nix-nixfmt-bin)
+    (error "Could not locate executable \"%s\"" nix-nixfmt-bin))
+  (nix--format-call (current-buffer))
+  (message "Formatted buffer with rustfmt."))
+
 (defvar nix-mode-menu (make-sparse-keymap "Nix")
   "Menu for Nix mode.")
 
@@ -247,12 +272,14 @@ If a close brace `}' ends an antiquote, the next character begins a string."
 (defun nix-create-keymap ()
   "Create the keymap associated with the Nix mode."
 
-  (define-key nix-mode-map "\C-c\C-f" 'nix-visit-file))
+  (define-key nix-mode-map "\C-c\C-g" 'nix-visit-file)
+  (define-key nix-mode-map "\C-c\C-f" 'nix-format-buffer))
 
 (defun nix-create-menu ()
   "Create the Nix menu as shown in the menu bar."
   (let ((m '("Nix"
-	     ["Goto file" nix-visit-file t])
+	     ["Goto file" nix-visit-file t]
+	     ["Format buffer" nix-format-buffer t])
 	   ))
     (easy-menu-define ada-mode-menu nix-mode-map "Menu keymap for Nix mode" m)))
 
