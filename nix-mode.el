@@ -193,16 +193,16 @@ P1 current position"
 	(goto-char (nth 8 (syntax-ppss)))
 	(skip-chars-backward "\n[:space:]"))
 
-      (forward-char -1)
-
       ;; any of these should be ignored
       (unless (or
-	       (and (looking-at "/") (looking-back "*" -1 nil))
-	       (looking-at ";")
-	       (looking-at ":")
-	       (looking-at "{")
-	       (looking-at "(")
-	       (looking-at ","))
+	       (looking-back "/*")
+	       (looking-back ";")
+	       (looking-back ":")
+	       (looking-back "{")
+	       (looking-back "(")
+	       (looking-back ",")
+	       (looking-back "let")
+	       (looking-back "in"))
 	  t))))
 
 (defun nix-indent-level ()
