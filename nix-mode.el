@@ -163,6 +163,23 @@ P1 current position"
                  (+ (if (eq l1 l2) 0 1) (nix-indent-level-parens p2))))
         0))))
 
+(defun nix-indent-level-let ()
+  (save-excursion
+    (setq lets 0)
+    (setq ins 0)
+    (beginning-of-line)
+    (while (not (eq (point) (point-min)))
+      (forward-line -1)
+      (cond
+       ((and
+	 (looking-at "[:space:]*let")
+	 (not (looking-at ".*in")))
+	(setq lets (1+ lets)))
+       ((looking-at "[:space:]*in")
+	(setq ins (1+ ins)))))
+
+    (- lets ins)))
+
 (defun nix-indent-level-is-closing ()
   "Go forward from beginning of line."
   (save-excursion
@@ -209,6 +226,7 @@ P1 current position"
   "Get current indent level."
   (* tab-width (+
 		(nix-indent-level-parens (point))
+		(nix-indent-level-let)
 		(if (nix-indent-level-is-closing) -1
 		  (if (nix-indent-level-is-hanging) 1 0)))))
 
