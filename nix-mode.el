@@ -270,8 +270,8 @@ P1 current position"
 (defvar nix-mode-map (make-sparse-keymap)
   "Local keymap used for Nix mode.")
 
-(defun nix-create-keymap ()  "Create the keymap associated with the Nix mode."
-
+(defun nix-create-keymap ()
+  "Create the keymap associated with the Nix mode."
   (define-key nix-mode-map "\C-c\C-g" 'nix-visit-file)
   (define-key nix-mode-map "\C-c\C-f" 'nix-format-buffer))
 
