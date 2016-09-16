@@ -155,6 +155,7 @@ If a close brace `}' ends an antiquote, the next character begins a string."
   (save-excursion
     (setq p1 (point))
     (setq p2 (nth 1 (syntax-ppss)))
+
     (while p2
       (goto-char p2)
       (backward-char)
@@ -162,8 +163,9 @@ If a close brace `}' ends an antiquote, the next character begins a string."
 	    (l2 (line-number-at-pos p2)))
 	(if (not (eq l1 l2))
 	    (setq n (+ n 1))))
-      (setq p1 p2) 
+      (setq p1 p2)
       (setq p2 (nth 1 (syntax-ppss)))))
+
   n)
 
 (defun nix-indent-level-is-closing ()
@@ -171,6 +173,7 @@ If a close brace `}' ends an antiquote, the next character begins a string."
   (save-excursion
     (beginning-of-line)
     (skip-chars-forward "[:space:]")
+
     (or ;; any of these should -1 indent level
      (looking-at ")")
      (looking-at "}")
@@ -206,7 +209,7 @@ If a close brace `}' ends an antiquote, the next character begins a string."
 	       (looking-back ",")
 	       (looking-back "let")
 	       (looking-back "in"))
-	  t))))
+	t))))
 
 (defun nix-indent-level ()
   "Get current indent level."
@@ -219,6 +222,7 @@ If a close brace `}' ends an antiquote, the next character begins a string."
   "Indent current line in a Nix expression."
   (interactive)
   (cond
+
    ;; comment
    ((save-excursion
       (beginning-of-line)
