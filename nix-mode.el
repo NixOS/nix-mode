@@ -149,19 +149,22 @@ If a close brace `}' ends an antiquote, the next character begins a string."
      (0 (ignore (nix-syntax-propertize-close-brace)))))
    start end))
 
-(defun nix-indent-level-parens (p1)
-  "Find indent level based on parens.
-P1 current position"
+(defun nix-indent-level-parens ()
+  "Find indent level based on parens."
+  (setq n 0)
   (save-excursion
-    (beginning-of-line)
-    (let ((p2 (nth 1 (syntax-ppss))))
-      (if p2 (progn
-               (goto-char p2)
-               (backward-char)
-               (let ((l1 (line-number-at-pos p1))
-                     (l2 (line-number-at-pos p2)))
-                 (+ (if (eq l1 l2) 0 1) (nix-indent-level-parens p2))))
-        0))))
+    (setq p1 (point))
+    (setq p2 (nth 1 (syntax-ppss)))
+    (while p2
+      (goto-char p2)
+      (backward-char)
+      (let ((l1 (line-number-at-pos p1))
+	    (l2 (line-number-at-pos p2)))
+	(if (not (eq l1 l2))
+	    (setq n (+ n 1))))
+      (setq p1 p2) 
+      (setq p2 (nth 1 (syntax-ppss)))))
+  n)
 
 (defun nix-indent-level-is-closing ()
   "Go forward from beginning of line."
@@ -182,8 +185,8 @@ P1 current position"
     (unless (or
     	     (looking-at "}")
 	     (looking-at ")")
-	     (looking-at "{")
-	     (looking-at ")"))
+	     (looking-at "{"))
+
       (forward-line -1)
       (end-of-line)
       (skip-chars-backward "\n[:space:]")
@@ -208,7 +211,7 @@ P1 current position"
 (defun nix-indent-level ()
   "Get current indent level."
   (* tab-width (+
-		(nix-indent-level-parens (point))
+		(nix-indent-level-parens)
 		(if (nix-indent-level-is-closing) -1
 		  (if (nix-indent-level-is-hanging) 1 0)))))
 
