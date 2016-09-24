@@ -297,8 +297,8 @@ If a close brace `}' ends an antiquote, the next character begins a string."
 
 (defun nix-create-keymap ()
   "Create the keymap associated with the Nix mode."
-  (define-key nix-mode-map "\C-c\C-g" 'nix-visit-file)
-  (define-key nix-mode-map "\C-c\C-f" 'nix-format-buffer))
+  (define-key nix-mode-map "\C-c\C-f" 'nix-visit-file)
+  (define-key nix-mode-map "\C-c\C-r" 'nix-format-buffer))
 
 (defun nix-create-menu ()
   "Create the Nix menu as shown in the menu bar."
