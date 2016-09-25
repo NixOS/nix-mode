@@ -219,16 +219,16 @@ If a close brace `}' ends an antiquote, the next character begins a string."
 	(skip-chars-backward "\n[:space:]"))
 
       ;; any of these should be ignored
-      (unless (or
-	       (looking-back "/*" 1)
-	       (looking-back ";" 1)
-	       (looking-back ":" 1)
-	       (looking-back "{" 1)
-	       (looking-back "(" 1)
-	       (looking-back "," 1)
-	       (looking-back "let" 1)
-	       (looking-back "in" 1))
-	t))))
+      (or
+       (looking-back "=" 1)
+       (looking-back "//" 1)
+       (looking-back ")" 1)
+       (looking-back "}" 1)
+       (looking-back "\"" 1)
+       (and
+	(looking-back "[a-zA-Z0-9]" 1)
+	(not (looking-back "in" 1))
+	(not (looking-back "let" 1)))))))
 
 (defun nix-indent-level ()
   "Get current indent level."
