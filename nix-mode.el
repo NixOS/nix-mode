@@ -158,7 +158,7 @@ If a close brace `}' ends an antiquote, the next character begins a string."
     (setq p1 (point))
     (setq p2 (nth 1 (syntax-ppss)))
 
-    (while p2
+    (while (and p2 (not (eq p2 1)))
       (goto-char p2)
       (backward-char)
       (let ((l1 (line-number-at-pos p1))
