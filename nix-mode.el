@@ -153,6 +153,8 @@ If a close brace `}' ends an antiquote, the next character begins a string."
   "Find indent level based on parens."
   (setq n 0)
   (save-excursion
+    (beginning-of-line)
+
     (setq p1 (point))
     (setq p2 (nth 1 (syntax-ppss)))
 
