@@ -229,17 +229,18 @@ If a close brace `}' ends an antiquote, the next character begins a string."
 	(goto-char (nth 8 (syntax-ppss)))
 	(skip-chars-backward "\n[:space:]"))
 
-      ;; any of these should be ignored
       (or
        (looking-back "=" 1)
        (looking-back "//" 1)
        (looking-back ")" 1)
        (looking-back "}" 1)
        (looking-back "\"" 1)
+       ;; (looking-back ":" 1)
        (and
-	(looking-back "[a-zA-Z0-9]" 1)
-	(not (looking-back "in" 1))
-	(not (looking-back "let" 1)))))))
+       	(looking-back "[a-zA-Z0-9]" 1)
+       	(not (looking-back "[[:space:]]in" 1))
+       	(not (looking-back "^in" 1))
+       	(not (looking-back "let" 1)))))))
 
 (defun nix-indent-level ()
   "Get current indent level."
