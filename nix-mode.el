@@ -179,10 +179,19 @@ If a close brace `}' ends an antiquote, the next character begins a string."
       (forward-line -1)
       (cond
        ((and
-	 (looking-at "[:space:]*let")
-	 (not (looking-at ".*in")))
+	 (or
+	  (looking-at "[[:space:]]*let$")
+	  (looking-at "[[:space:]]*let[[:space:]]"))
+	 (not
+	  (or
+	   (looking-at ".*[[:space:]]in$")
+	   (looking-at ".*[[:space:]]in[[:space:]]"))))
 	(setq lets (1+ lets)))
-       ((looking-at "[:space:]*in")
+       ((or
+	 (looking-at "^in$")
+	 (looking-at "^in[[:space:]]")
+	 (looking-at "[[:space:]]+in$")
+	 (looking-at "[[:space:]]+in[[:space:]]"))
 	(setq ins (1+ ins)))))
 
     (- lets ins)))
