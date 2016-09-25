@@ -175,8 +175,6 @@ If a close brace `}' ends an antiquote, the next character begins a string."
     (setq lets 0)
     (setq ins 0)
     (beginning-of-line)
-    (if (looking-at "in")
-	(setq ins (+ ins 1)))
     (while (not (eq (point) (point-min)))
       (forward-line -1)
       (cond
@@ -199,7 +197,9 @@ If a close brace `}' ends an antiquote, the next character begins a string."
      (looking-at ")")
      (looking-at "}")
      (looking-at "''")
-     (looking-at ","))))
+     (looking-at ",")
+     (looking-at "in[[:space:]]")
+     (looking-at "in$"))))
 
 (defun nix-indent-level-is-hanging ()
   "Is hanging?"
