@@ -218,14 +218,14 @@ If a close brace `}' ends an antiquote, the next character begins a string."
 
       ;; any of these should be ignored
       (unless (or
-	       (looking-back "/*")
-	       (looking-back ";")
-	       (looking-back ":")
-	       (looking-back "{")
-	       (looking-back "(")
-	       (looking-back ",")
-	       (looking-back "let")
-	       (looking-back "in"))
+	       (looking-back "/*" 1)
+	       (looking-back ";" 1)
+	       (looking-back ":" 1)
+	       (looking-back "{" 1)
+	       (looking-back "(" 1)
+	       (looking-back "," 1)
+	       (looking-back "let" 1)
+	       (looking-back "in" 1))
 	t))))
 
 (defun nix-indent-level ()
