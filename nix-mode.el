@@ -235,11 +235,8 @@ If a close brace `}' ends an antiquote, the next character begins a string."
 
       (or
        (looking-back "=" 1)
-       (looking-back "//" 1)
-       (looking-back ")" 1)
-       (looking-back "}" 1)
        ;; (looking-back ":" 1)
-       (looking-back "\"" 1)))))
+       (looking-back "//" 1)))))
 
 (defun nix-indent-level ()
   "Get current indent level."
