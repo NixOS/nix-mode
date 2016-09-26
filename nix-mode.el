@@ -184,7 +184,8 @@ If a close brace `}' ends an antiquote, the next character begins a string."
        ((and
 	 (or
 	  (looking-at "[[:space:]]*let$")
-	  (looking-at "[[:space:]]*let[[:space:]]"))
+	  (looking-at "[[:space:]]*let[[:space:]]")
+	  (looking-at ".*[[:space:]]let$"))
 	 (not
 	  (or
 	   (looking-at ".*[[:space:]]in$")
