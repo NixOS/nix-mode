@@ -208,6 +208,7 @@ If a close brace `}' ends an antiquote, the next character begins a string."
     (or ;; any of these should -1 indent level
      (looking-at ")")
      (looking-at "}")
+     (looking-at "]")
      (looking-at "''")
      (looking-at ",")
      (looking-at "in[[:space:]]")
