@@ -229,25 +229,21 @@ If a close brace `}' ends an antiquote, the next character begins a string."
   (save-excursion
     (beginning-of-line)
     (skip-chars-forward "[:space:]")
-    (unless (or
-    	     (looking-at "}")
-	     (looking-at ")")
-	     (looking-at "{"))
 
-      (forward-line -1)
-      (end-of-line)
-      (skip-chars-backward "\n[:space:]")
+    (forward-line -1)
+    (end-of-line)
+    (skip-chars-backward "\n[:space:]")
 
-      ;; skip through any comments in the way
-      (while (nth 4 (syntax-ppss))
-	(goto-char (nth 8 (syntax-ppss)))
-	(skip-chars-backward "\n[:space:]"))
+    ;; skip through any comments in the way
+    (while (nth 4 (syntax-ppss))
+      (goto-char (nth 8 (syntax-ppss)))
+      (skip-chars-backward "\n[:space:]"))
 
-      (or
-       (looking-back "=" 1)
-       (looking-back "+" 1)
-       ;; (looking-back ":" 1)
-       (looking-back "//" 1)))))
+    (or
+     (looking-back "=" 1)
+     (looking-back "+" 1)
+     ;; (looking-back ":" 1)
+     (looking-back "//" 1))))
 
 (defun nix-indent-level ()
   "Get current indent level."
