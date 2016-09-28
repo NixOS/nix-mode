@@ -140,6 +140,8 @@ If a close brace `}' ends an antiquote, the next character begins a string."
   (remove-text-properties start end '(syntax-table nil nix-syntax-antiquote nil))
   (funcall
    (syntax-propertize-rules
+    ("''['\\$\]" ;; ignore ''* characters
+     (0 (ignore (lambda () nil))))
     ("''"
      (0 (ignore (nix-syntax-propertize-multiline-string))))
     ("\\${"
