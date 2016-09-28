@@ -88,10 +88,6 @@
     table)
   "Syntax table for Nix mode.")
 
-(defun nix-syntax-propertize-escaped-antiquote ()
-  "Set syntax properies for an escaped antiquote mark."
-  nil)
-
 (defun nix-syntax-propertize-multiline-string ()
   "Set syntax properies for multiline string delimiters."
   (let* ((start (match-beginning 0))
@@ -139,8 +135,6 @@ If a close brace `}' ends an antiquote, the next character begins a string."
   (remove-text-properties start end '(syntax-table nil nix-syntax-antiquote nil))
   (funcall
    (syntax-propertize-rules
-    ("''\\${"
-     (0 (ignore (nix-syntax-propertize-escaped-antiquote))))
     ("''"
      (0 (ignore (nix-syntax-propertize-multiline-string))))
     ("\\${"
