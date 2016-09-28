@@ -123,11 +123,16 @@
 
 (defun nix-syntax-propertize-antiquote ()
   "Set syntax properties for an antiquote mark."
-  (let* ((start (match-beginning 0)))
-    (put-text-property start (1+ start)
-                       'syntax-table (string-to-syntax "|"))
-    (put-text-property start (+ start 2)
-                       'nix-syntax-antiquote t)))
+  (let* ((start (match-beginning 0))
+         (context (save-excursion (save-match-data (syntax-ppss start))))
+         (string-type (nth 3 context)))
+
+    ;; only add antiquote when we're already in a string
+    (when string-type
+      (put-text-property start (1+ start)
+			 'syntax-table (string-to-syntax "|"))
+      (put-text-property start (+ start 2)
+                       'nix-syntax-antiquote t))))
 
 (defun nix-syntax-propertize-close-brace ()
   "Set syntax properties for close braces.
