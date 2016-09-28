@@ -21,6 +21,8 @@
     "Set variable VAR to value VAL in current buffer."
     `(set (make-local-variable ',var) ,val)))
 
+;; Syntax coloring
+
 (defun nix-syntax-match-antiquote (limit)
   "Find antiquote within a Nix expression up to LIMIT."
   (let ((pos (next-single-char-property-change (point) 'nix-syntax-antiquote
@@ -95,11 +97,13 @@
          (context (save-excursion (save-match-data (syntax-ppss start))))
          (string-type (nth 3 context)))
     (pcase string-type
+
       (`t
        ;; inside a multiline string
        ;; ending multi-line string delimiter
        (put-text-property (1- end) end
                           'syntax-table (string-to-syntax "|")))
+
       (`nil
        ;; beginning multi-line string delimiter
        (put-text-property start (1+ start)
@@ -111,8 +115,7 @@
          (context (save-excursion (save-match-data (syntax-ppss start))))
          (string-type (nth 3 context)))
 
-    ;; only add antiquote when we're already in a string
-    (when string-type
+    (when string-type ;; only add antiquote when we're already in a string
       (put-text-property start (1+ start)
 			 'syntax-table (string-to-syntax "|"))
       (put-text-property start (+ start 2)
@@ -125,6 +128,7 @@ If a close brace `}' ends an antiquote, the next character begins a string."
          (end (match-end 0))
          (context (save-excursion (save-match-data (syntax-ppss start))))
          (open (nth 1 context)))
+
     (when open ;; a corresponding open-brace was found
       (let* ((antiquote (get-text-property open 'nix-syntax-antiquote)))
         (when antiquote
@@ -149,6 +153,8 @@ If a close brace `}' ends an antiquote, the next character begins a string."
     ("}"
      (0 (ignore (nix-syntax-propertize-close-brace)))))
    start end))
+
+;; Indentation
 
 (defun nix-indent-level-parens ()
   "Find indent level based on parens."
@@ -179,6 +185,7 @@ If a close brace `}' ends an antiquote, the next character begins a string."
     (setq lets 0)
     (setq ins 0)
     (beginning-of-line)
+
     (while (not (eq (point) (point-min)))
       (forward-line -1)
       (cond
@@ -268,6 +275,8 @@ If a close brace `}' ends an antiquote, the next character begins a string."
    (t
     (indent-line-to (nix-indent-level)))))
 
+;; Visit file
+
 (defun nix-visit-file ()
   "Go to file under cursor."
   (interactive)
@@ -276,6 +285,8 @@ If a close brace `}' ends an antiquote, the next character begins a string."
     (skip-chars-forward " \t")
     (if (looking-at nix-re-file-path)
 	(find-file (match-string-no-properties 0)))))
+
+;; Formatting
 
 (defcustom nix-nixfmt-bin "nixfmt"
   "Path to nixfmt executable."
@@ -301,6 +312,8 @@ If a close brace `}' ends an antiquote, the next character begins a string."
     (error "Could not locate executable \"%s\"" nix-nixfmt-bin))
   (nix--format-call (current-buffer))
   (message "Formatted buffer with rustfmt."))
+
+;; Key maps
 
 (defvar nix-mode-menu (make-sparse-keymap "Nix")
   "Menu for Nix mode.")
