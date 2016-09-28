@@ -119,7 +119,7 @@
       (put-text-property start (1+ start)
 			 'syntax-table (string-to-syntax "|"))
       (put-text-property start (+ start 2)
-                       'nix-syntax-antiquote t))))
+			 'nix-syntax-antiquote t))))
 
 (defun nix-syntax-propertize-close-brace ()
   "Set syntax properties for close braces.
@@ -158,55 +158,56 @@ If a close brace `}' ends an antiquote, the next character begins a string."
 
 (defun nix-indent-level-parens ()
   "Find indent level based on parens."
-  (setq n 0)
   (save-excursion
     (beginning-of-line)
 
-    (setq p1 (point))
-    (setq p2 (nth 1 (syntax-ppss)))
+    (let ((p1 (point))
+	  (p2 (nth 1 (syntax-ppss)))
+	  (n 0))
 
-    (if (eq p2 1)
-    	(setq n (1+ n)))
+      (if (eq p2 1)
+	  (setq n (1+ n)))
 
-    (while (and p2 (not (eq p2 1)))
-      (goto-char p2)
-      (backward-char)
-      (let ((l1 (line-number-at-pos p1))
-	    (l2 (line-number-at-pos p2)))
-	(if (not (eq l1 l2))
-	    (setq n (+ n 1))))
-      (setq p1 p2)
-      (setq p2 (nth 1 (syntax-ppss)))))
+      (while (and p2 (not (eq p2 1)))
+	(goto-char p2)
+	(backward-char)
+	(let ((l1 (line-number-at-pos p1))
+	      (l2 (line-number-at-pos p2)))
+	  (if (not (eq l1 l2))
+	      (setq n (+ n 1))))
+	(setq p1 p2)
+	(setq p2 (nth 1 (syntax-ppss))))
 
-  n)
+      n)))
 
 (defun nix-indent-level-let ()
+  "Get indent level based on # of let statements."
   (save-excursion
-    (setq lets 0)
-    (setq ins 0)
     (beginning-of-line)
 
-    (while (not (eq (point) (point-min)))
-      (forward-line -1)
-      (cond
-       ((and
-	 (or
-	  (looking-at "[[:space:]]*let$")
-	  (looking-at "[[:space:]]*let[[:space:]]")
-	  (looking-at ".*[[:space:]]let$"))
-	 (not
-	  (or
-	   (looking-at ".*[[:space:]]in$")
-	   (looking-at ".*[[:space:]]in[[:space:]]"))))
-	(setq lets (1+ lets)))
-       ((or
-	 (looking-at "^in$")
-	 (looking-at "^in[[:space:]]")
-	 (looking-at "[[:space:]]+in$")
-	 (looking-at "[[:space:]]+in[[:space:]]"))
-	(setq ins (1+ ins)))))
+    (let ((lets 0)
+	  (ins 0))
+      (while (not (eq (point) (point-min)))
+	(forward-line -1)
+	(cond
+	 ((and
+	   (or
+	    (looking-at "[[:space:]]*let$")
+	    (looking-at "[[:space:]]*let[[:space:]]")
+	    (looking-at ".*[[:space:]]let$"))
+	   (not
+	    (or
+	     (looking-at ".*[[:space:]]in$")
+	     (looking-at ".*[[:space:]]in[[:space:]]"))))
+	  (setq lets (1+ lets)))
+	 ((or
+	   (looking-at "^in$")
+	   (looking-at "^in[[:space:]]")
+	   (looking-at "[[:space:]]+in$")
+	   (looking-at "[[:space:]]+in[[:space:]]"))
+	  (setq ins (1+ ins)))))
 
-    (- lets ins)))
+      (- lets ins))))
 
 (defun nix-indent-level-is-closing ()
   "Go forward from beginning of line."
