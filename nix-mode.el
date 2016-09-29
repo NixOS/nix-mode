@@ -165,18 +165,23 @@ If a close brace `}' ends an antiquote, the next character begins a string."
 	  (p2 (nth 1 (syntax-ppss)))
 	  (n 0))
 
+      ;; prevent moving beyond buffer
       (if (eq p2 1)
 	  (setq n (1+ n)))
 
-      (while (and p2 (not (eq p2 1)))
+      (while (and p2 (not (eq p2 1))) ;; make sure p2 > 1
 	(goto-char p2)
 	(backward-char)
 	(let ((l1 (line-number-at-pos p1))
 	      (l2 (line-number-at-pos p2)))
 	  (if (not (eq l1 l2))
-	      (setq n (+ n 1))))
+	      (setq n (1+ n))))
 	(setq p1 p2)
-	(setq p2 (nth 1 (syntax-ppss))))
+	(setq p2 (nth 1 (syntax-ppss)))
+
+	;; make sure we don't go beyond buffer
+	(if (eq p2 1)
+	    (setq n (1+ n))))
 
       n)))
 
