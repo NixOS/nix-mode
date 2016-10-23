@@ -118,21 +118,20 @@
     (when string-type ;; only add antiquote when we're already in a string
       (put-text-property start (1+ start)
 			 'syntax-table (string-to-syntax "|"))
-      (put-text-property start (+ start 2)
+      (put-text-property start (+ 2 start)
 			 'nix-syntax-antiquote t))))
 
 (defun nix-syntax-propertize-close-brace ()
   "Set syntax properties for close braces.
 If a close brace `}' ends an antiquote, the next character begins a string."
   (let* ((start (match-beginning 0))
-         (end (match-end 0))
          (context (save-excursion (save-match-data (syntax-ppss start))))
          (open (nth 1 context)))
 
     (when open ;; a corresponding open-brace was found
       (let* ((antiquote (get-text-property open 'nix-syntax-antiquote)))
         (when antiquote
-          (put-text-property (+ start 1) (+ start 2)
+          (put-text-property (1+ start) (+ 2 start)
                              'syntax-table (string-to-syntax "|"))
           (put-text-property start (1+ start)
                              'nix-syntax-antiquote t))))))
