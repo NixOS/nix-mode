@@ -129,12 +129,11 @@ If a close brace `}' ends an antiquote, the next character begins a string."
          (open (nth 1 context)))
 
     (when open ;; a corresponding open-brace was found
-      (let* ((antiquote (get-text-property open 'nix-syntax-antiquote)))
-        (when antiquote
-          (put-text-property (1+ start) (+ 2 start)
-                             'syntax-table (string-to-syntax "|"))
-          (put-text-property start (1+ start)
-                             'nix-syntax-antiquote t))))))
+      (when (get-text-property open 'nix-syntax-antiquote)
+	(put-text-property (1+ start) (+ 2 start)
+			   'syntax-table (string-to-syntax "|"))
+	(put-text-property start (1+ start)
+			   'nix-syntax-antiquote t)))))
 
 (defun nix-syntax-propertize (start end)
   "Special syntax properties for Nix from START to END."
