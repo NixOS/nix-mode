@@ -131,7 +131,7 @@ If a close brace `}' ends an antiquote, the next character begins a string."
 
     (when open ;; a corresponding open-brace was found
       (when (get-text-property open 'nix-syntax-antiquote)
-	(put-text-property (1+ start) (+ 2 start)
+	(put-text-property start (1+ start)
 			   'syntax-table (string-to-syntax "|"))
 	(put-text-property start (1+ start)
 			   'nix-syntax-antiquote t)))))
