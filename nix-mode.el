@@ -87,7 +87,7 @@
     (modify-syntax-entry ?* ". 23" table)
     (modify-syntax-entry ?# "< b" table)
     (modify-syntax-entry ?\n "> b" table)
-    (modify-syntax-entry ?\" "|") ;; let " be opened/closed by antiquotes
+    (modify-syntax-entry ?\" "|" table) ;; let " be opened/closed by antiquotes
     table)
   "Syntax table for Nix mode.")
 
