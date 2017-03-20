@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t -*-
 ;;; nix-mode.el --- Major mode for editing Nix expressions
 
 ;; Author: Eelco Dolstra
