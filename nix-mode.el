@@ -211,6 +211,27 @@ If a close brace `}' ends an antiquote, the next character begins a string."
 
 (add-to-list 'flycheck-checkers 'nix)
 
+;;; REPL
+
+(defvar nix-prompt-regexp "nix-repl> ")
+
+(define-derived-mode nix-repl-mode comint-mode "Nix-REPL"
+  "Interactive prompt for Nix."
+  (setq-local comint-prompt-regexp nix-prompt-regexp)
+  (setq-local comint-prompt-read-only t))
+
+(defun nix-repl-show ()
+  "Load the Nix-REPL."
+  (interactive)
+  (pop-to-buffer-same-window
+   (get-buffer-create "*Nix-REPL*"))
+  (unless (comint-check-proc (current-buffer))
+    (nix--make-repl-in-buffer (current-buffer))
+    (nix-repl-mode)))
+
+(defun nix--make-repl-in-buffer (buffer)
+  (make-comint-in-buffer "Nix-REPL" buffer "nix-repl"))
+
 ;;; Indentation
 
 (defun nix-indent-level-parens ()
