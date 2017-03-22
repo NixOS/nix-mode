@@ -149,8 +149,8 @@
   (let* ((start (match-beginning 0))
          (ps (nix--get-parse-state start))
          (string-type (nix--get-string-type ps)))
-    (when string-type)
-      (nix--antiquote-open-at start string-type)))
+    (when string-type
+      (nix--antiquote-open-at start string-type))))
 
 (defun nix--antiquote-close-open ()
   (let* ((start (match-beginning 0))
