@@ -108,18 +108,16 @@
          (string-type (nix--get-string-type context)))
     (unless (or (equal string-type ?\")
                 (and (equal string-type nil)
-                     (save-match-data
-                       (string-match nix--variable-char
-                                     (buffer-substring-no-properties (1- start) start)))))
+                     (string-match-p nix--variable-char
+                                     (buffer-substring (1- start) start))))
       (when (equal string-type nil)
         (nix--mark-string start ?\')
         (setq start (+ 2 start)))
       (when (equal (mod (- end start) 3) 2)
-        (let ((str-peek (buffer-substring-no-properties end (+ 2 end))))
-          (if (equal str-peek "${")
-              (put-text-property end (+ 2 end) 'nix-escaped t)
-            (unless (member str-peek '("\\n" "\\r" "\\t"))
-              (nix--mark-string (1- end) ?\'))))))))
+        (let ((str-peek (buffer-substring end (min (point-max) (+ 2 end)))))
+          (if (member str-peek '("${" "\\n" "\\r" "\\t"))
+              (goto-char (+ 2 end))
+              (nix--mark-string (1- end) ?\')))))))
 
 (defun nix--escaped-antiquote-dq-style ()
   (let* ((start (match-beginning 0))
@@ -136,14 +134,12 @@
       (nix--mark-string pos ?\"))))
 
 (defun nix--antiquote-open-at (pos string-type)
-  (if (get-text-property pos 'nix-escaped)
-      (remove-text-properties pos (+ 2 pos) '(nix-escaped nil))
     (put-text-property pos (1+ pos)
                        'syntax-table (string-to-syntax "|"))
     (put-text-property pos (+ 2 pos)
                        'nix-string-type string-type)
     (put-text-property (1+ pos) (+ 2 pos)
-                       'nix-syntax-antiquote t)))
+                       'nix-syntax-antiquote t))
 
 (defun nix--antiquote-open ()
   (let* ((start (match-beginning 0))
@@ -165,46 +161,40 @@
         (put-text-property (+ 2 start) (+ 3 start)
                            'nix-syntax-antiquote t)))))
 
-(defun nix--antiquote-close-sq-end ()
-  (let* ((start (match-beginning 0))
-         (ps (nix--get-parse-state start)))
-    (when (and (not (nix--get-string-type ps))
-               (nix--open-brace-antiquote-p ps))
-      (let ((string-type (nix--open-brace-string-type ps)))
-        (pcase string-type
-          (`?\'
-           (put-text-property start (+ 3 start)
-                              'nix-string-type string-type)
-           (put-text-property start (1+ start)
-                              'nix-syntax-antiquote t))
-          (`?\" (nix--antiquote-close)))))))
-
-(defun nix--antiquote-close-dq-end ()
-  (let* ((start (match-beginning 0))
-         (ps (nix--get-parse-state start)))
-    (when (and (not (nix--get-string-type ps))
-               (nix--open-brace-antiquote-p ps))
-      (let ((string-type (nix--open-brace-string-type ps)))
-        (pcase string-type
-          (`?\"
-           (put-text-property start (+ 2 start)
-                              'nix-string-type string-type)
-           (put-text-property start (1+ start)
-                              'nix-syntax-antiquote t))
-          (`?\' (nix--antiquote-close)))))))
-
 (defun nix--antiquote-close ()
   (let* ((start (match-beginning 0))
          (ps (nix--get-parse-state start)))
-    (when (and (not (nix--get-string-type ps))
-               (nix--open-brace-antiquote-p ps))
+    (unless (nix--get-string-type ps)
       (let ((string-type (nix--open-brace-string-type ps)))
-        (put-text-property start (+ 2 start)
-                           'nix-string-type string-type)
-        (put-text-property start (1+ start)
-                           'nix-syntax-antiquote t)
-        (put-text-property (1+ start) (+ 2 start)
-                           'syntax-table (string-to-syntax "|"))))))
+        (when string-type
+          (put-text-property start (+ 2 start)
+                             'nix-string-type string-type)
+          (put-text-property start (1+ start)
+                             'nix-syntax-antiquote t)
+          (let ((ahead (buffer-substring (1+ start) (min (point-max) (+ 5 start)))))
+            (case string-type
+              (?\" (unless (string-match-p "^\"" ahead)
+                     (put-text-property (1+ start) (+ 2 start)
+                                        'syntax-table (string-to-syntax "|")))
+                   (goto-char (+ 2 start)))
+              (?\' (cond
+                    ((string-match-p "^'''" ahead)
+                     (put-text-property (1+ start) (+ 2 start)
+                                        'syntax-table (string-to-syntax "|"))
+                     (goto-char (+ 4 start)))
+                    ((string-match-p "^''\\${" ahead)
+                     (put-text-property (1+ start) (+ 2 start)
+                                        'syntax-table (string-to-syntax "|"))
+                     (goto-char (+ 5 start)))
+                    ((string-match-p "^''\\[nrt]" ahead)
+                     (put-text-property (1+ start) (+ 2 start)
+                                        'syntax-table (string-to-syntax "|"))
+                     (goto-char (+ 5 start)))
+                    ((string-match-p "^''" ahead)
+                     (goto-char (+ 3 start)))
+                    (t (put-text-property (1+ start) (+ 2 start)
+                                          'syntax-table (string-to-syntax "|"))
+                       (goto-char (+ 2 start))))))))))))
 
 (defun nix-syntax-propertize (start end)
   "Special syntax properties for Nix from START to END."
@@ -219,10 +209,6 @@
      (0 nil))
     ("\\\\\\${" (0 (ignore (nix--escaped-antiquote-dq-style))))
     ("'\\{2,\\}" (0 (ignore (nix--single-quotes))))
-    ("}''\\([^\\$'\\\\]\\|\\$[^{]\\|\\\\[^nrt]\\)"
-     (0 (ignore (nix--antiquote-close-sq-end))))
-    ("}\""
-     (0 (ignore (nix--antiquote-close-dq-end))))
     ("}\\${"
      (0 (ignore (nix--antiquote-close-open))))
     ("\\${"
