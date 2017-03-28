@@ -173,7 +173,140 @@ If a close brace `}' ends an antiquote, the next character begins a string."
      (0 (ignore (nix-syntax-propertize-close-brace)))))
    start end))
 
-;; Indentation
+
+;;; REPL
+
+(defvar nix-prompt-regexp "nix-repl> ")
+
+(define-derived-mode nix-repl-mode comint-mode "Nix-REPL"
+  "Interactive prompt for Nix."
+  (setq-local comint-prompt-regexp nix-prompt-regexp)
+  (setq-local comint-prompt-read-only t)
+  (add-to-list 'company-backends 'company-nix)
+  (company-mode))
+
+(defun nix-repl-show ()
+  "Load the Nix-REPL."
+  (interactive)
+  (pop-to-buffer-same-window
+   (get-buffer-create "*Nix-REPL*"))
+  (unless (comint-check-proc (current-buffer))
+    (nix--make-repl-in-buffer (current-buffer))
+    (nix-repl-mode)))
+
+(defun nix--make-repl-in-buffer (buffer)
+  (make-comint-in-buffer "Nix-REPL" buffer "nix-repl"))
+
+;;; Company
+
+(defun company-nix (command &optional arg &rest ignored)
+  (interactive '(interactive))
+  (case command
+    (interactive (company-begin-backend 'company-nix))
+    (prefix (and (member major-mode '(nix-mode nix-repl-mode))
+                 (nix-grab-attr-path)))
+    (candidates
+     (nix-get-completions (get-buffer-process (nix--get-company-buffer)) arg))
+    (sorted t)))
+
+(defun nix-grab-attr-path ()
+  (if (looking-at "[^a-zA-Z0-9'\\-_\\.]")
+      (buffer-substring (point) (save-excursion (skip-chars-backward "a-zA-Z0-9'\\-_\\.")
+                                                (point)))
+    (unless (and (char-after)
+                 (string-match "[a-zA-Z0-9'\\-_]" (char-to-string (char-after)))
+                 ""))))
+
+(defun nix--get-company-buffer (&optional buffer)
+  (let* ((buf (or buffer (current-buffer)))
+         (repl-buf (get-buffer "*Nix-REPL*")))
+    (if (or (equal buf "*Nix-REPL*") (equal buf repl-buf))
+        repl-buf
+      (nix--get-company-backend-buffer buf))))
+
+(defvar nix-company-backend-buffer-name " *nix-company-backend*")
+(defvar nix--company-last-buffer nil)
+
+(defun nix--get-company-backend-buffer (buffer)
+  (let* ((buf-file (buffer-file-name buffer))
+         (backend-buf (get-buffer-create nix-company-backend-buffer-name))
+         (last-buf nix--company-last-buffer)
+         (proc (get-buffer-process backend-buf)))
+    (with-current-buffer buffer
+      (if (and proc
+               (process-live-p proc))
+          (if (not (string= last-buf (buffer-name)))
+              (progn (quit-process proc)
+                     (nix--make-repl-in-buffer backend-buf)
+                     (nix--send-repl (concat ":l " buf-file "\n")
+                                     (get-buffer-process backend-buf) t)
+                     (setq nix--company-last-buffer (buffer-name)))
+            (nix--send-repl ":r\n" proc t))
+        (progn (nix--make-repl-in-buffer backend-buf)
+               (nix--send-repl (concat ":l " buf-file "\n")
+                               (get-buffer-process backend-buf) t)
+               (setq nix--company-last-buffer (buffer-name))))
+      backend-buf)))
+
+(defun nix-get-completions (proc prefix)
+  (save-match-data
+    (nix--with-temp-process-filter proc
+      (goto-char (point-min))
+      (process-send-string proc (concat prefix "\t\"" (nix--char-with-ctrl ?a) "\"\n"))
+      (setq i 0)
+      (while (and (< (setq i (1+ i)) 100)
+                  (not (search-forward-regexp "\"\\([^\"]*\\)\"[\n]*nix-repl>" nil t)))
+        (sleep-for 0.01))
+      (let ((new-prefix (match-string 1))
+            (start-compl (point)))
+        (if (string-suffix-p " " new-prefix)
+            (list (substring new-prefix 0 -1))
+          (process-send-string proc (concat new-prefix "\t\t" (nix--char-with-ctrl ?u) "\n"))
+          (goto-char start-compl)
+          (setq i 0)
+          (while (and (< (setq i (1+ i)) 100)
+                      (not (search-forward-regexp
+                            "[\n]+nix-repl>\\|Display all \\([0-9]+\\)" nil t)))
+            (sleep-for 0.01))
+          (if (match-string 1)
+              (progn
+                (process-send-string proc "n")
+                '())
+            (search-backward "\n" nil t)
+            (split-string (buffer-substring start-compl (1- (point))))))))))
+
+(defun nix--send-repl (input &optional process mute)
+  (let ((proc (or process (get-buffer-process (current-buffer)))))
+    (if mute
+        (nix--with-temp-process-filter proc
+          (process-send-string proc input))
+      (process-send-string proc input))))
+
+(defun nix--char-with-ctrl (char)
+  (char-to-string (logand #b10011111 char)))
+
+(defmacro nix--with-temp-process-filter (proc &rest body)
+  (declare (indent defun))
+  `(let* ((buf (generate-new-buffer " *temp-process-output*"))
+          (proc-filter-saved (process-filter ,proc))
+          (proc-marker (with-current-buffer buf (point-marker))))
+     (set-process-filter ,proc (nix--process-filter buf proc-marker))
+     (unwind-protect
+         (with-current-buffer buf
+           ,@body)
+       (set-process-filter ,proc proc-filter-saved)
+       (kill-buffer buf))))
+
+(defun nix--process-filter (buf marker)
+  (lambda (proc string)
+    (when (buffer-live-p buf)
+      (with-current-buffer buf
+        (save-excursion
+          (goto-char marker)
+          (insert string)
+          (set-marker marker (point)))))))
+
+;;; Indentation
 
 (defun nix-indent-level-parens ()
   "Find indent level based on parens."
@@ -357,6 +490,12 @@ If a close brace `}' ends an antiquote, the next character begins a string."
 
 (nix-create-keymap)
 (nix-create-menu)
+
+(when (featurep 'flycheck) (require 'nix-flycheck))
+
+(when (require 'company nil 'noerror) (add-to-list
+                                       'company-backends
+                                       'company-nix))
 
 ;;;###autoload
 (define-derived-mode nix-mode prog-mode "Nix"
