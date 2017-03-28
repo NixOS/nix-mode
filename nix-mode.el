@@ -173,10 +173,21 @@
                              'nix-syntax-antiquote t)
           (let ((ahead (buffer-substring (1+ start) (min (point-max) (+ 5 start)))))
             (case string-type
-              (?\" (unless (string-match-p "^\"" ahead)
+              (?\" (cond
+                    ((string-match-p "^\\\\\"" ahead)
                      (put-text-property (1+ start) (+ 2 start)
-                                        'syntax-table (string-to-syntax "|")))
-                   (goto-char (+ 2 start)))
+                                        'syntax-table (string-to-syntax "|"))
+                     (goto-char (+ 3 start)))
+                    ((string-match-p "^\\\\\\${" ahead)
+                     (put-text-property (1+ start) (+ 2 start)
+                                        'syntax-table (string-to-syntax "|"))
+                     (goto-char (+ 4 start)))
+                    ((string-match-p "^\"" ahead)
+                     (goto-char (+ 2 start)))
+                    (t
+                     (put-text-property (1+ start) (+ 2 start)
+                                        'syntax-table (string-to-syntax "|"))
+                     (goto-char (+ 2 start)))))
               (?\' (cond
                     ((string-match-p "^'''" ahead)
                      (put-text-property (1+ start) (+ 2 start)
@@ -186,7 +197,7 @@
                      (put-text-property (1+ start) (+ 2 start)
                                         'syntax-table (string-to-syntax "|"))
                      (goto-char (+ 5 start)))
-                    ((string-match-p "^''\\[nrt]" ahead)
+                    ((string-match-p "^''\\\\[nrt]" ahead)
                      (put-text-property (1+ start) (+ 2 start)
                                         'syntax-table (string-to-syntax "|"))
                      (goto-char (+ 5 start)))
