@@ -15,8 +15,6 @@
 
 ;;; Code:
 
-(require 'company)
-
 ;; Emacs 24.2 compatability
 (unless (fboundp 'setq-local)
   (defmacro setq-local (var val)
@@ -495,6 +493,10 @@ If a close brace `}' ends an antiquote, the next character begins a string."
 
 (when (featurep 'flycheck) (require 'nix-flycheck))
 
+(when (require 'company nil 'noerror) (add-to-list
+                                       'company-backends
+                                       'company-nix))
+
 ;;;###autoload
 (define-derived-mode nix-mode prog-mode "Nix"
   "Major mode for editing Nix expressions.
@@ -547,11 +549,7 @@ The hook `nix-mode-hook' is run when Nix mode is started.
   (setq-local paragraph-start "[ \t]*\\(#+[ \t]*\\)?$")
   (setq-local paragraph-separate paragraph-start)
 
-  (easy-menu-add nix-mode-menu nix-mode-map)
-
-  ;; Company
-  (add-to-list 'company-backends 'company-nix)
-  (company-mode))
+  (easy-menu-add nix-mode-menu nix-mode-map))
 
 ;;;###autoload
 (progn
