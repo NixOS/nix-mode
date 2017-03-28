@@ -1,4 +1,10 @@
-;;; Flycheck
+;;; nix-flycheck.el --- Flycheck support for Nix.
+
+;; This file is NOT part of GNU Emacs.
+
+;;; Commentary:
+
+;;; Code:
 
 (require 'flycheck)
 
@@ -22,7 +28,7 @@
                        :checker checker
                        :buffer buffer)
                       errs))))
-    errs)))
+      errs)))
 
 (flycheck-def-args-var flycheck-nix-args (nix))
 
@@ -37,3 +43,4 @@
 (add-to-list 'flycheck-checkers 'nix)
 
 (provide 'nix-flycheck)
+;;; nix-flycheck.el ends here
