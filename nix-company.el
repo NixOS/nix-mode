@@ -8,6 +8,7 @@
 ;;; Code:
 
 (require 'nix-repl)
+(require 'cl)
 
 (defun company-nix (command &optional arg &rest ignored)
   (interactive '(interactive))

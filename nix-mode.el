@@ -16,6 +16,8 @@
 
 ;;; Code:
 
+(require 'cl)
+
 ;; Emacs 24.2 compatability
 (unless (fboundp 'setq-local)
   (defmacro setq-local (var val)
