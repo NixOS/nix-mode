@@ -609,13 +609,6 @@ The hook `nix-mode-hook' is run when Nix mode is started.
   (add-to-list 'auto-mode-alist '("\\.nix\\'" . nix-mode))
   (add-to-list 'auto-mode-alist '("\\.nix.in\\'" . nix-mode)))
 
-(defun nix-mode-reload ()
-  "Reload Nix mode."
-  (interactive)
-  (unload-feature 'nix-mode)
-  (require 'nix-mode)
-  (nix-mode))
-
 (provide 'nix-mode)
 
 ;;; nix-mode.el ends here
