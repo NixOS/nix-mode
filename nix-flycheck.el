@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t -*-
 ;;; nix-flycheck.el --- Flycheck support for Nix.
 
 ;; This file is NOT part of GNU Emacs.

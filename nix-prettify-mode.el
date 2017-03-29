@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t -*-
 ;;; nix-prettify.el --- Prettify Nix store file names
 
 ;; Copyright © 2014, 2015 Alex Kost <alezost@gmail.com>
