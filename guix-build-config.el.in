@@ -1,0 +1,72 @@
+;;; guix-build-config.el --- Compile-time configuration variables
+
+;; Copyright © 2015 Mathieu Lirzin <mthl@openmailbox.org>
+;; Copyright © 2015, 2016 Alex Kost <alezost@gmail.com>
+
+;; This file is part of Emacs-Guix.
+
+;; Emacs-Guix is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; Emacs-Guix is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with Emacs-Guix.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Code:
+
+(defconst guix-config-name "@PACKAGE_NAME@"
+  "Emacs-Guix full name.")
+
+(defconst guix-config-version "@PACKAGE_VERSION@"
+  "Emacs-Guix version.")
+
+(defconst guix-config-image-directory
+  (let ((dir (replace-regexp-in-string "${prefix}" "@prefix@"
+                                       "@datarootdir@/emacs-guix/images")))
+    (if (file-exists-p dir)
+        dir
+      (expand-file-name "images" "@abs_top_srcdir@")))
+  "Directory with image files for Emacs-Guix.")
+
+(defconst guix-config-scheme-directory
+  (let ((dir (replace-regexp-in-string "${prefix}" "@prefix@"
+                                       "@guilemoduledir@")))
+    ;; If dir does not exist, it means Emacs-Guix is not installed, so
+    ;; it is used directly from source.
+    (if (file-exists-p dir)
+        dir
+      (expand-file-name "scheme" "@abs_top_srcdir@")))
+  "Directory with Scheme files for Emacs-Guix.")
+
+(defconst guix-config-scheme-compiled-directory
+  (let ((dir (replace-regexp-in-string "${exec_prefix}" "@prefix@"
+                                       "@guileccachedir@")))
+    (if (file-exists-p dir)
+        dir
+      (expand-file-name "scheme" "@abs_top_builddir@")))
+  "Directory with compiled Scheme (*.go) files for Emacs-Guix.")
+
+(defconst guix-config-guix-scheme-directory
+  (let ((dir "@guixmoduledir@"))
+    (and (not (string= "" dir))
+         dir))
+  "Directory with Guix modules.")
+
+(defconst guix-config-guix-scheme-compiled-directory
+  (let ((dir "@guixccachedir@"))
+    (and (not (string= "" dir))
+         dir))
+  "Directory with Guix compiled (*.go) files.")
+
+(defconst guix-config-guile-program "@GUILE@"
+  "Name of the 'guile' executable defined at configure time.")
+
+(provide 'guix-build-config)
+
+;;; guix-build-config.el ends here
