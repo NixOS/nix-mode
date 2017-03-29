@@ -1,5 +1,5 @@
-;; -*- lexical-binding: t -*-
 ;;; nix-mode.el --- Major mode for editing Nix expressions
+;; -*- lexical-binding: t -*-
 
 ;; Author: Eelco Dolstra
 ;; Maintainer: Matthew Bauer <mjbauer95@gmail.com>
