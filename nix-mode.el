@@ -402,27 +402,27 @@
     (beginning-of-line)
 
     (let ((lets 0)
-	  (ins 0))
+          (ins 0))
       (while (not (eq (point) (point-min)))
-	(forward-line -1)
-	(cond
-	 ((and
-	   (or
-	    (looking-at "[[:space:]]*let$")
-	    (looking-at "[[:space:]]*let[[:space:]]")
-	    (looking-at ".*[[:space:]]let$"))
-	   (not
-	    (or
-	     (looking-at ".*[[:space:]]in$")
-	     (looking-at ".*[[:space:]]in[[:space:]]"))))
-	  (setq lets (1+ lets)))
-	 ((or
-	   (looking-at "^in$")
-	   (looking-at "^in[[:space:]]")
-	   (looking-at "[[:space:]]+in$")
-	   (looking-at "[[:space:]]+in[[:space:]]"))
-	  (setq ins (1+ ins)))))
-
+        (forward-line -1)
+        (cond
+         ((save-excursion (end-of-line) (nth 4 (syntax-ppss))) nil)
+         ((and
+           (or
+            (looking-at "[[:space:]]*let$")
+            (looking-at "[[:space:]]*let[[:space:]]")
+            (looking-at ".*[[:space:]]let$"))
+           (not
+            (or
+             (looking-at ".*[[:space:]]in$")
+             (looking-at ".*[[:space:]]in[[:space:]]"))))
+          (setq lets (1+ lets)))
+         ((or
+           (looking-at "^in$")
+           (looking-at "^in[[:space:]]")
+           (looking-at "[[:space:]]+in$")
+           (looking-at "[[:space:]]+in[[:space:]]"))
+          (setq ins (1+ ins)))))
       (- lets ins))))
 
 (defun nix-indent-level-is-closing ()
