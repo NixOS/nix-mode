@@ -1,5 +1,5 @@
-;;; nix-company.el --- Company support for Nix
 ;; -*- lexical-binding: t -*-
+;;; nix-company.el --- Company support for Nix
 
 ;; This file is NOT part of GNU Emacs.
 

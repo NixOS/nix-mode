@@ -1,5 +1,5 @@
-;;; nix-repl.el --- Nix repl
 ;; -*- lexical-binding: t -*-
+;;; nix-repl.el --- Nix repl
 
 ;; This file is NOT part of GNU Emacs.
 
