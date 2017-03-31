@@ -22,6 +22,8 @@
     "Set variable VAR to value VAL in current buffer."
     `(set (make-local-variable ',var) ,val)))
 
+(require 'cl)
+
 ;;; Syntax coloring
 
 (defconst nix-keywords
