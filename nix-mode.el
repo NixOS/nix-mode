@@ -68,6 +68,8 @@
     (,nix-re-bracket-path . font-lock-constant-face))
   "Font lock keywords for nix.")
 
+(makunbound 'nix-mode-syntax-table)
+
 (defvar nix-mode-syntax-table
   (let ((table (make-syntax-table)))
     (modify-syntax-entry ?/ ". 14" table)
