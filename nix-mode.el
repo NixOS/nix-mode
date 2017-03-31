@@ -552,7 +552,7 @@
 (nix-create-keymap)
 (nix-create-menu)
 
-(when (featurep 'flycheck) (require 'nix-flycheck))
+(when (featurep 'flycheck) (require 'nix-flycheck nil 'noerror))
 
 (when (require 'company nil 'noerror) (add-to-list
                                        'company-backends
