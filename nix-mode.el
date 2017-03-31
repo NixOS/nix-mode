@@ -111,6 +111,7 @@
          (string-type (nix--get-string-type context)))
     (unless (or (equal string-type ?\")
                 (and (equal string-type nil)
+                     (< 1 start)
                      (string-match-p nix--variable-char
                                      (buffer-substring (1- start) start))))
       (when (equal string-type nil)
