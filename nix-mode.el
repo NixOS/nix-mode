@@ -24,7 +24,7 @@
     "Set variable VAR to value VAL in current buffer."
     `(set (make-local-variable ',var) ,val)))
 
-(require 'nix-format)
+(require 'nix-format nil 'noerror)
 
 ;;; Syntax coloring
 
