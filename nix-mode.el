@@ -26,36 +26,12 @@
 
 ;;; Syntax coloring
 
-(defun nix-syntax-match-antiquote (limit)
-  "Find antiquote within a Nix expression up to LIMIT."
-  (unless (> (point) limit)
-    (if (get-text-property (point) 'nix-syntax-antiquote)
-        (progn
-          (set-match-data (list (point) (1+ (point))))
-          (forward-char 1)
-          t)
-      (let ((pos (next-single-char-property-change (point) 'nix-syntax-antiquote
-                                                   nil limit)))
-        (when (and pos (not (> pos limit)))
-          (goto-char pos)
-          (let ((char (char-after pos)))
-            (pcase char
-              (`?{
-               (forward-char 1)
-               (set-match-data (list (1- pos) (point)))
-               t)
-              (`?}
-               (forward-char 1)
-               (set-match-data (list pos (point)))
-               t))))))))
-
 (defconst nix-keywords
   '("if" "then"
     "else" "with"
     "let" "in"
     "rec" "inherit"
-    "or"
-    ))
+    "or"))
 
 (defconst nix-builtins
   '("builtins" "baseNameOf"
@@ -89,9 +65,11 @@
     (,nix-re-file-path . font-lock-constant-face)
     (,nix-re-variable-assign 1 font-lock-variable-name-face)
     (,nix-re-bracket-path . font-lock-constant-face)
-    (nix-syntax-match-antiquote 0 font-lock-preprocessor-face t)
+    (nix--syntax-match-antiquote 0 font-lock-preprocessor-face t)
     )
   "Font lock keywords for nix.")
+
+(defconst nix--variable-char "[a-zA-Z0-9_'\-]")
 
 (makunbound 'nix-mode-syntax-table)
 
@@ -108,13 +86,34 @@
     table)
   "Syntax table for Nix mode.")
 
+(defun nix--syntax-match-antiquote (limit)
+  "Find antiquote within a Nix expression up to LIMIT."
+  (unless (> (point) limit)
+    (if (get-text-property (point) 'nix-syntax-antiquote)
+        (progn
+          (set-match-data (list (point) (1+ (point))))
+          (forward-char 1)
+          t)
+      (let ((pos (next-single-char-property-change (point) 'nix-syntax-antiquote
+                                                   nil limit)))
+        (when (and pos (not (> pos limit)))
+          (goto-char pos)
+          (let ((char (char-after pos)))
+            (pcase char
+              (`?{
+               (forward-char 1)
+               (set-match-data (list (1- pos) (point)))
+               t)
+              (`?}
+               (forward-char 1)
+               (set-match-data (list pos (point)))
+               t))))))))
+
 (defun nix--mark-string (pos string-type)
   (put-text-property pos (1+ pos)
                      'syntax-table (string-to-syntax "|"))
   (put-text-property pos (1+ pos)
                      'nix-string-type string-type))
-
-(defconst nix--variable-char "[a-zA-Z0-9_'\-]")
 
 (defun nix--get-parse-state (pos)
   (save-excursion (save-match-data (syntax-ppss pos))))
@@ -148,7 +147,7 @@
         (let ((str-peek (buffer-substring end (min (point-max) (+ 2 end)))))
           (if (member str-peek '("${" "\\n" "\\r" "\\t"))
               (goto-char (+ 2 end))
-              (nix--mark-string (1- end) ?\')))))))
+            (nix--mark-string (1- end) ?\')))))))
 
 (defun nix--escaped-antiquote-dq-style ()
   (let* ((start (match-beginning 0))
@@ -237,8 +236,10 @@
      (0 nil))
     ("\\\\\""
      (0 nil))
-    ("\\\\\\${" (0 (ignore (nix--escaped-antiquote-dq-style))))
-    ("'\\{2,\\}" (0 (ignore (nix--single-quotes))))
+    ("\\\\\\${"
+     (0 (ignore (nix--escaped-antiquote-dq-style))))
+    ("'\\{2,\\}"
+     (0 (ignore (nix--single-quotes))))
     ("}\\${"
      (0 (ignore (nix--antiquote-close-open))))
     ("\\${"
@@ -246,8 +247,7 @@
     ("}"
      (0 (ignore (nix--antiquote-close))))
     ("\""
-     (0 (ignore (nix--double-quotes))))
-    )
+     (0 (ignore (nix--double-quotes)))))
    start end))
 
 ;;; Indentation
@@ -444,7 +444,7 @@ The hook `nix-mode-hook' is run when Nix mode is started.
   (setq-local tab-width 2)
 
   ;; Font lock support.
-  (setq-local font-lock-defaults '(nix-font-lock-keywords nil nil nil nil))
+  (setq-local font-lock-defaults '(nix-font-lock-keywords))
 
   ;; Special syntax properties for Nix
   (setq-local syntax-propertize-function 'nix-syntax-propertize)
