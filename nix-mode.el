@@ -28,22 +28,26 @@
 
 (defun nix-syntax-match-antiquote (limit)
   "Find antiquote within a Nix expression up to LIMIT."
-  (let ((pos (next-single-char-property-change (point) 'nix-syntax-antiquote
-                                               nil limit)))
-    (when (and pos (> pos (point)) (< pos (point-max)))
-      (goto-char pos)
-      (let ((char (char-after pos)))
-        (pcase char
-          (`?{
-           (forward-char 1)
-           (set-match-data (list (1- pos) (point)))
-           t)
-          (`?}
-           (forward-char 1)
-           (set-match-data (list pos (point)))
-           t))
-        )
-      )))
+  (unless (> (point) limit)
+    (if (get-text-property (point) 'nix-syntax-antiquote)
+        (progn
+          (set-match-data (list (point) (1+ (point))))
+          (forward-char 1)
+          t)
+      (let ((pos (next-single-char-property-change (point) 'nix-syntax-antiquote
+                                                   nil limit)))
+        (when (and pos (not (> pos limit)))
+          (goto-char pos)
+          (let ((char (char-after pos)))
+            (pcase char
+              (`?{
+               (forward-char 1)
+               (set-match-data (list (1- pos) (point)))
+               t)
+              (`?}
+               (forward-char 1)
+               (set-match-data (list pos (point)))
+               t))))))))
 
 (defconst nix-keywords
   '("if" "then"
