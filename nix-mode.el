@@ -16,8 +16,6 @@
 
 ;;; Code:
 
-(require 'cl)
-
 ;; Emacs 24.2 compatability
 (unless (fboundp 'setq-local)
   (defmacro setq-local (var val)
@@ -196,45 +194,33 @@
     (unless (nix--get-string-type ps)
       (let ((string-type (nix--open-brace-string-type ps)))
         (when string-type
-          (put-text-property start (+ 2 start)
+          (put-text-property start (1+ start)
                              'nix-string-type string-type)
           (put-text-property start (1+ start)
                              'nix-syntax-antiquote t)
           (let ((ahead (buffer-substring (1+ start) (min (point-max) (+ 5 start)))))
-            (case string-type
-              (?\" (cond
-                    ((string-match-p "^\\\\\"" ahead)
-                     (put-text-property (1+ start) (+ 2 start)
-                                        'syntax-table (string-to-syntax "|"))
-                     (goto-char (+ 3 start)))
-                    ((string-match-p "^\\\\\\${" ahead)
-                     (put-text-property (1+ start) (+ 2 start)
-                                        'syntax-table (string-to-syntax "|"))
-                     (goto-char (+ 4 start)))
-                    ((string-match-p "^\"" ahead)
-                     (goto-char (+ 2 start)))
-                    (t
-                     (put-text-property (1+ start) (+ 2 start)
-                                        'syntax-table (string-to-syntax "|"))
-                     (goto-char (+ 2 start)))))
-              (?\' (cond
-                    ((string-match-p "^'''" ahead)
-                     (put-text-property (1+ start) (+ 2 start)
-                                        'syntax-table (string-to-syntax "|"))
-                     (goto-char (+ 4 start)))
-                    ((string-match-p "^''\\${" ahead)
-                     (put-text-property (1+ start) (+ 2 start)
-                                        'syntax-table (string-to-syntax "|"))
-                     (goto-char (+ 5 start)))
-                    ((string-match-p "^''\\\\[nrt]" ahead)
-                     (put-text-property (1+ start) (+ 2 start)
-                                        'syntax-table (string-to-syntax "|"))
-                     (goto-char (+ 5 start)))
-                    ((string-match-p "^''" ahead)
-                     (goto-char (+ 3 start)))
-                    (t (put-text-property (1+ start) (+ 2 start)
-                                          'syntax-table (string-to-syntax "|"))
-                       (goto-char (+ 2 start))))))))))))
+            (pcase string-type
+              (`?\" (cond
+                     ((or (string-match "^\\\\\"" ahead)
+                          (string-match "^\\\\\\${" ahead))
+                      (nix--mark-string (1+ start) string-type)
+                      (goto-char (match-end 0)))
+                     ((string-match-p "^\"" ahead)
+                      (goto-char (+ 2 start)))
+                     ((< (1+ start) (point-max))
+                      (nix--mark-string (1+ start) string-type)
+                      (goto-char (+ 2 start)))))
+              (`?\' (cond
+                     ((or (string-match "^'''" ahead)
+                          (string-match "^''\\${" ahead)
+                          (string-match "^''\\\\[nrt]" ahead))
+                      (nix--mark-string (1+ start) string-type)
+                      (goto-char (match-end 0)))
+                     ((string-match-p "^''" ahead)
+                      (goto-char (+ 3 start)))
+                     ((< (1+ start) (point-max))
+                      (nix--mark-string (1+ start) string-type)
+                      (goto-char (+ 2 start))))))))))))
 
 (defun nix-syntax-propertize (start end)
   "Special syntax properties for Nix from START to END."
