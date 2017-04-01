@@ -26,6 +26,25 @@
 
 ;;; Syntax coloring
 
+(defun nix-syntax-match-antiquote (limit)
+  "Find antiquote within a Nix expression up to LIMIT."
+  (let ((pos (next-single-char-property-change (point) 'nix-syntax-antiquote
+                                               nil limit)))
+    (when (and pos (> pos (point)) (< pos (point-max)))
+      (goto-char pos)
+      (let ((char (char-after pos)))
+        (pcase char
+          (`?{
+           (forward-char 1)
+           (set-match-data (list (1- pos) (point)))
+           t)
+          (`?}
+           (forward-char 1)
+           (set-match-data (list pos (point)))
+           t))
+        )
+      )))
+
 (defconst nix-keywords
   '("if" "then"
     "else" "with"
@@ -65,7 +84,9 @@
     (,nix-re-url . font-lock-constant-face)
     (,nix-re-file-path . font-lock-constant-face)
     (,nix-re-variable-assign 1 font-lock-variable-name-face)
-    (,nix-re-bracket-path . font-lock-constant-face))
+    (,nix-re-bracket-path . font-lock-constant-face)
+    (nix-syntax-match-antiquote 0 font-lock-preprocessor-face t)
+    )
   "Font lock keywords for nix.")
 
 (makunbound 'nix-mode-syntax-table)
