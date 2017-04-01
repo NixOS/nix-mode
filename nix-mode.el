@@ -25,9 +25,27 @@
     `(set (make-local-variable ',var) ,val)))
 
 (require 'nix-format)
-(require 'nix-repl)
 
 ;;; Syntax coloring
+
+(defun nix-syntax-match-antiquote (limit)
+  "Find antiquote within a Nix expression up to LIMIT."
+  (let ((pos (next-single-char-property-change (point) 'nix-syntax-antiquote
+                                               nil limit)))
+    (when (and pos (> pos (point)) (< pos (point-max)))
+      (goto-char pos)
+      (let ((char (char-after pos)))
+        (pcase char
+          (`?{
+           (forward-char 1)
+           (set-match-data (list (1- pos) (point)))
+           t)
+          (`?}
+           (forward-char 1)
+           (set-match-data (list pos (point)))
+           t))
+        )
+      )))
 
 (defconst nix-keywords
   '("if" "then"
@@ -68,8 +86,12 @@
     (,nix-re-url . font-lock-constant-face)
     (,nix-re-file-path . font-lock-constant-face)
     (,nix-re-variable-assign 1 font-lock-variable-name-face)
-    (,nix-re-bracket-path . font-lock-constant-face))
+    (,nix-re-bracket-path . font-lock-constant-face)
+    (nix-syntax-match-antiquote 0 font-lock-preprocessor-face t)
+    )
   "Font lock keywords for nix.")
+
+(makunbound 'nix-mode-syntax-table)
 
 (defvar nix-mode-syntax-table
   (let ((table (make-syntax-table)))
@@ -114,6 +136,7 @@
          (string-type (nix--get-string-type context)))
     (unless (or (equal string-type ?\")
                 (and (equal string-type nil)
+                     (< 1 start)
                      (string-match-p nix--variable-char
                                      (buffer-substring (1- start) start))))
       (when (equal string-type nil)
@@ -395,9 +418,9 @@
 (nix-create-keymap)
 (nix-create-menu)
 
-(when (featurep 'flycheck) (require 'nix-flycheck))
+(when (featurep 'flycheck) (require 'nix-flycheck nil 'noerror))
 
-(when (require 'company nil 'noerror) (require 'nix-company))
+(when (require 'company nil 'noerror) (require 'nix-company nil 'noerror))
 
 ;;;###autoload
 (define-derived-mode nix-mode prog-mode "Nix"
