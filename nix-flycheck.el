@@ -33,15 +33,15 @@
 
 (flycheck-def-args-var flycheck-nix-args (nix))
 
-(flycheck-define-checker nix
-			 "A syntax and evaluation checker for Nix using nix-instantiate."
-			 :command ("nix-instantiate" "--eval" "--strict" "--show-trace" (eval flycheck-nix-args) "-")
-			 :standard-input t
-			 :error-parser nix--parse-errors
-			 :modes (nix-mode)
-			 )
+(flycheck-define-checker flycheck-nix
+  "A syntax and evaluation checker for Nix using nix-instantiate."
+  :command ("nix-instantiate" "--eval" "--strict" "--show-trace" (eval flycheck-nix-args) "-")
+  :standard-input t
+  :error-parser nix--parse-errors
+  :modes (nix-mode)
+  )
 
-(add-to-list 'flycheck-checkers 'nix)
+(add-to-list 'flycheck-checkers 'flycheck-nix)
 
 (provide 'nix-flycheck)
 ;;; nix-flycheck.el ends here
