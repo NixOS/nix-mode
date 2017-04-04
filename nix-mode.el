@@ -373,17 +373,6 @@
    (t
     (indent-line-to (nix-indent-level)))))
 
-;; Visit file
-
-(defun nix-visit-file ()
-  "Go to file under cursor."
-  (interactive)
-  (save-excursion
-    (forward-whitespace -1)
-    (skip-chars-forward " \t")
-    (if (looking-at nix-re-file-path)
-	(find-file (match-string-no-properties 0)))))
-
 ;; Key maps
 
 (defvar nix-mode-menu (make-sparse-keymap "Nix")
@@ -394,7 +383,6 @@
 
 (defun nix-create-keymap ()
   "Create the keymap associated with the Nix mode."
-  (define-key nix-mode-map "\C-c\C-f" 'nix-visit-file)
   (define-key nix-mode-map "\C-c\C-r" 'nix-format-buffer))
 
 (defun nix-create-menu ()
