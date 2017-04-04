@@ -388,7 +388,6 @@
 (defun nix-create-menu ()
   "Create the Nix menu as shown in the menu bar."
   (let ((m '("Nix"
-	     ["Goto file" nix-visit-file t]
 	     ["Format buffer" nix-format-buffer t])
 	   ))
     (easy-menu-define ada-mode-menu nix-mode-map "Menu keymap for Nix mode" m)))
