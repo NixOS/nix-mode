@@ -36,10 +36,10 @@
 (defconst nix-builtins
   '("builtins" "baseNameOf"
     "derivation" "dirOf"
-    "false" "fetchTarball"
-    "import" "isNull"
-    "map" "removeAttrs"
-    "toString" "true"))
+    "true" "false" "null"
+    "isNull" "toString"
+    "fetchTarball" "import"
+    "map" "removeAttrs"))
 
 (defconst nix-warning-keywords
   '("assert" "abort" "throw"))
