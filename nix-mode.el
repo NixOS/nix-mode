@@ -347,7 +347,7 @@
   "Get current indent level."
   (if (nix-indent-level-is-hanging)
       (+ (nix-indent-prev-level)
-         (* tab-width (+ (if (nix-indent-level-is-hanging) 1 0)
+         (* tab-width (+ (if (nix-indent-prev-level-is-hanging) 0 1)
                          (if (nix-indent-level-is-closing) -1 0))))
     (* tab-width (+ (nix-indent-level-parens)
                     (if (nix-indent-level-is-closing) -1 0)))))
