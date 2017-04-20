@@ -316,6 +316,7 @@
         (skip-chars-backward "\n[:space:]"))
 
       (not (or
+            (looking-back "{" 1)
             (looking-back "}" 1)
             (looking-back ":" 1)
             (looking-back ";" 1))))))
