@@ -258,26 +258,26 @@
     (beginning-of-line)
 
     (let ((p1 (point))
-	  (p2 (nth 1 (syntax-ppss)))
-	  (n 0))
+          (p2 (nth 1 (syntax-ppss)))
+          (n 0))
 
       ;; prevent moving beyond buffer
       (if (eq p2 1)
-	  (setq n (1+ n)))
+          (setq n (1+ n)))
 
       (while (and p2 (not (eq p2 1))) ;; make sure p2 > 1
-	(goto-char p2)
-	(backward-char)
-	(let ((l1 (line-number-at-pos p1))
-	      (l2 (line-number-at-pos p2)))
-	  (if (not (eq l1 l2))
-	      (setq n (1+ n))))
-	(setq p1 p2)
-	(setq p2 (nth 1 (syntax-ppss)))
+        (goto-char p2)
+        (backward-char)
+        (let ((l1 (line-number-at-pos p1))
+              (l2 (line-number-at-pos p2)))
+          (if (not (eq l1 l2))
+              (setq n (1+ n))))
+        (setq p1 p2)
+        (setq p2 (nth 1 (syntax-ppss)))
 
-	;; make sure we don't go beyond buffer
-	(if (eq p2 1)
-	    (setq n (1+ n))))
+        ;; make sure we don't go beyond buffer
+        (if (eq p2 1)
+            (setq n (1+ n))))
 
       n)))
 
@@ -296,33 +296,61 @@
      (looking-at "in[[:space:]]")
      (looking-at "in$"))))
 
+(defun nix-indent-level-is-opening ()
+  "Is opening indent?"
+  (save-excursion
+    (end-of-line)
+    (skip-chars-backward "[:space:]")
+
+    (or
+     (looking-back "''"))))
+
 (defun nix-indent-level-is-hanging ()
   "Is hanging?"
   (save-excursion
     (beginning-of-line)
     (skip-chars-forward "[:space:]")
 
-    (forward-line -1)
-    (end-of-line)
+    (if (or
+         ;; (looking-at ",")
+         (looking-at "{")) nil
+
+      (forward-line -1)
+      (end-of-line)
+      (skip-chars-backward "\n[:space:]")
+
+      ;; skip through any comments in the way
+      (while (nth 4 (syntax-ppss))
+        (goto-char (nth 8 (syntax-ppss)))
+        (skip-chars-backward "\n[:space:]"))
+
+      (not (or
+            (looking-back "}" 1)
+            (looking-back ":" 1)
+            (looking-back ";" 1))))))
+
+(defun nix-indent-prev-level-is-hanging ()
+  "Is the previous level hanging?"
+  (save-excursion
+    (beginning-of-line)
     (skip-chars-backward "\n[:space:]")
+    (nix-indent-level-is-hanging)))
 
-    ;; skip through any comments in the way
-    (while (nth 4 (syntax-ppss))
-      (goto-char (nth 8 (syntax-ppss)))
-      (skip-chars-backward "\n[:space:]"))
-
-    (or
-     (looking-back "=" 1)
-     (looking-back "+" 1)
-     ;; (looking-back ":" 1)
-     (looking-back "//" 1))))
+(defun nix-indent-prev-level ()
+  "Get the indent level of the previous line."
+  (save-excursion
+    (beginning-of-line)
+    (skip-chars-backward "\n[:space:]")
+    (current-indentation)))
 
 (defun nix-indent-level ()
   "Get current indent level."
-  (* tab-width (+
-                (nix-indent-level-parens)
-                (if (nix-indent-level-is-closing) -1
-                  (if (nix-indent-level-is-hanging) 1 0)))))
+  (if (nix-indent-level-is-hanging)
+      (+ (nix-indent-prev-level)
+         (* tab-width (+ (if (nix-indent-level-is-hanging) 1 0)
+                         (if (nix-indent-level-is-closing) -1 0))))
+    (* tab-width (+ (nix-indent-level-parens)
+                    (if (nix-indent-level-is-closing) -1 0)))))
 
 (defun nix-indent-line ()
   "Indent current line in a Nix expression."
@@ -332,12 +360,15 @@
    ;; comment
    ((save-excursion
       (beginning-of-line)
-      (nth 4 (syntax-ppss))) nil)
+      (nth 4 (syntax-ppss)))
+    (indent-line-to (nix-indent-prev-level)))
 
    ;; string
    ((save-excursion
       (beginning-of-line)
-      (nth 3 (syntax-ppss))) nil)
+      (nth 3 (syntax-ppss)))
+    (indent-line-to (+ (nix-indent-prev-level)
+                       (if (save-excursion (forward-line -1) (nix-indent-level-is-opening)) tab-width 0))))
 
    ;; else
    (t
