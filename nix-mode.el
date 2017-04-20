@@ -281,35 +281,6 @@
 
       n)))
 
-(defun nix-indent-level-let ()
-  "Get indent level based on # of let statements."
-  (save-excursion
-    (beginning-of-line)
-
-    (let ((lets 0)
-          (ins 0))
-      (while (not (eq (point) (point-min)))
-        (forward-line -1)
-        (cond
-         ((save-excursion (end-of-line) (nth 4 (syntax-ppss))) nil)
-         ((and
-           (or
-            (looking-at "[[:space:]]*let$")
-            (looking-at "[[:space:]]*let[[:space:]]")
-            (looking-at ".*[[:space:]]let$"))
-           (not
-            (or
-             (looking-at ".*[[:space:]]in$")
-             (looking-at ".*[[:space:]]in[[:space:]]"))))
-          (setq lets (1+ lets)))
-         ((or
-           (looking-at "^in$")
-           (looking-at "^in[[:space:]]")
-           (looking-at "[[:space:]]+in$")
-           (looking-at "[[:space:]]+in[[:space:]]"))
-          (setq ins (1+ ins)))))
-      (- lets ins))))
-
 (defun nix-indent-level-is-closing ()
   "Go forward from beginning of line."
   (save-excursion
@@ -349,10 +320,9 @@
 (defun nix-indent-level ()
   "Get current indent level."
   (* tab-width (+
-		(nix-indent-level-parens)
-		(nix-indent-level-let)
-		(if (nix-indent-level-is-closing) -1
-		  (if (nix-indent-level-is-hanging) 1 0)))))
+                (nix-indent-level-parens)
+                (if (nix-indent-level-is-closing) -1
+                  (if (nix-indent-level-is-hanging) 1 0)))))
 
 (defun nix-indent-line ()
   "Indent current line in a Nix expression."
