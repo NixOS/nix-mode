@@ -296,15 +296,6 @@
      (looking-at "in[[:space:]]")
      (looking-at "in$"))))
 
-(defun nix-indent-level-is-opening ()
-  "Is opening indent?"
-  (save-excursion
-    (end-of-line)
-    (skip-chars-backward "[:space:]")
-
-    (or
-     (looking-back "''"))))
-
 (defun nix-indent-level-is-hanging ()
   "Is hanging?"
   (save-excursion
@@ -368,7 +359,18 @@
       (beginning-of-line)
       (nth 3 (syntax-ppss)))
     (indent-line-to (+ (nix-indent-prev-level)
-                       (if (save-excursion (forward-line -1) (nix-indent-level-is-opening)) tab-width 0))))
+                       (* tab-width (+ (if (save-excursion
+                                             (forward-line -1)
+                                             (end-of-line)
+                                             (skip-chars-backward "[:space:]")
+                                             (looking-back "''")) 1 0)
+                                       (if (save-excursion
+                                             (beginning-of-line)
+                                             (skip-chars-forward
+                                              "[:space:]")
+                                             (looking-at "''")
+                                             ) -1 0)
+                                       )))))
 
    ;; else
    (t
