@@ -368,7 +368,7 @@ like this:
 
 \\{nix-devel-mode-map}"
   :init-value nil
-  :lighter " Guix"
+  :lighter " Nix"
   :keymap nix-devel-mode-map
   (if nix-devel-mode
       (progn

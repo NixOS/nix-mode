@@ -43,10 +43,10 @@
           "/profiles/per-user/"
           (getenv "USER")
           "/profile")
-  "Default Guix profile.")
+  "Default Nix profile.")
 
 (defvar nix-current-profile nix-default-profile
-  "Current Guix profile.
+  "Current Nix profile.
 It is used by various commands as the default working profile.")
 
 (defvar nix-system-profile-regexp

@@ -60,7 +60,8 @@
 ;;; Readers
 
 (defvar nix-hydra-projects
-  '("nixpkgs" "nix")
+  '("nixpkgs" "nix" "disnix" "gnu" "hydra" "libchop" "nixops" "nixos"
+    "node2nix" "patchelf")
   "List of available Hydra projects.")
 
 (nix-define-readers

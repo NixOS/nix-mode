@@ -224,7 +224,7 @@ See `nix-hydra-build-status-alist'."
 
 (nix-hydra-define-interface build info
   :mode-name "Hydra-Build-Info"
-  :buffer-name "*Guix Hydra Build Info*"
+  :buffer-name "*Hydra Build Info*"
   :format '((name nil (simple bui-info-heading))
             nil
             nix-hydra-build-info-insert-url

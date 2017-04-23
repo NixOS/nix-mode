@@ -64,7 +64,7 @@
 
 (nix-hydra-define-interface jobset info
   :mode-name "Hydra-Jobset-Info"
-  :buffer-name "*Guix Hydra Jobset Info*"
+  :buffer-name "*Hydra Jobset Info*"
   :format '((name nil (simple bui-info-heading))
             nil
             nix-hydra-jobset-info-insert-url
@@ -121,7 +121,7 @@
 (nix-hydra-define-interface jobset list
   :describe-function 'nix-hydra-list-describe
   :mode-name "Hydra-Jobset-List"
-  :buffer-name "*Guix Hydra Jobsets*"
+  :buffer-name "*Hydra Jobsets*"
   :format '((name nil 25 t)
             (project nil 10 t)
             (scheduled nil 12 t)

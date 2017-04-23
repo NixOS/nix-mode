@@ -61,7 +61,7 @@
 
 (bui-define-interface nix-profile list
   :mode-name "Profile-List"
-  :buffer-name "*Guix Profiles*"
+  :buffer-name "*Nix Profiles*"
   :get-entries-function 'nix-profile-get-entries
   :format '((current nix-profile-list-get-current 10 t)
             (profile bui-list-get-file-name 40 t)
@@ -114,7 +114,7 @@
 ;;; Interactive commands
 
 (defun nix-profiles-show ()
-  "Display Guix profiles.
+  "Display Nix profiles.
 Unlike `nix-profiles', this command always recreates
 `nix-profile-list-buffer-name' buffer."
   (interactive)
@@ -122,7 +122,7 @@ Unlike `nix-profiles', this command always recreates
 
 ;;;###autoload
 (defun nix-profiles ()
-  "Display Guix profiles.
+  "Display Nix profiles.
 Switch to the `nix-profile-list-buffer-name' buffer if it
 already exists.
 
