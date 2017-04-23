@@ -1,4 +1,4 @@
-;;; guix-ui-messages.el --- Minibuffer messages for Guix package management interface
+;;; nix-ui-messages.el --- Minibuffer messages for Guix package management interface
 
 ;; Copyright © 2014–2017 Alex Kost <alezost@gmail.com>
 
@@ -19,7 +19,7 @@
 
 ;;; Commentary:
 
-;; This file provides `guix-result-message' function used to show a
+;; This file provides `nix-result-message' function used to show a
 ;; minibuffer message after displaying packages/generations in a
 ;; list/info buffer.
 
@@ -28,21 +28,21 @@
 (require 'cl-lib)
 (require 'bui-utils)
 
-(defvar guix-messages
+(defvar nix-messages
   `((package
      (id
       ,(lambda (_ entries ids)
-         (guix-message-packages-by-id entries 'package ids)))
+         (nix-message-packages-by-id entries 'package ids)))
      (name
       ,(lambda (_ entries names)
-         (guix-message-packages-by-name entries 'package names)))
+         (nix-message-packages-by-name entries 'package names)))
      (license
       ,(lambda (_ entries licenses)
-         (apply #'guix-message-packages-by-license
+         (apply #'nix-message-packages-by-license
                 entries 'package licenses)))
      (location
       ,(lambda (_ entries locations)
-         (apply #'guix-message-packages-by-location
+         (apply #'nix-message-packages-by-location
                 entries 'package locations)))
      (from-file
       (0 "No package in file '%s'." val)
@@ -75,17 +75,17 @@
     (output
      (id
       ,(lambda (_ entries ids)
-         (guix-message-packages-by-id entries 'output ids)))
+         (nix-message-packages-by-id entries 'output ids)))
      (name
       ,(lambda (_ entries names)
-         (guix-message-packages-by-name entries 'output names)))
+         (nix-message-packages-by-name entries 'output names)))
      (license
       ,(lambda (_ entries licenses)
-         (apply #'guix-message-packages-by-license
+         (apply #'nix-message-packages-by-license
                 entries 'output licenses)))
      (location
       ,(lambda (_ entries locations)
-         (apply #'guix-message-packages-by-location
+         (apply #'nix-message-packages-by-location
                 entries 'output locations)))
      (from-file
       (0 "No package in file '%s'." val)
@@ -116,7 +116,7 @@
       (1 "A single obsolete package output in profile '%s'." profile)
       (many "%d obsolete package outputs in profile '%s'." count profile))
      (profile-diff
-      guix-message-outputs-by-diff))
+      nix-message-outputs-by-diff))
 
     (generation
      (id
@@ -132,13 +132,13 @@
       (1 "A single generation available in profile '%s'." profile)
       (many "%d generations available in profile '%s'." count profile))
      (time
-      guix-message-generations-by-time))))
+      nix-message-generations-by-time))))
 
-(defun guix-message-string-name (name)
+(defun nix-message-string-name (name)
   "Return a quoted name string."
   (concat "'" name "'"))
 
-(defun guix-message-string-entry-type (entry-type &optional plural)
+(defun nix-message-string-entry-type (entry-type &optional plural)
   "Return a string denoting an ENTRY-TYPE."
   (cl-ecase entry-type
     (package
@@ -148,24 +148,24 @@
     (generation
      (if plural "generations" "generation"))))
 
-(defun guix-message-string-entries (count entry-type)
+(defun nix-message-string-entries (count entry-type)
   "Return a string denoting the COUNT of ENTRY-TYPE entries."
   (cl-case count
     (0 (concat "No "
-               (guix-message-string-entry-type
+               (nix-message-string-entry-type
                 entry-type 'plural)))
     (1 (concat "A single "
-               (guix-message-string-entry-type
+               (nix-message-string-entry-type
                 entry-type)))
     (t (format "%d %s"
                count
-               (guix-message-string-entry-type
+               (nix-message-string-entry-type
                 entry-type 'plural)))))
 
-(defun guix-message-packages-by-id (entries entry-type ids)
+(defun nix-message-packages-by-id (entries entry-type ids)
   "Display a message for packages or outputs searched by IDS."
   (let* ((count (length entries))
-         (str-beg (guix-message-string-entries count entry-type))
+         (str-beg (nix-message-string-entries count entry-type))
          (str-end (if (> count 1)
                       (concat "with the following IDs: "
                               (mapconcat #'bui-get-string ids ", "))
@@ -179,50 +179,50 @@ Or it may be some package variant that cannot be handled by
 Emacs-Guix.  For example, it may be so called 'canonical package'
 used by '%%base-packages' in an operating-system declaration.
 
-Try \"\\[guix-search-by-name]\" to find this package.")
+Try \"\\[nix-search-by-name]\" to find this package.")
                  str-beg str-end)
       (message "%s %s." str-beg str-end))))
 
-(defun guix-message-packages-by-name (entries entry-type names)
+(defun nix-message-packages-by-name (entries entry-type names)
   "Display a message for packages or outputs searched by NAMES."
   (let* ((count (length entries))
-         (str-beg (guix-message-string-entries count entry-type))
+         (str-beg (nix-message-string-entries count entry-type))
          (str-end (if (cdr names)
                       (concat "matching the following names: "
-                              (mapconcat #'guix-message-string-name
+                              (mapconcat #'nix-message-string-name
                                          names ", "))
                     (concat "with name "
-                            (guix-message-string-name (car names))))))
+                            (nix-message-string-name (car names))))))
     (message "%s %s." str-beg str-end)))
 
-(defun guix-message-packages-by-license (entries entry-type license)
+(defun nix-message-packages-by-license (entries entry-type license)
   "Display a message for packages or outputs searched by LICENSE."
   (let* ((count (length entries))
-         (str-beg (guix-message-string-entries count entry-type))
+         (str-beg (nix-message-string-entries count entry-type))
          (str-end (format "with license '%s'" license)))
     (message "%s %s." str-beg str-end)))
 
-(defun guix-message-packages-by-location (entries entry-type location)
+(defun nix-message-packages-by-location (entries entry-type location)
   "Display a message for packages or outputs searched by LOCATION."
   (let* ((count   (length entries))
-         (str-beg (guix-message-string-entries count entry-type))
+         (str-beg (nix-message-string-entries count entry-type))
          (str-end (format "placed in '%s'" location)))
     (message "%s %s." str-beg str-end)))
 
-(defun guix-message-generations-by-time (profile entries times)
+(defun nix-message-generations-by-time (profile entries times)
   "Display a message for generations searched by TIMES."
   (let* ((count (length entries))
-         (str-beg (guix-message-string-entries count 'generation))
+         (str-beg (nix-message-string-entries count 'generation))
          (time-beg (bui-get-time-string (car  times)))
          (time-end (bui-get-time-string (cadr times))))
     (message (concat "%s of profile '%s'\n"
                      "matching time period '%s' - '%s'.")
              str-beg profile time-beg time-end)))
 
-(defun guix-message-outputs-by-diff (_ entries profiles)
+(defun nix-message-outputs-by-diff (_ entries profiles)
   "Display a message for outputs searched by PROFILES difference."
   (let* ((count (length entries))
-         (str-beg (guix-message-string-entries count 'output))
+         (str-beg (nix-message-string-entries count 'output))
          (profile1 (car  profiles))
          (profile2 (cadr profiles)))
     (cl-multiple-value-bind (new old str-action)
@@ -232,14 +232,14 @@ Try \"\\[guix-search-by-name]\" to find this package.")
       (message "%s %s profile '%s' comparing with profile '%s'."
                str-beg str-action new old))))
 
-(defun guix-result-message (profile entries entry-type
-                            search-type search-vals)
+(defun nix-result-message (profile entries entry-type
+                                   search-type search-vals)
   "Display an appropriate message after displaying ENTRIES."
-  (let* ((type-spec (bui-assq-value guix-messages
-                                     (if (eq entry-type 'system-generation)
-                                         'generation
-                                       entry-type)
-                                     search-type))
+  (let* ((type-spec (bui-assq-value nix-messages
+                                    (if (eq entry-type 'system-generation)
+                                        'generation
+                                      entry-type)
+                                    search-type))
          (fun-or-count-spec (car type-spec)))
     (if (functionp fun-or-count-spec)
         (funcall fun-or-count-spec profile entries search-vals)
@@ -255,6 +255,6 @@ Try \"\\[guix-search-by-name]\" to find this package.")
                 (profile . ,profile)))
         (apply #'message msg args)))))
 
-(provide 'guix-ui-messages)
+(provide 'nix-ui-messages)
 
-;;; guix-ui-messages.el ends here
+;;; nix-ui-messages.el ends here

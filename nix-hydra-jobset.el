@@ -26,104 +26,100 @@
 
 (require 'cl-lib)
 (require 'bui)
-(require 'guix-hydra)
-(require 'guix-hydra-build)
+(require 'nix-hydra)
+(require 'nix-hydra-build)
 
-(guix-hydra-define-entry-type jobset
-  :search-types '((project . guix-hydra-jobset-api-url))
-  :filters '(guix-hydra-jobset-filter-id)
+(nix-hydra-define-entry-type jobset
+  :search-types '((project . nix-hydra-jobset-api-url))
+  :filters '(nix-hydra-jobset-filter-id)
   :filter-names '((nrscheduled . scheduled)
                   (nrsucceeded . succeeded)
                   (nrfailed . failed)
                   (nrtotal . total)))
 
-(defun guix-hydra-jobset-get-display (search-type &rest args)
+(defun nix-hydra-jobset-get-display (search-type &rest args)
   "Search for Hydra builds and show results."
   (apply #'bui-list-get-display-entries
-         'guix-hydra-jobset search-type args))
+         'nix-hydra-jobset search-type args))
 
-
 ;;; Defining URLs
 
-(defun guix-hydra-jobset-url (project jobset)
+(defun nix-hydra-jobset-url (project jobset)
   "Return Hydra URL of a PROJECT's JOBSET."
-  (guix-hydra-url "jobset/" project "/" jobset))
+  (nix-hydra-url "jobset/" project "/" jobset))
 
-(defun guix-hydra-jobset-api-url (project)
+(defun nix-hydra-jobset-api-url (project)
   "Return Hydra API URL for jobsets by PROJECT."
-  (guix-hydra-api-url "jobsets"
+  (nix-hydra-api-url "jobsets"
     `(("project" . ,project))))
 
-
 ;;; Filters for processing raw entries
 
-(defun guix-hydra-jobset-filter-id (entry)
+(defun nix-hydra-jobset-filter-id (entry)
   "Add 'ID' parameter to 'hydra-jobset' ENTRY."
   (cons `(id . ,(bui-entry-non-void-value entry 'name))
         entry))
 
-
 ;;; Hydra jobset 'info'
 
-(guix-hydra-define-interface jobset info
+(nix-hydra-define-interface jobset info
   :mode-name "Hydra-Jobset-Info"
   :buffer-name "*Guix Hydra Jobset Info*"
   :format '((name nil (simple bui-info-heading))
             nil
-            guix-hydra-jobset-info-insert-url
-            (project   format guix-hydra-jobset-info-insert-project)
-            (scheduled format (format guix-hydra-jobset-info-scheduled))
-            (succeeded format (format guix-hydra-jobset-info-succeeded))
-            (failed    format (format guix-hydra-jobset-info-failed))
-            (total     format (format guix-hydra-jobset-info-total))))
+            nix-hydra-jobset-info-insert-url
+            (project   format nix-hydra-jobset-info-insert-project)
+            (scheduled format (format nix-hydra-jobset-info-scheduled))
+            (succeeded format (format nix-hydra-jobset-info-succeeded))
+            (failed    format (format nix-hydra-jobset-info-failed))
+            (total     format (format nix-hydra-jobset-info-total))))
 
-(defface guix-hydra-jobset-info-scheduled
+(defface nix-hydra-jobset-info-scheduled
   '((t))
   "Face used for the number of scheduled builds."
-  :group 'guix-hydra-jobset-info-faces)
+  :group 'nix-hydra-jobset-info-faces)
 
-(defface guix-hydra-jobset-info-succeeded
-  '((t :inherit guix-hydra-build-status-succeeded))
+(defface nix-hydra-jobset-info-succeeded
+  '((t :inherit nix-hydra-build-status-succeeded))
   "Face used for the number of succeeded builds."
-  :group 'guix-hydra-jobset-info-faces)
+  :group 'nix-hydra-jobset-info-faces)
 
-(defface guix-hydra-jobset-info-failed
-  '((t :inherit guix-hydra-build-status-failed))
+(defface nix-hydra-jobset-info-failed
+  '((t :inherit nix-hydra-build-status-failed))
   "Face used for the number of failed builds."
-  :group 'guix-hydra-jobset-info-faces)
+  :group 'nix-hydra-jobset-info-faces)
 
-(defface guix-hydra-jobset-info-total
+(defface nix-hydra-jobset-info-total
   '((t))
   "Face used for the total number of builds."
-  :group 'guix-hydra-jobset-info-faces)
+  :group 'nix-hydra-jobset-info-faces)
 
-(defun guix-hydra-jobset-info-insert-project (project entry)
+(defun nix-hydra-jobset-info-insert-project (project entry)
   "Insert PROJECT button for the jobset ENTRY."
   (let ((jobset (bui-entry-non-void-value entry 'name)))
     (bui-insert-button
-     project 'guix-hydra-build-project
+     project 'nix-hydra-build-project
      'action (lambda (btn)
-               (let ((args (guix-hydra-build-latest-prompt-args
+               (let ((args (nix-hydra-build-latest-prompt-args
                             :project (button-get btn 'project)
                             :jobset  (button-get btn 'jobset))))
-                 (apply #'guix-hydra-build-get-display
+                 (apply #'nix-hydra-build-get-display
                         'latest args)))
      'project project
      'jobset jobset)))
 
-(defun guix-hydra-jobset-info-insert-url (entry)
+(defun nix-hydra-jobset-info-insert-url (entry)
   "Insert Hydra URL for the jobset ENTRY."
-  (bui-insert-button (guix-hydra-jobset-url
+  (bui-insert-button (nix-hydra-jobset-url
                       (bui-entry-non-void-value entry 'project)
                       (bui-entry-non-void-value entry 'name))
                      'bui-url)
   (bui-newline))
 
-
 ;;; Hydra jobset 'list'
 
-(guix-hydra-define-interface jobset list
-  :describe-function 'guix-hydra-list-describe
+(nix-hydra-define-interface jobset list
+  :describe-function 'nix-hydra-list-describe
   :mode-name "Hydra-Jobset-List"
   :buffer-name "*Guix Hydra Jobsets*"
   :format '((name nil 25 t)
@@ -132,40 +128,39 @@
             (succeeded nil 12 t)
             (failed nil 9 t)
             (total nil 10 t))
-  :hint 'guix-hydra-jobset-list-hint)
+  :hint 'nix-hydra-jobset-list-hint)
 
-(let ((map guix-hydra-jobset-list-mode-map))
-  (define-key map (kbd "B") 'guix-hydra-jobset-list-latest-builds))
+(let ((map nix-hydra-jobset-list-mode-map))
+  (define-key map (kbd "B") 'nix-hydra-jobset-list-latest-builds))
 
-(defvar guix-hydra-jobset-list-default-hint
-  '(("\\[guix-hydra-jobset-list-latest-builds]")
+(defvar nix-hydra-jobset-list-default-hint
+  '(("\\[nix-hydra-jobset-list-latest-builds]")
     " show latest builds for the current jobset;\n"))
 
-(defun guix-hydra-jobset-list-hint ()
+(defun nix-hydra-jobset-list-hint ()
   (bui-format-hints
-   guix-hydra-jobset-list-default-hint
+   nix-hydra-jobset-list-default-hint
    (bui-default-hint)))
 
-(defun guix-hydra-jobset-list-latest-builds (number &rest args)
+(defun nix-hydra-jobset-list-latest-builds (number &rest args)
   "Display latest NUMBER of Hydra builds of the current jobset.
 Interactively, prompt for NUMBER.  With prefix argument, prompt
 for all ARGS."
   (interactive
    (let ((entry (bui-list-current-entry)))
-     (guix-hydra-build-latest-prompt-args
+     (nix-hydra-build-latest-prompt-args
       :project (bui-entry-non-void-value entry 'project)
       :jobset  (bui-entry-non-void-value entry 'name))))
-  (apply #'guix-hydra-latest-builds number args))
+  (apply #'nix-hydra-latest-builds number args))
 
-
 ;;; Interactive commands
 
 ;;;###autoload
-(defun guix-hydra-jobsets (project)
+(defun nix-hydra-jobsets (project)
   "Display jobsets of PROJECT."
-  (interactive (list (guix-hydra-read-project)))
-  (guix-hydra-jobset-get-display 'project project))
+  (interactive (list (nix-hydra-read-project)))
+  (nix-hydra-jobset-get-display 'project project))
 
-(provide 'guix-hydra-jobset)
+(provide 'nix-hydra-jobset)
 
-;;; guix-hydra-jobset.el ends here
+;;; nix-hydra-jobset.el ends here
