@@ -28,7 +28,7 @@
 (defgroup nix nil
   "Interface for Nix package manager."
   :prefix "nix-"
-  :group 'external')
+  :group 'external)
 
 (defgroup nix-faces nil
   "Nix faces."
