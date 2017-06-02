@@ -14,6 +14,7 @@
     :back "''"
     :include-front t
     :front-offset 2
+    :end-not-begin t
     )))
 
 (setq mmm-global-mode 'maybe)
