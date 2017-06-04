@@ -11,7 +11,7 @@
     :submode sh-mode
     :face mmm-output-submode-face
     :front "''"
-    :back "''"
+    :back "''[^$\\]"
     :include-front t
     :front-offset 2
     :end-not-begin t
