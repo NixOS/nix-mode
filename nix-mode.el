@@ -471,6 +471,12 @@ The hook `nix-mode-hook' is run when Nix mode is started.
   (add-to-list 'auto-mode-alist '("\\.nix\\'" . nix-mode))
   (add-to-list 'auto-mode-alist '("\\.nix.in\\'" . nix-mode)))
 
+;; register projectile project
+(with-eval-after-load "projectile"
+  (projectile-register-project-type 'nix '("default.nix")
+                                    :compile "nix-build")
+  )
+
 (provide 'nix-mode)
 
 ;;; nix-mode.el ends here
