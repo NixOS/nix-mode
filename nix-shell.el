@@ -21,7 +21,7 @@
 
 (defgroup nix-shell nil
   "Customizations for nix-shell"
-  :group nix)
+  :group 'nix)
 
 (defcustom nix-shell-executable "nix-shell"
   "Location of nix-shell executable."
