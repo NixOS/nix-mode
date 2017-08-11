@@ -1,5 +1,4 @@
-;; -*- lexical-binding: t -*-
-;;; nix-mode.el --- Major mode for editing Nix expressions
+;;; nix-mode.el --- Major mode for editing .nix files -*- lexical-binding: t -*-
 
 ;; Author: Eelco Dolstra
 ;; Maintainer: Matthew Bauer <mjbauer95@gmail.com>
@@ -479,10 +478,5 @@ The hook `nix-mode-hook' is run when Nix mode is started.
   (add-to-list 'auto-mode-alist '("\\.nix\\'" . nix-mode))
   (add-to-list 'auto-mode-alist '("\\.nix.in\\'" . nix-mode)))
 
-(with-eval-after-load "projectile"
-  (projectile-register-project-type 'nix '("default.nix")
-                                    "nix-build"))
-
 (provide 'nix-mode)
-
 ;;; nix-mode.el ends here

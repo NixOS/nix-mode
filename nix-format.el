@@ -1,5 +1,4 @@
-;; -*- lexical-binding: t -*-
-;;; nix-format.el --- Nix formatter
+;;; nix-format.el --- Nix formatter -*- lexical-binding: t -*-
 
 ;; This file is NOT part of GNU Emacs.
 

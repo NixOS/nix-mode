@@ -1,5 +1,4 @@
-;; -*- lexical-binding: t -*-
-;;; nix-prettify.el --- Prettify Nix store file names
+;;; nix-prettify.el -- Prettify Nix store file names  -*- lexical-binding: t -*-
 
 ;; Copyright © 2014, 2015 Alex Kost <alezost@gmail.com>
 ;; Modified by Matthew Bauer for use in nix-mode
@@ -20,7 +19,7 @@
 ;; replaced with '/gnu/store/…-foo-0.1' in the current buffer.  There is
 ;; also `global-nix-prettify-mode' for global prettifying.
 
-;; To install, add the following to your emacs init file:
+;; To install, add the following to your Emacs init file:
 ;;
 ;;   (add-to-list 'load-path "/path/to/dir-with-nix-prettify")
 ;;   (autoload 'nix-prettify-mode "nix-prettify" nil t)

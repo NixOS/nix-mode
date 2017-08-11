@@ -1,5 +1,4 @@
-;; -*- lexical-binding: t -*-
-;;; nix-repl.el --- Nix repl
+;;; nix-repl.el --- Nix repl -*- lexical-binding: t -*-
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -8,6 +7,8 @@
 ;;; Code:
 
 (defvar nix-prompt-regexp "nix-repl> ")
+
+(require 'comint)
 
 (defgroup nix-repl nil
   "nix-repl customizations"

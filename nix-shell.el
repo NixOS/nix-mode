@@ -8,8 +8,15 @@
 
 ;;; Commentary:
 
+;; To use this just run:
+
+;; M-x RET nix-shell RET
+
+;; This will give you some
+
 ;;; Code:
 
+(require 'nix-mode)
 (require 'term)
 
 (defcustom nix-shell-executable "nix-shell"
