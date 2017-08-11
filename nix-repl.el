@@ -9,6 +9,13 @@
 
 (defvar nix-prompt-regexp "nix-repl> ")
 
+(defgroup nix-repl nil
+  "nix-repl customizations"
+  :group 'nix)
+
+(defcustom nix-repl-executable "nix-repl"
+  "Location of nix-repl command.")
+
 (define-derived-mode nix-repl-mode comint-mode "Nix-REPL"
   "Interactive prompt for Nix."
   (setq-local comint-prompt-regexp nix-prompt-regexp)
@@ -24,7 +31,7 @@
     (nix-repl-mode)))
 
 (defun nix--make-repl-in-buffer (buffer)
-  (make-comint-in-buffer "Nix-REPL" buffer "nix-repl"))
+  (make-comint-in-buffer "Nix-REPL" buffer nix-repl-executable))
 
 (defun nix-get-completions (proc prefix)
   (save-match-data
