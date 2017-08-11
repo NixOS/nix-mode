@@ -1,4 +1,10 @@
-;;; nix-mode-mmm --- Summary
+;;; nix-shell.el -- support for MMM in nix-mode -*- lexical-binding: t -*-
+
+;; Author: Matthew Bauer <mjbauer95@gmail.com>
+;; Homepage: https://github.com/matthewbauer/nix-mode
+;; Keywords: nix
+
+;; This file is NOT part of GNU Emacs.
 
 ;;; Commentary:
 
