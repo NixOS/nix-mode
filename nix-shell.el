@@ -17,13 +17,16 @@
   :group 'nix)
 
 ;;;###autoload
-(defun nix-shell (attribute)
+(defun nix-shell (path attribute)
   "Run nix-shell in a terminal.
 
+PATH path containing Nix expressions.
 ATTRIBUTE attribute name in nixpkgs to use."
-  (interactive (list (read-from-minibuffer "Attribute name: ")))
+  (interactive
+   (list (read-from-minibuffer "Nix path: " "<nixpkgs>")
+         (read-from-minibuffer "Nix attribute name: ")))
   (set-buffer (make-term "nix-shell" nix-shell-executable nil
-                         "<nixpkgs>" "-A" attribute))
+                         path "-A" attribute))
   (term-mode)
   (term-char-mode)
   (switch-to-buffer "*nix-shell*"))
