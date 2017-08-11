@@ -31,6 +31,15 @@
   "Nix mode customizations"
   :group 'nix)
 
+(defgroup nix-faces nil
+  "Nix faces."
+  :group 'nix
+  :group 'faces)
+
+(defvar nix-system-types
+  '("x86_64-linux" "i686-linux" "aarch64-linux" "x86_64-darwin")
+  "List of supported systems.")
+
 ;;; Syntax coloring
 
 (defconst nix-keywords
