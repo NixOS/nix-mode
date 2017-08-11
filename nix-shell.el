@@ -16,7 +16,7 @@
 
 ;;; Code:
 
-(require 'nix-mode)
+;; (require 'nix-mode)
 (require 'term)
 
 (defcustom nix-shell-executable "nix-shell"
