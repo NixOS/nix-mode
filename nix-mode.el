@@ -417,8 +417,6 @@
 (nix-create-keymap)
 (nix-create-menu)
 
-(when (featurep 'flycheck) (require 'nix-flycheck nil 'noerror))
-
 (when (require 'company nil 'noerror) (require 'nix-company nil 'noerror))
 
 (when (require 'mmm-mode nil 'noerror) (require 'nix-sh nil 'noerror))

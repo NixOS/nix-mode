@@ -7,3 +7,5 @@ This repository is based off of the nix-mode.el file in the [Nix repository](htt
 ## Other Nix Modes
 
 @shlevy has an excellent major mode for integrating nix-shell into emacs. It is available at [shlevy/nix-buffer](https://github.com/shlevy/nix-buffer). 
+
+@travisbhartwell also have some modes dealing with Nix. They are available at [travisbhartwell/nix-emacs](https://github.com/travisbhartwell/nix-emacs).
