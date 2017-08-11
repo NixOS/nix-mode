@@ -10,12 +10,11 @@
 
 ;;; Code:
 
-
 (require 'term)
 
 (defcustom nix-shell-executable "nix-shell"
   "Location of nix-shell executable."
-  :group 'nix-mode)
+  :group 'nix)
 
 ;;;###autoload
 (defun nix-shell (attribute)

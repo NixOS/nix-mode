@@ -24,6 +24,14 @@
 
 (require 'nix-format nil 'noerror)
 
+(defgroup nix nil
+  "Nix-related customizations"
+  :group 'languages)
+
+(defgroup nix-mode nil
+  "Nix mode customizations"
+  :group 'nix)
+
 ;;; Syntax coloring
 
 (defconst nix-keywords
