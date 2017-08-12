@@ -419,7 +419,7 @@
 
 (when (require 'company nil 'noerror) (require 'nix-company nil 'noerror))
 
-(when (require 'mmm-mode nil 'noerror) (require 'nix-sh nil 'noerror))
+(when (require 'mmm-mode nil 'noerror) (require 'nix-mode-mmm nil 'noerror))
 
 ;;;###autoload
 (define-derived-mode nix-mode prog-mode "Nix"
