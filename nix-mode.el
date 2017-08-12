@@ -1,9 +1,8 @@
 ;;; nix-mode.el --- Major mode for editing .nix files -*- lexical-binding: t -*-
 
-;; Author: Eelco Dolstra
 ;; Maintainer: Matthew Bauer <mjbauer95@gmail.com>
 ;; Homepage: https://github.com/matthewbauer/nix-mode
-;; Version: 1.2
+;; Version: 1.2.1
 ;; Keywords: nix, languages, tools, unix
 ;; Package-Requires: ((emacs "24.3"))
 
@@ -392,7 +391,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
                                              (forward-line -1)
                                              (end-of-line)
                                              (skip-chars-backward "[:space:]")
-                                             (looking-back "''")) 1 0)
+                                             (looking-back "''" 0)) 1 0)
                                        (if (save-excursion
                                              (beginning-of-line)
                                              (skip-chars-forward
