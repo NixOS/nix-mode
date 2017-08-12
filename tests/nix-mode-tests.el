@@ -1,3 +1,9 @@
+;;; nix-mode-tests.el -- test nix-mode
+
+;;; Commentary:
+
+;;; Code:
+
 (require 'ert)
 (require 'nix-mode)
 
@@ -21,3 +27,4 @@
             (eq (nix--get-string-type (nix--get-parse-state (point))) nil))))
 
 (provide 'nix-mode-tests)
+;;; nix-mode-tests.el ends here

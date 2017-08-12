@@ -9,7 +9,11 @@
 (require 'nix-repl)
 (require 'cl)
 
-(defun company-nix (command &optional arg &rest ignored)
+(defun company-nix (command &optional arg &rest _)
+  "Company backend for Nix.
+
+COMMAND company command
+ARG company argument"
   (interactive '(interactive))
   (case command
     (interactive (company-begin-backend 'company-nix))
@@ -20,6 +24,7 @@
     (sorted t)))
 
 (defun nix-grab-attr-path ()
+  "Get Nix attribute path at point."
   (if (looking-at "[^a-zA-Z0-9'\\-_\\.]")
       (buffer-substring (point) (save-excursion (skip-chars-backward "a-zA-Z0-9'\\-_\\.")
                                                 (point)))
@@ -28,6 +33,9 @@
                  ""))))
 
 (defun nix--get-company-buffer (&optional buffer)
+  "Get the Nix repl buffer for company.
+
+BUFFER check for Nix-REPL in current buffer"
   (let* ((buf (or buffer (current-buffer)))
          (repl-buf (get-buffer "*Nix-REPL*")))
     (if (or (equal buf "*Nix-REPL*") (equal buf repl-buf))
@@ -38,6 +46,7 @@
 (defvar nix--company-last-buffer nil)
 
 (defun nix--get-company-backend-buffer (buffer)
+  "Get Nix company backend from BUFFER."
   (let* ((buf-file (buffer-file-name buffer))
          (backend-buf (get-buffer-create nix-company-backend-buffer-name))
          (last-buf nix--company-last-buffer)

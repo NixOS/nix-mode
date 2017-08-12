@@ -126,27 +126,36 @@
                t))))))))
 
 (defun nix--mark-string (pos string-type)
+  "Mark string as a Nix string.
+
+POS position of start of string
+STRING-TYPE type of string based off of Emacs syntax table types"
   (put-text-property pos (1+ pos)
                      'syntax-table (string-to-syntax "|"))
   (put-text-property pos (1+ pos)
                      'nix-string-type string-type))
 
 (defun nix--get-parse-state (pos)
+  "Get the result of `syntax-ppss' at POS."
   (save-excursion (save-match-data (syntax-ppss pos))))
 
 (defun nix--get-string-type (parse-state)
+  "Get the type of string based on PARSE-STATE."
   (let ((string-start (nth 8 parse-state)))
     (and string-start (get-text-property string-start 'nix-string-type))))
 
 (defun nix--open-brace-string-type (parse-state)
+  "Determine if this is an open brace string type based on PARSE-STATE."
   (let ((open-brace (nth 1 parse-state)))
     (and open-brace (get-text-property open-brace 'nix-string-type))))
 
 (defun nix--open-brace-antiquote-p (parse-state)
+  "Determine if this is an open brace antiquote based on PARSE-STATE."
   (let ((open-brace (nth 1 parse-state)))
     (and open-brace (get-text-property open-brace 'nix-syntax-antiquote))))
 
 (defun nix--single-quotes ()
+  "Handle Nix single quotes."
   (let* ((start (match-beginning 0))
          (end (match-end 0))
          (context (nix--get-parse-state start))
@@ -166,6 +175,7 @@
             (nix--mark-string (1- end) ?\')))))))
 
 (defun nix--escaped-antiquote-dq-style ()
+  "Handle Nix escaped antiquote dq style."
   (let* ((start (match-beginning 0))
          (ps (nix--get-parse-state start))
          (string-type (nix--get-string-type ps)))
@@ -173,6 +183,7 @@
       (nix--antiquote-open-at (1+ start) ?\'))))
 
 (defun nix--double-quotes ()
+  "Handle Nix double quotes."
   (let* ((pos (match-beginning 0))
          (ps (nix--get-parse-state pos))
          (string-type (nix--get-string-type ps)))
@@ -180,14 +191,16 @@
       (nix--mark-string pos ?\"))))
 
 (defun nix--antiquote-open-at (pos string-type)
-    (put-text-property pos (1+ pos)
-                       'syntax-table (string-to-syntax "|"))
-    (put-text-property pos (+ 2 pos)
-                       'nix-string-type string-type)
-    (put-text-property (1+ pos) (+ 2 pos)
-                       'nix-syntax-antiquote t))
+  "Handle Nix antiquote open at based on POS and STRING-TYPE."
+  (put-text-property pos (1+ pos)
+                     'syntax-table (string-to-syntax "|"))
+  (put-text-property pos (+ 2 pos)
+                     'nix-string-type string-type)
+  (put-text-property (1+ pos) (+ 2 pos)
+                     'nix-syntax-antiquote t))
 
 (defun nix--antiquote-open ()
+  "Handle Nix antiquote open."
   (let* ((start (match-beginning 0))
          (ps (nix--get-parse-state start))
          (string-type (nix--get-string-type ps)))
@@ -195,6 +208,7 @@
       (nix--antiquote-open-at start string-type))))
 
 (defun nix--antiquote-close-open ()
+  "Handle Nix antiquote close then open."
   (let* ((start (match-beginning 0))
          (ps (nix--get-parse-state start))
          (string-type (nix--get-string-type ps)))
@@ -210,6 +224,7 @@
                              'nix-syntax-antiquote t))))))
 
 (defun nix--antiquote-close ()
+  "Handle Nix antiquote close."
   (let* ((start (match-beginning 0))
          (ps (nix--get-parse-state start)))
     (unless (nix--get-string-type ps)

@@ -62,7 +62,7 @@ removed only from strings matching `nix-prettify-regexp', so
 that compositions created by other modes are left untouched.
 
 Set this variable to non-nil, if you want to remove any
-composition unconditionally (like `prettify-symbols-mode' does).
+composition unconditionally (like variable `prettify-symbols-mode' does).
 Most likely it will do no harm and will make the process of
 disabling `nix-prettify-mode' a little faster."
   :type 'boolean
