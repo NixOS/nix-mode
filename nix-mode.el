@@ -3,8 +3,9 @@
 ;; Author: Eelco Dolstra
 ;; Maintainer: Matthew Bauer <mjbauer95@gmail.com>
 ;; Homepage: https://github.com/matthewbauer/nix-mode
-;; Version: 1.1
-;; Keywords: nix
+;; Version: 1.2
+;; Keywords: nix, languages, tools, unix
+;; Package-Requires: ((emacs "24.3"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -14,12 +15,6 @@
 ;; for more information available at https://nixos.org/nix/manual/.
 
 ;;; Code:
-
-;; Emacs 24.2 compatability
-(unless (fboundp 'setq-local)
-  (defmacro setq-local (var val)
-    "Set variable VAR to value VAL in current buffer."
-    `(set (make-local-variable ',var) ,val)))
 
 (require 'nix-format nil 'noerror)
 
