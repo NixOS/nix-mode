@@ -1,4 +1,8 @@
 # nix-mode
+
+[![MELPA](https://melpa.org/packages/nix-mode-badge.svg)](https://melpa.org/#/nix-mode)
+[![MELPA Stable](https://stable.melpa.org/packages/nix-mode-badge.svg)](https://stable.melpa.org/#/nix-mode)
+
 An emacs major mode for editing nix expressions.
 
 This repository is based off of the nix-mode.el file originally located in
