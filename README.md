@@ -7,9 +7,8 @@ at
 [misc/emacs/nix-mode.el](https://github.com/NixOS/nix/blob/master/misc/emacs/nix-mode.el).
 Please see [the CHANGELOG file](https://github.com/matthewbauer/nix-mode/blob/master/CHANGELOG.md) for a list of changes.
 
+## Other Emacs packages
 
-## Other Nix Modes
+@shlevy has an excellent package for integrating nix-shell into emacs. It is available at [shlevy/nix-buffer](https://github.com/shlevy/nix-buffer). 
 
-@shlevy has an excellent major mode for integrating nix-shell into emacs. It is available at [shlevy/nix-buffer](https://github.com/shlevy/nix-buffer). 
-
-@travisbhartwell also have some modes dealing with Nix. They are available at [travisbhartwell/nix-emacs](https://github.com/travisbhartwell/nix-emacs).
+@travisbhartwell also has some package dealing with Nix. They are available at [travisbhartwell/nix-emacs](https://github.com/travisbhartwell/nix-emacs).
