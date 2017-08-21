@@ -29,7 +29,7 @@
   (unless (executable-find nix-nixfmt-bin)
     (error "Could not locate executable \"%s\"" nix-nixfmt-bin))
   (nix--format-call (current-buffer))
-  (message "Formatted buffer with rustfmt."))
+  (message "Formatted buffer with nixfmt."))
 
 (provide 'nix-format)
 ;;; nix-format.el ends here
