@@ -484,9 +484,6 @@ The hook `nix-mode-hook' is run when Nix mode is started.
   (setq-local paragraph-start "[ \t]*\\(#+[ \t]*\\)?$")
   (setq-local paragraph-separate paragraph-start)
 
-  ;; Case sensitive searching
-  (setq-local case-fold-search nil)
-
   (easy-menu-add nix-mode-menu nix-mode-map))
 
 ;;;###autoload
