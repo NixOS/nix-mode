@@ -454,8 +454,6 @@ The hook `nix-mode-hook' is run when Nix mode is started.
 "
   :syntax-table nix-mode-syntax-table
 
-  (setq-local case-fold-search nil)
-
   ;; Disable hard tabs and set tab to 2 spaces
   ;; Recommended by nixpkgs manual: https://nixos.org/nixpkgs/manual/#sec-syntax
   (setq-local indent-tabs-mode nil)
