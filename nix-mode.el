@@ -111,6 +111,10 @@
 
 (defconst nix--variable-char "[a-zA-Z0-9_'\-]")
 
+(defvar nix-mode-abbrev-table
+  (make-abbrev-table)
+  "Abbrev table for Nix mode.")
+
 (makunbound 'nix-mode-syntax-table)
 
 (defvar nix-mode-syntax-table
@@ -484,6 +488,7 @@ The hook `nix-mode-hook' is run when Nix mode is started.
 "
   :group 'nix-mode
   :syntax-table nix-mode-syntax-table
+  :abbrev-table nix-mode-abbrev-table
 
   ;; Disable hard tabs and set tab to 2 spaces
   ;; Recommended by nixpkgs manual: https://nixos.org/nixpkgs/manual/#sec-syntax
