@@ -64,7 +64,7 @@
   "<[a-zA-Z0-9._\\+-]+\\(/[a-zA-Z0-9._\\+-]+\\)*>")
 
 (defconst nix-re-variable-assign
-  "\\<\\([a-zA-Z_][a-zA-Z0-9_'\-\.]*\\)[ \t]*=")
+  "\\<\\([a-zA-Z_][a-zA-Z0-9_'\-\.]*\\)[ \t]*=[^=]")
 
 (defconst nix-font-lock-keywords
   `(
