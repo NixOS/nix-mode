@@ -452,6 +452,7 @@ The hook `nix-mode-hook' is run when Nix mode is started.
 
 \\{nix-mode-map}
 "
+  :group 'nix-mode
   :syntax-table nix-mode-syntax-table
 
   ;; Disable hard tabs and set tab to 2 spaces
