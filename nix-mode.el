@@ -30,6 +30,36 @@
   :group 'nix
   :group 'faces)
 
+(defface nix-keyword-face
+  '((t :inherit font-lock-keyword-face))
+  "Face used to highlight Nix keywords."
+  :group 'haskell-faces)
+
+(defface nix-keyword-warning-face
+  '((t :inherit font-lock-warning-face))
+  "Face used to highlight Nix warning keywords."
+  :group 'haskell-faces)
+
+(defface nix-builtin-face
+  '((t :inherit font-lock-builtin-face))
+  "Face used to highlight Nix builtins."
+  :group 'nix-faces)
+
+(defface nix-constant-face
+  '((t :inherit font-lock-constant-face))
+  "Face used to highlight Nix constants."
+  :group 'nix-faces)
+
+(defface nix-attribute-face
+  '((t :inherit font-lock-variable-name-face))
+  "Face used to highlight Nix attributes."
+  :group 'nix-faces)
+
+(defface nix-antiquote-face
+  '((t :inherit font-lock-preprocessor-face))
+  "Face used to highlight Nix antiquotes."
+  :group 'nix-faces)
+
 (defvar nix-system-types
   '("x86_64-linux" "i686-linux" "aarch64-linux" "x86_64-darwin")
   "List of supported systems.")
@@ -68,14 +98,14 @@
 
 (defconst nix-font-lock-keywords
   `(
-    (,(regexp-opt nix-keywords 'symbols) . font-lock-keyword-face)
-    (,(regexp-opt nix-warning-keywords 'symbols) . font-lock-warning-face)
-    (,(regexp-opt nix-builtins 'symbols) . font-lock-builtin-face)
-    (,nix-re-url . font-lock-constant-face)
-    (,nix-re-file-path . font-lock-constant-face)
-    (,nix-re-variable-assign 1 font-lock-variable-name-face)
-    (,nix-re-bracket-path . font-lock-constant-face)
-    (nix--syntax-match-antiquote 0 font-lock-preprocessor-face t)
+    (,(regexp-opt nix-keywords 'symbols) . nix-keyword-face)
+    (,(regexp-opt nix-warning-keywords 'symbols) . nix-keyword-warning-face)
+    (,(regexp-opt nix-builtins 'symbols) . nix-builtin-face)
+    (,nix-re-url . nix-constant-face)
+    (,nix-re-file-path . nix-constant-face)
+    (,nix-re-variable-assign 1 nix-attribute-face)
+    (,nix-re-bracket-path . nix-constant-face)
+    (nix--syntax-match-antiquote 0 nix-antiquote-face t)
     )
   "Font lock keywords for nix.")
 
