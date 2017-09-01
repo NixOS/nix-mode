@@ -33,12 +33,12 @@
 (defface nix-keyword-face
   '((t :inherit font-lock-keyword-face))
   "Face used to highlight Nix keywords."
-  :group 'haskell-faces)
+  :group 'nix-faces)
 
 (defface nix-keyword-warning-face
   '((t :inherit font-lock-warning-face))
   "Face used to highlight Nix warning keywords."
-  :group 'haskell-faces)
+  :group 'nix-faces)
 
 (defface nix-builtin-face
   '((t :inherit font-lock-builtin-face))
@@ -98,14 +98,14 @@
 
 (defconst nix-font-lock-keywords
   `(
-    (,(regexp-opt nix-keywords 'symbols) . nix-keyword-face)
-    (,(regexp-opt nix-warning-keywords 'symbols) . nix-keyword-warning-face)
-    (,(regexp-opt nix-builtins 'symbols) . nix-builtin-face)
-    (,nix-re-url . nix-constant-face)
-    (,nix-re-file-path . nix-constant-face)
-    (,nix-re-variable-assign 1 nix-attribute-face)
-    (,nix-re-bracket-path . nix-constant-face)
-    (nix--syntax-match-antiquote 0 nix-antiquote-face t)
+    (,(regexp-opt nix-keywords 'symbols) 0 'nix-keyword-face)
+    (,(regexp-opt nix-warning-keywords 'symbols) 0 'nix-keyword-warning-face)
+    (,(regexp-opt nix-builtins 'symbols) 0 'nix-builtin-face)
+    (,nix-re-url 0 'nix-constant-face)
+    (,nix-re-file-path 0 'nix-constant-face)
+    (,nix-re-variable-assign 1 'nix-attribute-face)
+    (,nix-re-bracket-path 0 'nix-constant-face)
+    (nix--syntax-match-antiquote 0 'nix-antiquote-face t)
     )
   "Font lock keywords for nix.")
 
