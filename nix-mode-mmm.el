@@ -13,15 +13,15 @@
 (require 'mmm-mode)
 
 (mmm-add-group 'nix-sh
- '((sh-command
-    :submode sh-mode
-    :face mmm-output-submode-face
-    :front "''"
-    :back "''[^$\\]"
-    :include-front t
-    :front-offset 2
-    :end-not-begin t
-    )))
+               '((sh-command
+                  :submode sh-mode
+                  :face mmm-output-submode-face
+                  :front "[^'a-zA-Z]''[^']"
+                  :back "''[^$\\]"
+                  :include-front t
+                  :front-offset 4
+                  :end-not-begin t
+                  )))
 
 (setq mmm-global-mode 'maybe)
 (mmm-add-mode-ext-class 'nix-mode "\\.nix\\'" 'nix-sh)
