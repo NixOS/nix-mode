@@ -7,7 +7,7 @@
 ;;; Code:
 
 (require 'nix-repl)
-(require 'cl)
+(require 'cl-lib)
 
 (defun company-nix (command &optional arg &rest _)
   "Company backend for Nix.
@@ -15,7 +15,7 @@
 COMMAND company command
 ARG company argument"
   (interactive '(interactive))
-  (case command
+  (cl-case command
     (interactive (company-begin-backend 'company-nix))
     (prefix (and (member major-mode '(nix-mode nix-repl-mode))
                  (nix-grab-attr-path)))
