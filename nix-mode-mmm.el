@@ -23,7 +23,7 @@
                   :end-not-begin t
                   )))
 
-(setq mmm-global-mode 'maybe)
+;; (setq mmm-global-mode 'maybe)
 (mmm-add-mode-ext-class 'nix-mode "\\.nix\\'" 'nix-sh)
 
 (provide 'nix-mode-mmm)
