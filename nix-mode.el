@@ -536,5 +536,11 @@ The hook `nix-mode-hook' is run when Nix mode is started.
   (add-to-list 'auto-mode-alist '("\\.nix\\'" . nix-mode))
   (add-to-list 'auto-mode-alist '("\\.nix.in\\'" . nix-mode)))
 
+(when (featurep 'smartparens)
+  (sp-with-modes 'nix-mode
+    (sp-local-pair "'" "'" :unless '(sp-in-comment-p sp-in-string-quotes-p))
+    (sp-local-pair "\"" "\"")
+    (sp-local-pair "''" "''" :unless '(sp-in-comment-p sp-in-string-quotes-p))))
+
 (provide 'nix-mode)
 ;;; nix-mode.el ends here
