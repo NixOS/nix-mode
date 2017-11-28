@@ -465,6 +465,17 @@ STRING-TYPE type of string based off of Emacs syntax table types"
 (when (require 'mmm-mode nil 'noerror) (require 'nix-mode-mmm nil 'noerror))
 
 ;;;###autoload
+(defun nix-build (&optional attr dir)
+  "Run nix-build.
+ATTR is the attribute to build.
+DIR is the directory containing the Nix default.nix expression."
+  (interactive "sNix attribute: ")
+  (unless dir (setq dir default-directory))
+  (if attr
+      (shell-command (format "nix-build %s -A %s" dir attr))
+    (shell-command (format "nix-build %s" dir))))
+
+;;;###autoload
 (define-derived-mode nix-mode prog-mode "Nix"
   "Major mode for editing Nix expressions.
 
