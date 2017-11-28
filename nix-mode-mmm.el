@@ -17,7 +17,7 @@
                   :submode sh-mode
                   :face mmm-output-submode-face
                   :front "[^'a-zA-Z]''[^']"
-                  :back "''[^$\\]"
+                  :back "''[^$\\']"
                   :include-front t
                   :front-offset 4
                   :end-not-begin t
