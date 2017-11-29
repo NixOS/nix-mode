@@ -473,8 +473,8 @@ DIR is the directory containing the Nix default.nix expression."
   (interactive "sNix attribute: ")
   (unless dir (setq dir default-directory))
   (if attr
-      (shell-command (format "nix-build %s -A %s" dir attr))
-    (shell-command (format "nix-build %s" dir))))
+      (async-shell-command (format "nix-build %s -A %s" dir attr))
+    (async-shell-command (format "nix-build %s" dir))))
 
 ;;;###autoload
 (define-derived-mode nix-mode prog-mode "Nix"
