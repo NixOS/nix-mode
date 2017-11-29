@@ -20,7 +20,7 @@
 
 (require 'files)
 
-(defvar nix-shebang-interpreter-regexp "#!nix-shell -i \\([^ \t\n]+\\)"
+(defvar nix-shebang-interpreter-regexp "#!\s*nix-shell -i \\([^ \t\n]+\\)"
   "Regexp for nix-shell -i header.")
 
 (defun nix-shebang-get-interpreter ()
@@ -34,13 +34,14 @@
 (defun nix-shebang-mode ()
   "Detect and run file’s interpreter mode."
   (let ((mode (nix-shebang-get-interpreter)))
-    (funcall (assoc-default mode
-                            (mapcar (lambda (e)
-                                      (cons
-                                       (format "\\`%s\\'" (car e))
-                                       (cdr e)))
-                                    interpreter-mode-alist)
-                            #'string-match-p))))
+    (when mode
+      (funcall (assoc-default mode
+                              (mapcar (lambda (e)
+                                        (cons
+                                         (format "\\`%s\\'" (car e))
+                                         (cdr e)))
+                                      interpreter-mode-alist)
+                              #'string-match-p)))))
 
 ;; WARNING: this will automatically modify interpreter-mode-alist
 ;; ideally we could make this opt-in
