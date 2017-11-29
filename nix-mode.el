@@ -461,9 +461,9 @@ STRING-TYPE type of string based off of Emacs syntax table types"
 (nix-create-keymap)
 (nix-create-menu)
 
-(when (require 'company nil 'noerror) (require 'nix-company nil 'noerror))
-
-(when (require 'mmm-mode nil 'noerror) (require 'nix-mode-mmm nil 'noerror))
+;; TODO: find a better way to load this
+(when (find-library "company") (require 'nix-company nil 'noerror))
+(when (find-library "mmm-mode") (require 'nix-mode-mmm nil 'noerror))
 
 ;;;###autoload
 (defun nix-build (&optional attr dir)
