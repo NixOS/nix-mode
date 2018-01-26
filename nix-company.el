@@ -10,6 +10,7 @@
 (require 'cl-lib)
 (require 'company)
 
+;;;###autoload
 (defun company-nix (command &optional arg &rest _)
   "Company backend for Nix.
 
