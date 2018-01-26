@@ -30,9 +30,9 @@ ARG company argument"
   (if (looking-at "[^a-zA-Z0-9'\\-_\\.]")
       (buffer-substring (point) (save-excursion (skip-chars-backward "a-zA-Z0-9'\\-_\\.")
                                                 (point)))
-    (unless (and (char-after)
-                 (string-match "[a-zA-Z0-9'\\-_]" (char-to-string (char-after)))
-                 ""))))
+    (and (char-after)
+         (string-match "[a-zA-Z0-9'\\-_]" (char-to-string (char-after)))
+         "")))
 
 (defun nix--get-company-buffer (&optional buffer)
   "Get the Nix repl buffer for company.
