@@ -19,7 +19,7 @@ ARG company argument"
   (interactive '(interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-nix))
-    (prefix (and (member major-mode '(nix-mode nix-repl-mode))
+    (prefix (and (derived-mode-p 'nix-mode 'nix-repl-mode)
                  (nix-grab-attr-path)))
     (candidates
      (nix-get-completions (get-buffer-process (nix--get-company-buffer)) arg))
