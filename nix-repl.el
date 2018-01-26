@@ -93,7 +93,7 @@ MUTE if true then don’t alert user."
 
 (defun nix--process-filter (buf marker)
   "Process filter for Nix-rel buffer BUF at MARKER."
-  (lambda (proc string)
+  (lambda (_proc string)
     (when (buffer-live-p buf)
       (with-current-buffer buf
         (save-excursion
