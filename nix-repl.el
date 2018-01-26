@@ -15,7 +15,8 @@
   :group 'nix)
 
 (defcustom nix-repl-executable "nix-repl"
-  "Location of nix-repl command.")
+  "Location of nix-repl command."
+  :type 'string)
 
 (define-derived-mode nix-repl-mode comint-mode "Nix-REPL"
   "Interactive prompt for Nix."
