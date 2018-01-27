@@ -15,8 +15,8 @@
 
 ;;; Code:
 
-(require 'nix-format nil 'noerror)
-(require 'nix-shebang nil 'noerror)
+(require 'nix-format)
+(require 'nix-shebang)
 
 (defgroup nix nil
   "Nix-related customizations"

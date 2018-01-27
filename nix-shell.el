@@ -25,7 +25,8 @@
 
 (defcustom nix-shell-executable "nix-shell"
   "Location of nix-shell executable."
-  :group 'nix-shell)
+  :group 'nix-shell
+  :type 'string)
 
 ;;;###autoload
 (defun nix-shell (path attribute)

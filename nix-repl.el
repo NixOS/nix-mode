@@ -15,7 +15,8 @@
   :group 'nix)
 
 (defcustom nix-repl-executable "nix-repl"
-  "Location of nix-repl command.")
+  "Location of nix-repl command."
+  :type 'string)
 
 (define-derived-mode nix-repl-mode comint-mode "Nix-REPL"
   "Interactive prompt for Nix."
@@ -54,27 +55,27 @@
     (nix--with-temp-process-filter proc
                                    (goto-char (point-min))
                                    (process-send-string proc (concat prefix "\t\"" (nix--char-with-ctrl ?a) "\"\n"))
-                                   (setq i 0)
-                                   (while (and (< (setq i (1+ i)) 100)
-                                               (not (search-forward-regexp "\"\\([^\"]*\\)\"[\n]*nix-repl>" nil t)))
-                                     (sleep-for 0.01))
-                                   (let ((new-prefix (match-string 1))
-                                         (start-compl (point)))
-                                     (if (string-suffix-p " " new-prefix)
-                                         (list (substring new-prefix 0 -1))
-                                       (process-send-string proc (concat new-prefix "\t\t" (nix--char-with-ctrl ?u) "\n"))
-                                       (goto-char start-compl)
-                                       (setq i 0)
-                                       (while (and (< (setq i (1+ i)) 100)
-                                                   (not (search-forward-regexp
-                                                         "[\n]+nix-repl>\\|Display all \\([0-9]+\\)" nil t)))
-                                         (sleep-for 0.01))
-                                       (if (match-string 1)
-                                           (progn
-                                             (process-send-string proc "n")
-                                             '())
-                                         (search-backward "\n" nil t)
-                                         (split-string (buffer-substring start-compl (1- (point))))))))))
+                                   (let ((i 0))
+                                     (while (and (< (setq i (1+ i)) 100)
+                                                 (not (search-forward-regexp "\"\\([^\"]*\\)\"[\n]*nix-repl>" nil t)))
+                                       (sleep-for 0.01))
+                                     (let ((new-prefix (match-string 1))
+                                           (start-compl (point)))
+                                       (if (string-suffix-p " " new-prefix)
+                                           (list (substring new-prefix 0 -1))
+                                         (process-send-string proc (concat new-prefix "\t\t" (nix--char-with-ctrl ?u) "\n"))
+                                         (goto-char start-compl)
+                                         (setq i 0)
+                                         (while (and (< (setq i (1+ i)) 100)
+                                                     (not (search-forward-regexp
+                                                           "[\n]+nix-repl>\\|Display all \\([0-9]+\\)" nil t)))
+                                           (sleep-for 0.01))
+                                         (if (match-string 1)
+                                             (progn
+                                               (process-send-string proc "n")
+                                               '())
+                                           (search-backward "\n" nil t)
+                                           (split-string (buffer-substring start-compl (1- (point)))))))))))
 
 (defun nix--send-repl (input &optional process mute)
   "Send INPUT to PROCESS.
@@ -92,7 +93,7 @@ MUTE if true then don’t alert user."
 
 (defun nix--process-filter (buf marker)
   "Process filter for Nix-rel buffer BUF at MARKER."
-  (lambda (proc string)
+  (lambda (_proc string)
     (when (buffer-live-p buf)
       (with-current-buffer buf
         (save-excursion

@@ -191,11 +191,11 @@ See `nix-prettify-special-modes' for details."
        (nix-prettify-mode)))
 
 ;;;###autoload
-(define-globalized-minor-mode global-nix-prettify-mode
+(define-globalized-minor-mode nix-prettify-global-mode
   nix-prettify-mode nix-prettify-turn-on)
 
 ;;;###autoload
-(defalias 'nix-prettify-global-mode 'global-nix-prettify-mode)
+(define-obsolete-function-alias 'global-nix-prettify-mode 'nix-prettify-global-mode)
 
 (provide 'nix-prettify-mode)
 
