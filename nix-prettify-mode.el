@@ -5,7 +5,7 @@
 
 ;; Author: Alex Kost
 ;; Maintainer: Matthew Bauer <mjbauer95@gmail.com>
-;; Homepage: https://github.com/matthewbauer/nix-mode
+;; Homepage: https://github.com/NixOS/nix-mode
 ;; Version: 1.1
 ;; Keywords: nix
 

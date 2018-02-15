@@ -1,7 +1,7 @@
 ;;; nix-shebang.el --- Handle nix shebang header -*- lexical-binding: t -*-
 
 ;; Author: Matthew Bauer <mjbauer95@gmail.com>
-;; Homepage: https://github.com/matthewbauer/nix-mode
+;; Homepage: https://github.com/NixOS/nix-mode
 ;; Version: 1.2.1
 ;; Keywords: nix, languages, tools, unix
 ;; Package-Requires: ((emacs "24.3"))

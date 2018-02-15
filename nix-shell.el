@@ -1,7 +1,7 @@
 ;;; nix-shell.el -- run nix-shell in Emacs -*- lexical-binding: t -*-
 
 ;; Author: Matthew Bauer <mjbauer95@gmail.com>
-;; Homepage: https://github.com/matthewbauer/nix-mode
+;; Homepage: https://github.com/NixOS/nix-mode
 ;; Keywords: nix
 
 ;; This file is NOT part of GNU Emacs.

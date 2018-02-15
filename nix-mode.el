@@ -1,7 +1,7 @@
 ;;; nix-mode.el --- Major mode for editing .nix files -*- lexical-binding: t -*-
 
 ;; Maintainer: Matthew Bauer <mjbauer95@gmail.com>
-;; Homepage: https://github.com/matthewbauer/nix-mode
+;; Homepage: https://github.com/NixOS/nix-mode
 ;; Version: 1.2.1
 ;; Keywords: nix, languages, tools, unix
 ;; Package-Requires: ((emacs "24.3"))
@@ -454,8 +454,8 @@ STRING-TYPE type of string based off of Emacs syntax table types"
 (defun nix-create-menu ()
   "Create the Nix menu as shown in the menu bar."
   (let ((m '("Nix"
-	     ["Format buffer" nix-format-buffer t])
-	   ))
+             ["Format buffer" nix-format-buffer t])
+           ))
     (easy-menu-define ada-mode-menu nix-mode-map "Menu keymap for Nix mode" m)))
 
 (nix-create-keymap)
