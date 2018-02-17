@@ -53,7 +53,7 @@ ATTRIBUTE from PATH to get Nix expressions from."
   (interactive (list (read-string "Nix path: " "<nixpkgs>")
 					 (read-string "Nix attribute name: ")))
   (async-shell-command (format "%s '%s' -A '%s' --run unpackPhase"
-							   nix-shell-executable dir attribute)))
+							   nix-shell-executable path attribute)))
 
 (provide 'nix-shell)
 ;;; nix-shell.el ends here
