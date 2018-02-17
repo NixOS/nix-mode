@@ -24,13 +24,13 @@
   :group 'nix)
 
 (defcustom nix-shell-executable "nix-shell"
-  "Location of nix-shell executable."
+  "Location of ‘nix-shell’ executable."
   :group 'nix-shell
   :type 'string)
 
 ;;;###autoload
 (defun nix-shell (path attribute)
-  "Run nix-shell in a terminal.
+  "Run ‘nix-shell’ in a terminal.
 
 PATH path containing Nix expressions.
 ATTRIBUTE attribute name in nixpkgs to use."
