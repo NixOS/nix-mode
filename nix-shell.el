@@ -43,5 +43,17 @@ ATTRIBUTE attribute name in nixpkgs to use."
   (term-char-mode)
   (switch-to-buffer "*nix-shell*"))
 
+;;;###autoload
+(defun nix-unpack (path attribute)
+  "Get source from a Nix derivation.
+
+PATH used for base of Nix expresions.
+
+ATTRIBUTE from PATH to get Nix expressions from."
+  (interactive (list (read-string "Nix path: " "<nixpkgs>")
+					 (read-string "Nix attribute name: ")))
+  (async-shell-command (format "%s '%s' -A '%s' --run unpackPhase"
+							   nix-shell-executable dir attribute)))
+
 (provide 'nix-shell)
 ;;; nix-shell.el ends here
