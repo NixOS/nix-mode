@@ -466,7 +466,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
   "Run nix-build.
 ATTR is the attribute to build.
 DIR is the directory containing the Nix default.nix expression."
-  (interactive "sNix attribute: ")
+  (interactive)
   (unless dir (setq dir default-directory))
   (if attr
       (async-shell-command (format "nix-build %s -A %s" dir attr))
