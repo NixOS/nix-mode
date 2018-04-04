@@ -22,6 +22,16 @@
   "Nix-related customizations"
   :group 'languages)
 
+(defcustom nix-indent-function 'indent-relative
+  "The function to use to indent.
+
+Valid functions for this are:
+
+- indent-relative
+- nix-indent-line (buggy)"
+  :group 'nix
+  :type 'function)
+
 (defgroup nix-mode nil
   "Nix mode customizations"
   :group 'nix)
@@ -406,6 +416,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
     (* tab-width (+ (nix-indent-level-parens)
                     (if (nix-indent-level-is-closing) -1 0)))))
 
+;;;###autoload
 (defun nix-indent-line ()
   "Indent current line in a Nix expression."
   (interactive)
@@ -513,7 +524,7 @@ The hook `nix-mode-hook' is run when Nix mode is started.
   (setq-local parse-sexp-lookup-properties t)
 
   ;; Automatic indentation [C-j]
-  (setq-local indent-line-function 'nix-indent-line)
+  (setq-local indent-line-function nix-indent-function)
 
   ;; Indenting of comments
   (setq-local comment-start "# ")
