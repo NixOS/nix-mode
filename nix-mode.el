@@ -371,7 +371,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
     (when matching-indentation
       (if (save-excursion (beginning-of-line) (looking-at "let\\|with\\|\\[\\|{"))
           (indent-line-to matching-indentation)
-        (indent-line-to (+ 2 matching-indentation)))
+        (indent-line-to (+ tab-width matching-indentation)))
       t)))
 
 (defun nix-indent-prev-level ()
