@@ -324,81 +324,55 @@ STRING-TYPE type of string based off of Emacs syntax table types"
 
 ;;; Indentation
 
-(defun nix-indent-level-parens ()
-  "Find indent level based on parens."
-  (save-excursion
-    (beginning-of-line)
+(defun nix--inside-string-or-comment ()
+  (or (nix--get-string-type (nix--get-parse-state (point)))
+      (nth 4 (syntax-ppss))))
+(defun nix-find-backward-matching-token ()
+  (cond
+   ((looking-at "in\\b")
+    (let ((counter 1))
+      (while (and (> counter 0) (re-search-backward "\\b\\(let\\|in\\)\\b" nil t))
+        (unless (nix--inside-string-or-comment)
+          (setq counter (cond ((looking-at "let") (- counter 1))
+                              ((looking-at "in") (+ counter 1))))
+          )
+        )
+      counter ))
+   ((looking-at "}")
+    (backward-up-list) t)
+   ((looking-at "]")
+    (backward-up-list) t)
+   ((looking-at ")")
+    (backward-up-list) t)
+   ))
+(defun nix-indent-to-backward-match ()
+  (let ((matching-indentation (save-excursion
+                                (beginning-of-line)
+                                (skip-chars-forward "[:space:]")
+                                (if (nix-find-backward-matching-token)
+                                    (current-indentation)))))
+    (when matching-indentation (indent-line-to matching-indentation) t))
+  )
 
-    (let ((p1 (point))
-          (p2 (nth 1 (syntax-ppss)))
-          (n 0))
+(defun nix-indent-find-BOL-expression-start ()
+  (beginning-of-line)
+  (let ((counter 1))
+    (while (and (> counter 0) (re-search-backward "\\(;\\|=\\|inherit\\|with\\b\\)" nil t))
+      (unless (nix--inside-string-or-comment)
+        (setq counter (cond ((looking-at "with\\|=\\|inherit") (- counter 1))
+                            ((looking-at ";") (+ counter 1))))
+        )
+      )
+      (when (/= counter 0) (goto-char (point-min))) t))
 
-      ;; prevent moving beyond buffer
-      (if (eq p2 1)
-          (setq n (1+ n)))
-
-      (while (and p2 (not (eq p2 1))) ;; make sure p2 > 1
-        (goto-char p2)
-        (backward-char)
-        (let ((l1 (line-number-at-pos p1))
-              (l2 (line-number-at-pos p2)))
-          (if (not (eq l1 l2))
-              (setq n (1+ n))))
-        (setq p1 p2)
-        (setq p2 (nth 1 (syntax-ppss)))
-
-        ;; make sure we don't go beyond buffer
-        (if (eq p2 1)
-            (setq n (1+ n))))
-
-      n)))
-
-(defun nix-indent-level-is-closing ()
-  "Go forward from beginning of line."
-  (save-excursion
-    (beginning-of-line)
-    (skip-chars-forward "[:space:]")
-
-    (or ;; any of these should -1 indent level
-     (looking-at ")")
-     (looking-at "}")
-     (looking-at "]")
-     (looking-at "''")
-     (looking-at ",")
-     (looking-at "in[[:space:]]")
-     (looking-at "in$"))))
-
-(defun nix-indent-level-is-hanging ()
-  "Is hanging?"
-  (save-excursion
-    (beginning-of-line)
-    (skip-chars-forward "[:space:]")
-
-    (if (or
-         ;; (looking-at ",")
-         (looking-at "{")) nil
-
-      (forward-line -1)
-      (end-of-line)
-      (skip-chars-backward "\n[:space:]")
-
-      ;; skip through any comments in the way
-      (while (nth 4 (syntax-ppss))
-        (goto-char (nth 8 (syntax-ppss)))
-        (skip-chars-backward "\n[:space:]"))
-
-      (not (or
-            (looking-back "{" 1)
-            (looking-back "}" 1)
-            (looking-back ":" 1)
-            (looking-back ";" 1))))))
-
-(defun nix-indent-prev-level-is-hanging ()
-  "Is the previous level hanging?"
-  (save-excursion
-    (beginning-of-line)
-    (skip-chars-backward "\n[:space:]")
-    (nix-indent-level-is-hanging)))
+(defun nix-indent-expression-start ()
+  (let ((matching-indentation (save-excursion (when (nix-indent-find-BOL-expression-start)
+                                                (current-indentation)))))
+    (when matching-indentation
+      (if (save-excursion (beginning-of-line) (looking-at "let\\|with\\|\\[\\|{"))
+          (indent-line-to matching-indentation)
+        (indent-line-to (+ 2 matching-indentation)))
+      t)))
 
 (defun nix-indent-prev-level ()
   "Get the indent level of the previous line."
@@ -406,15 +380,6 @@ STRING-TYPE type of string based off of Emacs syntax table types"
     (beginning-of-line)
     (skip-chars-backward "\n[:space:]")
     (current-indentation)))
-
-(defun nix-indent-level ()
-  "Get current indent level."
-  (if (nix-indent-level-is-hanging)
-      (+ (nix-indent-prev-level)
-         (* tab-width (+ (if (nix-indent-prev-level-is-hanging) 0 1)
-                         (if (nix-indent-level-is-closing) -1 0))))
-    (* tab-width (+ (nix-indent-level-parens)
-                    (if (nix-indent-level-is-closing) -1 0)))))
 
 ;;;###autoload
 (defun nix-indent-line ()
@@ -446,9 +411,16 @@ STRING-TYPE type of string based off of Emacs syntax table types"
                                              ) -1 0)
                                        )))))
 
+   ;; dedent '}', ']', ')' 'in'
+   (nix-indent-to-backward-match)
+
+   ;; indent between = and ; + 2, or to 2
+   (nix-indent-expression-start)
+
    ;; else
    (t
-    (indent-line-to (nix-indent-level)))))
+      (indent-line-to (nix-indent-prev-level)))
+    ))
 
 ;; Key maps
 
