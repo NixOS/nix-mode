@@ -412,10 +412,10 @@ STRING-TYPE type of string based off of Emacs syntax table types"
                                        )))))
 
    ;; dedent '}', ']', ')' 'in'
-   (nix-indent-to-backward-match)
+   ((nix-indent-to-backward-match))
 
    ;; indent between = and ; + 2, or to 2
-   (nix-indent-expression-start)
+   ((nix-indent-expression-start))
 
    ;; else
    (t
