@@ -369,7 +369,9 @@ STRING-TYPE type of string based off of Emacs syntax table types"
   (let ((matching-indentation (save-excursion (when (nix-indent-find-BOL-expression-start)
                                                 (current-indentation)))))
     (when matching-indentation
-      (if (save-excursion (beginning-of-line) (looking-at "let\\|with\\|\\[\\|{"))
+      (if (save-excursion (beginning-of-line)
+                          (skip-chars-forward "[:space:]")
+                          (looking-at "let\\|with\\|\\[\\|{"))
           (indent-line-to matching-indentation)
         (indent-line-to (+ tab-width matching-indentation)))
       t)))
@@ -385,6 +387,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
 (defun nix-indent-line ()
   "Indent current line in a Nix expression."
   (interactive)
+  (let ((end-of-indentation (save-excursion
   (cond
 
    ;; comment
@@ -420,7 +423,10 @@ STRING-TYPE type of string based off of Emacs syntax table types"
    ;; else
    (t
       (indent-line-to (nix-indent-prev-level)))
-    ))
+   )
+  (point))))
+    (when (> end-of-indentation (point)) (goto-char end-of-indentation)))
+  )
 
 ;; Key maps
 
@@ -485,6 +491,7 @@ The hook `nix-mode-hook' is run when Nix mode is started.
   ;; Recommended by nixpkgs manual: https://nixos.org/nixpkgs/manual/#sec-syntax
   (setq-local indent-tabs-mode nil)
   (setq-local tab-width 2)
+  (setq-local electric-indent-chars '(?\n ?{ ?} ?[ ?] ?= ?\;))
 
   ;; Font lock support.
   (setq-local font-lock-defaults '(nix-font-lock-keywords))
