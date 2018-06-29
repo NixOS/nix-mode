@@ -14,9 +14,13 @@
   "nix-repl customizations"
   :group 'nix)
 
-(defcustom nix-repl-executable "nix-repl"
+(defcustom nix-repl-executable "nix"
   "Location of nix-repl command."
   :type 'string)
+
+(defcustom nix-repl-executable-args '("repl")
+  "Arguments to provide to nix-repl."
+  :type 'list)
 
 (define-derived-mode nix-repl-mode comint-mode "Nix-REPL"
   "Interactive prompt for Nix."
@@ -47,7 +51,10 @@
 
 (defun nix--make-repl-in-buffer (buffer)
   "Make Nix Repl in BUFFER."
-  (make-comint-in-buffer "Nix-REPL" buffer nix-repl-executable))
+  (apply
+   'make-comint-in-buffer
+   (append `("Nix-REPL" ,buffer ,nix-repl-executable nil)
+           nix-repl-executable-args)))
 
 (defun nix-get-completions (proc prefix)
   "Get Nix completions from Nix-repl process PROC and based off of PREFIX."
