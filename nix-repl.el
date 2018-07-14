@@ -9,14 +9,11 @@
 (defvar nix-prompt-regexp "nix-repl> ")
 
 (require 'comint)
+(require 'nix)
 
 (defgroup nix-repl nil
   "nix-repl customizations"
   :group 'nix)
-
-(defcustom nix-repl-executable "nix"
-  "Location of nix-repl command."
-  :type 'string)
 
 (defcustom nix-repl-executable-args '("repl")
   "Arguments to provide to nix-repl."
@@ -53,7 +50,7 @@
   "Make Nix Repl in BUFFER."
   (apply
    'make-comint-in-buffer
-   (append `("Nix-REPL" ,buffer ,nix-repl-executable nil)
+   (append `("Nix-REPL" ,buffer ,nix-executable nil)
            nix-repl-executable-args)))
 
 (defun nix-get-completions (proc prefix)
