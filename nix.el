@@ -26,23 +26,27 @@
   "Nix-related customizations"
   :group 'languages)
 
-(defcustom nix-executable "nix"
+(defcustom nix-executable (executable-find "nix")
   "Nix executable location."
-  :group 'nix)
+  :group 'nix
+  :type 'string)
 
-(defcustom nix-build-executable "nix-build"
+(defcustom nix-build-executable (executable-find "nix-build")
   "Nix-build executable location."
-  :group 'nix)
+  :group 'nix
+  :type 'string)
 
-(defcustom nix-instantiate-executable "nix-instantiate"
+(defcustom nix-instantiate-executable (executable-find "nix-instantiate")
   "Nix executable location."
-  :group 'nix)
+  :group 'nix
+  :type 'string)
 
-(defcustom nix-store-executable "nix-store"
+(defcustom nix-store-executable (executable-find "nix-store")
   "Nix executable location."
-  :group 'nix)
+  :group 'nix
+  :type 'string)
 
-(defcustom nix-shell-executable "nix-shell"
+(defcustom nix-shell-executable (executable-find "nix-shell")
   "Location of ‘nix-shell’ executable."
   :group 'nix
   :type 'string)
