@@ -27,6 +27,12 @@
 (defcustom nix-shell-file nil
   "Set to the file to run the nix-shell for."
   :type 'string
+  :group 'nix-shell
+  :risky t)
+
+(defcustom nix-shell-attribute nil
+  "Set to the file to run the nix-shell for."
+  :type 'string
   :group 'nix-shell)
 
 (defcustom nix-shell-inputs '(depsBuildBuild
@@ -191,15 +197,6 @@ ATTRIBUTE an attribute of the Nix file to use."
     (nix-instantiate-async (apply-partially 'nix-shell--callback
 					    (current-buffer))
 			   nix-file attribute)))
-
-;;;###autoload
-(define-minor-mode global-nix-shell-mode
-  "A minor mode for setting up build tools from Nix."
-  :group 'nix
-  :global t
-  (if nix-shell-mode
-      (add-hook 'find-file-hook 'nix-shell t)
-    (remove-hook 'find-file-hook 'nix-shell)))
 
 (provide 'nix-shell)
 ;;; nix-shell.el ends here
