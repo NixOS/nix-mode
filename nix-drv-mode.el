@@ -37,7 +37,8 @@
                (format "%s show-derivation \"%s\""
 		       nix-executable
 		       (buffer-file-name))))
-      (json-mode))
+      (json-mode)
+      (set-buffer-modified-p nil))
     (set-buffer-modified-p nil)
     (read-only-mode 1)))
 
