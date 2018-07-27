@@ -18,11 +18,16 @@
 
 (require 'nix)
 (require 'nix-instantiate)
+(require 'nix-store)
+
+(defgroup nix-shell nil
+  "All nix-shell options."
+  :group 'nix)
 
 (defcustom nix-shell-file nil
   "Set to the file to run the nix-shell for."
   :type 'string
-  :group 'nix)
+  :group 'nix-shell)
 
 (defcustom nix-shell-inputs '(depsBuildBuild
 			      depsBuildBuildPropagated
@@ -32,13 +37,18 @@
 			      depsBuildTargetPropagated)
   "List of inputs to collect for nix-shell."
   :type 'list
-  :group 'nix)
+  :group 'nix-shell)
 
 (defcustom nix-shell-clear-environment nil
   "Whether to clear the old ‘exec-path’ & environment.
 Similar to ‘--pure’ argument in command line nix-shell."
   :type 'boolean
-  :group 'nix)
+  :group 'nix-shell)
+
+(defcustom nix-shell-auto-realise t
+  "Whether we can realise paths in the built .drv file."
+  :type 'boolean
+  :group 'nix-shell)
 
 (defun nix-shell--callback (buffer drv)
   "Run the nix-shell callback to setup the buffer.
@@ -62,7 +72,7 @@ The DRV file to use."
     ;; Make sure this .drv file can actually be built here.
     (unless (string= system (nix-system))
       (error
-       "Your system (%s) does not match the target system (%s)"
+       "Your system (%s) does not match .drv’s build system (%s)"
        (nix-system) system))
 
     (with-current-buffer buffer
@@ -73,7 +83,9 @@ The DRV file to use."
 	)
 
       (dolist (input inputs)
-	(unless (file-directory-p input) (nix-store-realise input))
+	(when (and (not (file-directory-p input))
+		   nix-shell-auto-realise)
+	  (nix-store-realise input))
 
 	(let ((bin (expand-file-name "bin" input))
 	      (man (expand-file-name "share/man" input))
