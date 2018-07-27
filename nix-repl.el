@@ -37,7 +37,8 @@
        (set-process-filter ,proc proc-filter-saved)
        (kill-buffer buf))))
 
-(defun nix-repl-show ()
+;;;###autoload
+(defun nix-repl ()
   "Load the Nix-REPL."
   (interactive)
   (pop-to-buffer-same-window
