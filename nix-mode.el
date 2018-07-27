@@ -17,6 +17,9 @@
 
 (require 'nix)
 (require 'nix-format)
+(require 'nix-shebang)
+(require 'nix-shell)
+(require 'nix-repl)
 
 (defgroup nix-mode nil
   "Nix mode customizations"
