@@ -51,6 +51,16 @@
   :group 'nix
   :type 'string)
 
+(defun nix-system ()
+  "Get the current system tuple."
+  (let ((stdout (generate-new-buffer "nix eval"))
+        result)
+    (call-process nix-executable nil (list stdout nil) nil
+		  "eval" "--raw" "(builtins.currentSystem)")
+    (with-current-buffer stdout (setq result (buffer-string)))
+    (kill-buffer stdout)
+    result))
+
 ;;;###autoload
 (defun nix-build (&optional attr dir)
   "Run nix-build.
