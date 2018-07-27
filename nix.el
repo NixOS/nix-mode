@@ -87,21 +87,16 @@ ATTRIBUTE from PATH to get Nix expressions from."
 			       nix-shell-executable
 			       path attribute)))
 
-
 ;;;###autoload
 (define-minor-mode global-nix-mode
   "Minor mode to enable Nix enhancements."
   :require 'nix
   :global t
-  (cond
-   (global-nix-mode
+  (when global-nix-mode
     (add-to-list 'interpreter-mode-alist '("nix-shell" . nix-shebang-mode))
     (add-to-list 'auto-mode-alist '("\\.nix\\'" . nix-mode))
     (add-to-list 'auto-mode-alist '("\\.drv\\'" . nix-drv-mode))
-    (add-hook 'nix-mode-hook (lambda () (setq-local company-backends '(company-nix))))
-    )
-   (t
-    ())))
+    (add-hook 'after-change-major-mode-hook 'nix-shell-mode)))
 
 (provide 'nix)
 ;;; nix.el ends here
