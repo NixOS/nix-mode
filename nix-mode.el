@@ -27,7 +27,7 @@
 
 Valid functions for this are:
 
-- indent-relative
+- ‘indent-relative’
 - nix-indent-line (buggy)"
   :group 'nix-mode
   :type 'function)
