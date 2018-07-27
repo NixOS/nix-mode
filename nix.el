@@ -16,11 +16,9 @@
 
 ;;; Code:
 
-(require 'term)
-
 (require 'nix-mode)
 (require 'nix-shebang)
-(require 'nix-company)
+(require 'nix-shell)
 
 (defgroup nix nil
   "Nix-related customizations"
@@ -71,22 +69,6 @@ DIR is the directory containing the Nix default.nix expression."
   (if attr
       (async-shell-command (format "%s %s -A %s" nix-build-executable dir attr))
     (async-shell-command (format "%s %s" nix-build-executable dir))))
-
-
-;;;###autoload
-(defun nix-shell (path attribute)
-  "Run ‘nix-shell’ in a terminal.
-
-PATH path containing Nix expressions.
-ATTRIBUTE attribute name in nixpkgs to use."
-  (interactive
-   (list (read-from-minibuffer "Nix path: " "<nixpkgs>")
-         (read-from-minibuffer "Nix attribute name: ")))
-  (set-buffer (make-term "nix-shell" nix-shell-executable nil
-                         path "-A" attribute))
-  (term-mode)
-  (term-char-mode)
-  (switch-to-buffer "*nix-shell*"))
 
 ;;;###autoload
 (defun nix-unpack (path attribute)
