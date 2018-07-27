@@ -19,6 +19,8 @@
 (require 'nix-mode)
 (require 'nix-shebang)
 (require 'nix-shell)
+(require 'nix-repl)
+(require 'nix-drv-mode)
 
 (defgroup nix nil
   "Nix-related customizations"
