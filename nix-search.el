@@ -42,7 +42,19 @@ NIX-FILE a Nix expression to search in."
 		     (alist-get 'description (cdr entry)))))
 	  )
 	(display-buffer display 'display-buffer-pop-up-window)))
+    (kill-buffer stdout)
     result))
+
+(defun nix-search-read-attr (nix-file)
+  "Read from a list of attributes.
+NIX-FILE the nix file to look in."
+  (let ((collection
+	 (sort (mapcar (lambda (x) (symbol-name (car x)))
+		       (nix-search "" nix-file))
+	       'string<))
+	(read (cond ((fboundp 'ivy-read) 'ivy-read)
+		    (t 'completing-read))))
+    (funcall read "Attribute: " collection)))
 
 (provide 'nix-search)
 ;;; nix-search.el ends here
