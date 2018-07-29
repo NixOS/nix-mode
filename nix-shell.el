@@ -27,8 +27,7 @@
 (defcustom nix-shell-file nil
   "Set to the file to run the nix-shell for."
   :type 'string
-  :group 'nix-shell
-  :risky t)
+  :group 'nix-shell)
 
 (defcustom nix-shell-attribute nil
   "Set to the file to run the nix-shell for."
