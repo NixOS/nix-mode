@@ -16,16 +16,19 @@
 (defun nix-instantiate--parsed (drv)
   "Get the parsed version of the .drv file.
 DRV file to load from."
-  (let ((stdout (generate-new-buffer "nix show-derivation")))
+  (let ((stdout (generate-new-buffer "nix show-derivation"))
+	result)
     (call-process nix-executable nil (list stdout nil) nil
 		  "show-derivation" drv)
-    (cdar (with-current-buffer stdout
-	    (when (eq (buffer-size) 0)
-	      (error
-	       "Error: nix show-derivation %s failed to produce any output"
-	       drv))
-	    (goto-char (point-min))
-	    (json-read)))))
+    (setq result
+	  (cdar (with-current-buffer stdout
+		  (when (eq (buffer-size) 0)
+		    (error "nix show-derivation %s failed to produce any output"
+			   drv))
+		  (goto-char (point-min))
+		  (json-read))))
+    (kill-buffer stdout)
+    result))
 
 ;;;###autoload
 (defun nix-instantiate (nix-file &optional attribute)
@@ -68,7 +71,8 @@ EVENT the event that was fired."
 	      (callback (lax-plist-get nix-instantiate--running-processes prop))
 	    (funcall callback drv)))))
     (setq nix-instantiate--running-processes
-	  (lax-plist-put nix-instantiate--running-processes prop nil))
+	  (lax-plist-put nix-instantiate--running-processes prop nil)))
+  (unless (process-live-p proc)
     (kill-buffer (process-buffer proc))
     (kill-buffer err)))
 
