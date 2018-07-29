@@ -111,8 +111,7 @@ PHASE phase to run.
 FILE used for base of Nix expresions.
 ATTR from NIX-FILE to get Nix expressions from."
   (shell-command
-   (format "%s '%s' -A '%s' --run '
-if [ -z \"%sPhase\" ]; then eval %sPhase; else eval \"$%sPhase\"; fi' &"
+   (format "%s '%s' -A '%s' --run 'if [ -z \"$%sPhase\" ]; then eval %sPhase; else eval \"$%sPhase\"; fi' &"
 	   nix-shell-executable
 	   file attr phase phase phase)))
 
