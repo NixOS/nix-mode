@@ -5,6 +5,64 @@
 
 An emacs major mode for editing nix expressions.
 
+## Recommended config
+
+```
+(use-package nix
+  :ensure nix-mode
+  :commands global-nix-mode
+  :init (global-nix-mode))
+```
+
+## Submodes
+
+A quick list of what is provided.
+
+### nix.el
+
+nix.el contains some miscellaneous tools for Nix developers.
+Interactive functions include:
+
+- nix-unpack - unpack source of a Nix attribute.
+
+  To use this just type:
+
+  M-x nix-unpack<RET>
+
+  Followed by your Nix path & attribute path.
+
+- nix-build - build a Nix derviation.
+
+  This is meant to work similarly to M-x compile. It will use your
+  current directory & build it if there is a default.nix there.
+
+nix.el also provides some basic functions for interfacing with Nix.
+Some variables are provided to point to the Nix binaries that can be
+used in Lisp code:
+
+- nix-executable
+- nix-build-executable
+- nix-instantiate-executable
+- nix-store-executable
+- nix-shell-executable
+
+Other useful functions for Lisp scripts are provided:
+
+- nix-system - Get the current system, detected by Nix
+
+### nix-repl.el
+
+nix-repl.el has two purposes.
+
+First, it provides an interface for completion, used by nix-company.el.
+
+Second, it provides an interactive function to open an repl. You can
+open this with:
+
+M-x nix-repl<RET>
+
+## Origins
+
 This repository is based off of the nix-mode.el file originally located in
 the [Nix repository](https://github.com/NixOS/nix)
 at
