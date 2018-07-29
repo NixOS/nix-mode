@@ -72,7 +72,6 @@ EVENT the event that was fired."
     (kill-buffer (process-buffer proc))
     (kill-buffer err)))
 
-;;;###autoload
 (defun nix-instantiate-async (callback nix-file &optional attribute)
   "Run nix-instantiate on a Nix expression, asynchronously.
 CALLBACK the function to call when instantiate completes.
@@ -91,7 +90,7 @@ ATTRIBUTE an attribute of the Nix file to use."
      :name "nix-instantiate"
      :buffer stdout
      :command (append (list nix-instantiate-executable nix-file)
-		      (when attribute ("-A" attribute)))
+		      (when attribute (list "-A" attribute)))
      :noquery t
      :sentinel (apply-partially 'nix-instantiate--sentinel prop stderr)
      :stderr stderr)))
