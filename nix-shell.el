@@ -24,16 +24,6 @@
   "All nix-shell options."
   :group 'nix)
 
-(defcustom nix-shell-file nil
-  "Set to the file to run the nix-shell for."
-  :type 'string
-  :group 'nix-shell)
-
-(defcustom nix-shell-attribute nil
-  "Set to the file to run the nix-shell for."
-  :type 'string
-  :group 'nix-shell)
-
 (defcustom nix-shell-inputs '(depsBuildBuild
 			      depsBuildBuildPropagated
 			      nativeBuildInputs
@@ -54,6 +44,77 @@ Similar to ‘--pure’ argument in command line nix-shell."
   "Whether we can realise paths in the built .drv file."
   :type 'boolean
   :group 'nix-shell)
+
+(defcustom nix-file nil
+  "Nix file to build expressions from.
+Should only be set in dir-locals.el file."
+  :type 'stringp
+  :group 'nix-shell)
+
+(defcustom nix-attr nil
+  "Nix attribute path to use.
+Should only be set in dir-locals.el file."
+  :type 'stringp
+  :group 'nix-shell)
+
+;;;###autoload
+(defun nix-shell-unpack (file attr)
+  "Run Nix’s unpackPhase.
+FILE is the file to unpack from.
+ATTR is the attribute to unpack."
+  (interactive
+   (list
+    (if nix-file (expand-file-name nix-file (locate-dominating-file
+					     (if (buffer-file-name)
+						 (buffer-file-name)
+					       default-directory)
+					     dir-locals-file))
+      "<nixpkgs>")
+    (if nix-attr nix-attr (nix-search-read-attr "<nixpkgs>"))))
+  (nix-shell--run-phase "unpack" file attr))
+
+;;;###autoload
+(defun nix-shell-configure (file attr)
+  "Run Nix’s configurePhase.
+FILE is the file to configure from.
+ATTR is the attribute to configure."
+  (interactive
+   (list
+    (if nix-file (expand-file-name nix-file (locate-dominating-file
+					     (if (buffer-file-name)
+						 (buffer-file-name)
+					       default-directory)
+					     dir-locals-file))
+      "<nixpkgs>")
+    (if nix-attr nix-attr (nix-search-read-attr "<nixpkgs>"))))
+  (nix-shell--run-phase "configure" file attr))
+
+;;;###autoload
+(defun nix-shell-build (file attr)
+  "Run Nix’s buildPhase.
+FILE is the file to build from.
+ATTR is the attribute to build."
+  (interactive
+   (list
+    (if nix-file (expand-file-name nix-file (locate-dominating-file
+					     (if (buffer-file-name)
+						 (buffer-file-name)
+					       default-directory)
+					     dir-locals-file))
+      "<nixpkgs>")
+    (if nix-attr nix-attr (nix-search-read-attr "<nixpkgs>"))))
+  (nix-shell--run-phase "build" file attr))
+
+(defun nix-shell--run-phase (phase file attr)
+  "Get source from a Nix derivation.
+PHASE phase to run.
+FILE used for base of Nix expresions.
+ATTR from NIX-FILE to get Nix expressions from."
+  (shell-command
+   (format "%s '%s' -A '%s' --run '
+if [ -z \"%sPhase\" ]; then eval %sPhase; else eval \"$%sPhase\"; fi' &"
+	   nix-shell-executable
+	   file attr phase phase phase)))
 
 (defun nix-shell--callback (buffer drv)
   "Run the nix-shell callback to setup the buffer.
@@ -108,7 +169,6 @@ The DRV file to use."
 	(flycheck-buffer))
       )))
 
-;;;###autoload
 (defun nix-shell-with-packages (packages &optional pkgs-file)
   "Create a nix shell environment from the listed package.
 PACKAGES a list of packages to use.
@@ -150,16 +210,20 @@ PKGS-FILE a file to use to get the packages."
     (eshell-mode)
     buffer))
 
-(defun nix-eshell (&optional nix-file attribute)
+(defun nix-eshell (file &optional attr)
   "Create an Eshell buffer that has the shell environment in it.
-NIX-FILE the .nix expression to create a shell for.
-ATTRIBUTE attribute to instantiate in NIX-FILE."
-  (interactive)
-
-  (unless nix-file
-    (when nix-shell-file (setq nix-file nix-shell-file)))
-
-  (unless nix-file (error "Cannot find .nix file"))
+FILE the .nix expression to create a shell for.
+ATTR attribute to instantiate in NIX-FILE."
+  (interactive
+   (list
+    (if nix-file (expand-file-name nix-file (locate-dominating-file
+					     (if (buffer-file-name)
+						 (buffer-file-name)
+					       default-directory)
+					     dir-locals-file))
+      "<nixpkgs>")
+    (when (not nix-file)
+      (if nix-attr nix-attr (nix-search-read-attr "<nixpkgs>")))))
 
   (let ((buffer (generate-new-buffer "*nix-eshell*")))
     (pop-to-buffer-same-window buffer)
@@ -168,34 +232,39 @@ ATTRIBUTE attribute to instantiate in NIX-FILE."
 
     (nix-shell--callback
      (current-buffer)
-     (nix-instantiate nix-file attribute))
+     (nix-instantiate file attribute))
 
     (eshell-mode)
     buffer))
 
 ;;;###autoload
-(defun nix-shell (&optional nix-file attribute)
-  "A nix-shell emulator in Emacs.
-NIX-FILE the file to instantiate.
-ATTRIBUTE an attribute of the Nix file to use."
-  (interactive)
-
-  (unless nix-file
-    (when nix-shell-file (setq nix-file nix-shell-file)))
-
-  (unless attribute
-    (when nix-shell-attribute (setq attribute nix-shell-attribute)))
-
-  (when nix-file
-    (setq nix-file
-	  (expand-file-name nix-file (locate-dominating-file
-				      (if (buffer-file-name)
-					  (buffer-file-name)
-					default-directory)
-				      dir-locals-file)))
+(defun nix-shell-with-string (string)
+  "A nix-shell emulator in Emacs from a string.
+STRING the nix expression to use."
+  (let ((file (make-temp-file "nix-shell" nil ".nix")))
+    (with-temp-file file (insert string))
     (nix-instantiate-async (apply-partially 'nix-shell--callback
 					    (current-buffer))
-			   nix-file attribute)))
+			   file)))
+
+;;;###autoload
+(defun nix-shell (file &optional attr)
+  "A nix-shell emulator in Emacs.
+FILE the file to instantiate.
+ATTRIBUTE an attribute of the Nix file to use."
+  (interactive
+   (list
+    (if nix-file (expand-file-name nix-file (locate-dominating-file
+					     (if (buffer-file-name)
+						 (buffer-file-name)
+					       default-directory)
+					     dir-locals-file))
+      "<nixpkgs>")
+    (when (not nix-file)
+      (if nix-attr nix-attr (nix-search-read-attr "<nixpkgs>")))))
+  (nix-instantiate-async (apply-partially 'nix-shell--callback
+					  (current-buffer))
+			 file attr))
 
 (provide 'nix-shell)
 ;;; nix-shell.el ends here

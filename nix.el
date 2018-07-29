@@ -154,30 +154,6 @@
   (pcomplete-here nix-commands))
 
 ;;;###autoload
-(defun nix-build (&optional attr dir)
-  "Run nix-build.
-ATTR is the attribute to build.
-DIR is the directory containing the Nix default.nix expression."
-  (interactive)
-  (unless dir (setq dir default-directory))
-  (if attr
-      (async-shell-command (format "%s %s -A %s" nix-build-executable dir attr))
-    (async-shell-command (format "%s %s" nix-build-executable dir))))
-
-;;;###autoload
-(defun nix-unpack (path attribute)
-  "Get source from a Nix derivation.
-
-PATH used for base of Nix expresions.
-
-ATTRIBUTE from PATH to get Nix expressions from."
-  (interactive (list (read-string "Nix path: " "<nixpkgs>")
-		     (read-string "Nix attribute name: ")))
-  (async-shell-command (format "%s '%s' -A '%s' --run unpackPhase"
-			       nix-shell-executable
-			       path attribute)))
-
-;;;###autoload
 (define-minor-mode global-nix-mode
   "Minor mode to enable Nix enhancements."
   :require 'nix
@@ -187,14 +163,16 @@ ATTRIBUTE from PATH to get Nix expressions from."
         (add-to-list 'interpreter-mode-alist '("nix-shell" . nix-shebang-mode))
         (add-to-list 'auto-mode-alist '("\\.nix\\'" . nix-mode))
         ;; (add-to-list 'auto-mode-alist '("\\.drv\\'" . nix-drv-mode))
-        (add-hook 'after-change-major-mode-hook 'nix-shell))
+        ;; (add-hook 'after-change-major-mode-hook 'nix-shell)
+        )
     (progn
       (setq interpreter-mode-alist (remove '("nix-shell" . nix-shebang-mode)
                                            interpreter-mode-alist))
       (setq auto-mode-alist
             (remove '("\\.drv\\'" . nix-drv-mode)
                     (remove '("\\.nix\\'" . nix-mode) auto-mode-alist)))
-      (remove-hook 'after-change-major-mode-hook 'nix-shell))))
+      ;; (remove-hook 'after-change-major-mode-hook 'nix-shell)
+      )))
 
 (provide 'nix)
 ;;; nix.el ends here
