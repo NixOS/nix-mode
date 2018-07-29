@@ -153,26 +153,5 @@
       (pcomplete-here)))
   (pcomplete-here nix-commands))
 
-;;;###autoload
-(define-minor-mode global-nix-mode
-  "Minor mode to enable Nix enhancements."
-  :require 'nix
-  :global t
-  (if global-nix-mode
-      (progn
-        (add-to-list 'interpreter-mode-alist '("nix-shell" . nix-shebang-mode))
-        (add-to-list 'auto-mode-alist '("\\.nix\\'" . nix-mode))
-        ;; (add-to-list 'auto-mode-alist '("\\.drv\\'" . nix-drv-mode))
-        ;; (add-hook 'after-change-major-mode-hook 'nix-shell)
-        )
-    (progn
-      (setq interpreter-mode-alist (remove '("nix-shell" . nix-shebang-mode)
-                                           interpreter-mode-alist))
-      (setq auto-mode-alist
-            (remove '("\\.drv\\'" . nix-drv-mode)
-                    (remove '("\\.nix\\'" . nix-mode) auto-mode-alist)))
-      ;; (remove-hook 'after-change-major-mode-hook 'nix-shell)
-      )))
-
 (provide 'nix)
 ;;; nix.el ends here
