@@ -64,12 +64,7 @@ FILE is the file to unpack from.
 ATTR is the attribute to unpack."
   (interactive
    (list
-    (if nix-file (expand-file-name nix-file (locate-dominating-file
-					     (if (buffer-file-name)
-						 (buffer-file-name)
-					       default-directory)
-					     dir-locals-file))
-      "<nixpkgs>")
+    (if nix-file nix-file "<nixpkgs>")
     (if nix-attr nix-attr (nix-search-read-attr "<nixpkgs>"))))
   (nix-shell--run-phase "unpack" file attr))
 
@@ -80,12 +75,7 @@ FILE is the file to configure from.
 ATTR is the attribute to configure."
   (interactive
    (list
-    (if nix-file (expand-file-name nix-file (locate-dominating-file
-					     (if (buffer-file-name)
-						 (buffer-file-name)
-					       default-directory)
-					     dir-locals-file))
-      "<nixpkgs>")
+    (if nix-file nix-file "<nixpkgs>")
     (if nix-attr nix-attr (nix-search-read-attr "<nixpkgs>"))))
   (nix-shell--run-phase "configure" file attr))
 
@@ -96,12 +86,7 @@ FILE is the file to build from.
 ATTR is the attribute to build."
   (interactive
    (list
-    (if nix-file (expand-file-name nix-file (locate-dominating-file
-					     (if (buffer-file-name)
-						 (buffer-file-name)
-					       default-directory)
-					     dir-locals-file))
-      "<nixpkgs>")
+    (if nix-file nix-file "<nixpkgs>")
     (if nix-attr nix-attr (nix-search-read-attr "<nixpkgs>"))))
   (nix-shell--run-phase "build" file attr))
 
@@ -215,12 +200,7 @@ FILE the .nix expression to create a shell for.
 ATTR attribute to instantiate in NIX-FILE."
   (interactive
    (list
-    (if nix-file (expand-file-name nix-file (locate-dominating-file
-					     (if (buffer-file-name)
-						 (buffer-file-name)
-					       default-directory)
-					     dir-locals-file))
-      "<nixpkgs>")
+    (if nix-file nix-file "<nixpkgs>")
     (when (not nix-file)
       (if nix-attr nix-attr (nix-search-read-attr "<nixpkgs>")))))
 
@@ -253,12 +233,7 @@ FILE the file to instantiate.
 ATTRIBUTE an attribute of the Nix file to use."
   (interactive
    (list
-    (if nix-file (expand-file-name nix-file (locate-dominating-file
-					     (if (buffer-file-name)
-						 (buffer-file-name)
-					       default-directory)
-					     dir-locals-file))
-      "<nixpkgs>")
+    (if nix-file nix-file "<nixpkgs>")
     (when (not nix-file)
       (if nix-attr nix-attr (nix-search-read-attr "<nixpkgs>")))))
   (nix-instantiate-async (apply-partially 'nix-shell--callback
