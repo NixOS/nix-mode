@@ -14,6 +14,9 @@
  "nix-store.el"
  "nix-instantiate.el"
  "nix-drv-mode.el"
+ "nix-search.el"
+ "nix-shebang.el"
+ "nix.el"
  )
 
 (development
