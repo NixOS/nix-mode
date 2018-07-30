@@ -30,13 +30,10 @@ DRV file to load from."
     (kill-buffer stdout)
     result))
 
-;;;###autoload
 (defun nix-instantiate (nix-file &optional attribute)
   "Run nix-instantiate on a Nix expression.
 NIX-FILE the file to instantiate.
 ATTRIBUTE an attribute of the Nix file to use."
-  (interactive "fNix file: ")
-  (setq nix-file (expand-file-name nix-file))
   (let ((stdout (generate-new-buffer "nix-instantiate"))
 	result)
     (if attribute
