@@ -19,6 +19,7 @@
 (require 'nix)
 (require 'nix-instantiate)
 (require 'nix-store)
+(require 'nix-search)
 
 (defgroup nix-shell nil
   "All nix-shell options."
@@ -68,15 +69,21 @@ ATTR is the attribute to unpack."
     (if nix-attr nix-attr (nix-search-read-attr "<nixpkgs>"))))
   (nix-shell--run-phase "unpack" file attr))
 
+(defun nix-shell--find-file ()
+  (cond
+   (nix-file nix-file)
+   ((file-exists-p "shell.nix") "shell.nix")
+   ((file-exists-p "default.nix") "default.nix")
+   (t (read-file-name "Nix file: "))))
+
 ;;;###autoload
 (defun nix-shell-configure (file attr)
   "Run Nix’s configurePhase.
 FILE is the file to configure from.
 ATTR is the attribute to configure."
   (interactive
-   (list
-    (if nix-file nix-file "<nixpkgs>")
-    (if nix-attr nix-attr (nix-search-read-attr "<nixpkgs>"))))
+   (list (nix-shell--find-file)
+	 (if nix-attr nix-attr (nix-search-read-attr "<nixpkgs>"))))
   (nix-shell--run-phase "configure" file attr))
 
 ;;;###autoload
@@ -85,9 +92,8 @@ ATTR is the attribute to configure."
 FILE is the file to build from.
 ATTR is the attribute to build."
   (interactive
-   (list
-    (if nix-file nix-file "<nixpkgs>")
-    (if nix-attr nix-attr (nix-search-read-attr "<nixpkgs>"))))
+   (list (nix-shell--find-file)
+	 (if nix-attr nix-attr (nix-search-read-attr "<nixpkgs>"))))
   (nix-shell--run-phase "build" file attr))
 
 (defun nix-shell--run-phase (phase file attr)
