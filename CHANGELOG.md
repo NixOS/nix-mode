@@ -8,6 +8,15 @@
 
 ### Changes
 
+## 2.0
+
+* Added manual.
+
+### New files
+
+* nix.el: customization settings for nix installation
+* 
+
 ## 1.2.1
 
 ### Changes
