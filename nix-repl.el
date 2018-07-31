@@ -9,14 +9,11 @@
 (defvar nix-prompt-regexp "nix-repl> ")
 
 (require 'comint)
+(require 'nix)
 
 (defgroup nix-repl nil
   "nix-repl customizations"
   :group 'nix)
-
-(defcustom nix-repl-executable "nix"
-  "Location of nix-repl command."
-  :type 'string)
 
 (defcustom nix-repl-executable-args '("repl")
   "Arguments to provide to nix-repl."
@@ -40,7 +37,8 @@
        (set-process-filter ,proc proc-filter-saved)
        (kill-buffer buf))))
 
-(defun nix-repl-show ()
+;;;###autoload
+(defun nix-repl ()
   "Load the Nix-REPL."
   (interactive)
   (pop-to-buffer-same-window
@@ -49,11 +47,13 @@
     (nix--make-repl-in-buffer (current-buffer))
     (nix-repl-mode)))
 
+(defalias 'nix-repl-show 'nix-repl)
+
 (defun nix--make-repl-in-buffer (buffer)
   "Make Nix Repl in BUFFER."
   (apply
    'make-comint-in-buffer
-   (append `("Nix-REPL" ,buffer ,nix-repl-executable nil)
+   (append `("Nix-REPL" ,buffer ,nix-executable nil)
            nix-repl-executable-args)))
 
 (defun nix-get-completions (proc prefix)

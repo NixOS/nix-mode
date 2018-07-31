@@ -15,30 +15,29 @@
 
 ;;; Code:
 
+(require 'nix)
 (require 'nix-format)
 (require 'nix-shebang)
+(require 'nix-shell)
+(require 'nix-repl)
 
-(defgroup nix nil
-  "Nix-related customizations"
-  :group 'languages)
+(defgroup nix-mode nil
+  "Nix mode customizations"
+  :group 'nix)
 
 (defcustom nix-indent-function 'indent-relative
   "The function to use to indent.
 
 Valid functions for this are:
 
-- indent-relative
+- ‘indent-relative’
 - nix-indent-line (buggy)"
-  :group 'nix
+  :group 'nix-mode
   :type 'function)
-
-(defgroup nix-mode nil
-  "Nix mode customizations"
-  :group 'nix)
 
 (defgroup nix-faces nil
   "Nix faces."
-  :group 'nix
+  :group 'nix-mode
   :group 'faces)
 
 (defface nix-keyword-face
@@ -438,7 +437,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
 
 (defun nix-create-keymap ()
   "Create the keymap associated with the Nix mode."
-  (define-key nix-mode-map "\C-c\C-r" 'nix-format-buffer))
+  )
 
 (defun nix-create-menu ()
   "Create the Nix menu as shown in the menu bar."
@@ -449,17 +448,6 @@ STRING-TYPE type of string based off of Emacs syntax table types"
 
 (nix-create-keymap)
 (nix-create-menu)
-
-;;;###autoload
-(defun nix-build (&optional attr dir)
-  "Run nix-build.
-ATTR is the attribute to build.
-DIR is the directory containing the Nix default.nix expression."
-  (interactive)
-  (unless dir (setq dir default-directory))
-  (if attr
-      (async-shell-command (format "nix-build %s -A %s" dir attr))
-    (async-shell-command (format "nix-build %s" dir))))
 
 ;;;###autoload
 (define-derived-mode nix-mode prog-mode "Nix"
@@ -491,7 +479,7 @@ The hook `nix-mode-hook' is run when Nix mode is started.
   ;; Recommended by nixpkgs manual: https://nixos.org/nixpkgs/manual/#sec-syntax
   (setq-local indent-tabs-mode nil)
   (setq-local tab-width 2)
-  (setq-local electric-indent-chars '(?\n ?{ ?} ?[ ?] ?( ?)))
+  (setq-local electric-indent-chars '(?\n ?{ ?} ?\[ ?\] ?\( ?\)))
 
   ;; Font lock support.
   (setq-local font-lock-defaults '(nix-font-lock-keywords))
@@ -517,11 +505,6 @@ The hook `nix-mode-hook' is run when Nix mode is started.
   (setq-local paragraph-separate paragraph-start)
 
   (easy-menu-add nix-mode-menu nix-mode-map))
-
-;;;###autoload
-(progn
-  (add-to-list 'auto-mode-alist '("\\.nix\\'" . nix-mode))
-  (add-to-list 'auto-mode-alist '("\\.nix.in\\'" . nix-mode)))
 
 (provide 'nix-mode)
 ;;; nix-mode.el ends here

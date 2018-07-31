@@ -69,9 +69,5 @@ BUFFER check for Nix-REPL in current buffer"
                (setq nix--company-last-buffer (buffer-name))))
       backend-buf)))
 
-;; install nix-company
-(add-hook 'nix-mode-hook (lambda ()
-                           (setq-local company-backends '(company-nix))))
-
 (provide 'nix-company)
 ;;; nix-company.el ends here

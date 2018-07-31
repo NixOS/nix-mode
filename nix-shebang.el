@@ -43,9 +43,5 @@
                                       interpreter-mode-alist)
                               #'string-match-p)))))
 
-;; WARNING: this will automatically modify interpreter-mode-alist
-;; ideally we could make this opt-in
-(add-to-list 'interpreter-mode-alist '("nix-shell" . nix-shebang-mode))
-
 (provide 'nix-shebang)
 ;;; nix-shebang.el ends here

@@ -11,6 +11,13 @@
  "nix-shell.el"
  "nix-mode-mmm.el"
  "nix-prettify-mode.el"
+ "nix-store.el"
+ "nix-instantiate.el"
+ "nix-drv-mode.el"
+ "nix-search.el"
+ "nix-shebang.el"
+ "nix.el"
+ "nix-shell-haskell.el"
  )
 
 (development
