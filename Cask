@@ -17,6 +17,7 @@
  "nix-search.el"
  "nix-shebang.el"
  "nix.el"
+ "nix-shell-haskell.el"
  )
 
 (development
