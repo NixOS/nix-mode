@@ -47,6 +47,8 @@
     (nix--make-repl-in-buffer (current-buffer))
     (nix-repl-mode)))
 
+(defalias 'nix-repl-show 'nix-repl)
+
 (defun nix--make-repl-in-buffer (buffer)
   "Make Nix Repl in BUFFER."
   (apply
