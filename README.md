@@ -5,15 +5,6 @@
 
 An emacs major mode for editing nix expressions.
 
-## Recommended config
-
-```
-(use-package nix
-  :ensure nix-mode
-  :commands global-nix-mode
-  :init (global-nix-mode))
-```
-
 ## Submodes
 
 A quick list of what is provided.
