@@ -36,7 +36,8 @@ NIX-FILE a Nix expression to search in."
 	(with-current-buffer display
 	  (dolist (entry result)
 	    (widget-insert
-	     (format "name: %s\nversion: %s\ndescription: %s\n\n"
+	     (format "attr: %s\nname: %s\nversion: %s\ndescription: %s\n\n"
+                     (car entry)
 		     (alist-get 'pkgName (cdr entry))
 		     (alist-get 'version (cdr entry))
 		     (alist-get 'description (cdr entry)))))
