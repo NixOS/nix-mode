@@ -35,6 +35,24 @@ Valid functions for this are:
   :group 'nix-mode
   :type 'function)
 
+(defcustom nix-mode-caps
+  '(" =[ \n]" "\(" "\{" "\\[" "\\bwith " "\\blet\\b" "\\binherit\\b")
+  "Regular expressions to consider expression caps."
+  :group 'nix-mode
+  :type '(repeat string))
+
+(defcustom nix-mode-ends
+  '(";" "\)" "\\]" "\}" "\\bin\\b")
+  "Regular expressions to consider expression ends."
+  :group 'nix-mode
+  :type '(repeat string))
+
+(defcustom nix-mode-quotes
+  '("''" "\"")
+  "Regular expressions to consider expression quotes."
+  :group 'nix-mode
+  :type '(repeat string))
+
 (defgroup nix-faces nil
   "Nix faces."
   :group 'nix-mode
@@ -326,6 +344,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
 (defun nix--inside-string-or-comment ()
   (or (nix--get-string-type (nix--get-parse-state (point)))
       (nth 4 (syntax-ppss))))
+
 (defun nix-find-backward-matching-token ()
   (cond
    ((looking-at "in\\b")
@@ -344,6 +363,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
    ((looking-at ")")
     (backward-up-list) t)
    ))
+
 (defun nix-indent-to-backward-match ()
   (let ((matching-indentation (save-excursion
                                 (beginning-of-line)
@@ -353,27 +373,74 @@ STRING-TYPE type of string based off of Emacs syntax table types"
     (when matching-indentation (indent-line-to matching-indentation) t))
   )
 
-(defun nix-indent-find-BOL-expression-start ()
-  (beginning-of-line)
-  (let ((counter 1))
-    (while (and (> counter 0) (re-search-backward "\\(;\\|=\\|inherit\\|with\\b\\)" nil t))
-      (unless (nix--inside-string-or-comment)
-        (setq counter (cond ((looking-at "with\\|=\\|inherit") (- counter 1))
-                            ((looking-at ";") (+ counter 1))))
-        )
-      )
-      (when (/= counter 0) (goto-char (point-min))) t))
+(defun nix-mode-make-regexp (parts)
+  "Combine the regexps into a single or-delimited regexp."
+  (declare (indent defun))
+  (string-join parts "\\|"))
+
+(defun nix-mode-caps-regexp ()
+  "Return regexp for matching expression caps."
+  (nix-mode-make-regexp nix-mode-caps))
+
+(defun nix-mode-ends-regexp ()
+  "Return regexp for matching expression ends."
+  (nix-mode-make-regexp nix-mode-ends))
+
+(defun nix-mode-quotes-regexp ()
+  "Return regexp for matching string quotes."
+  (nix-mode-make-regexp nix-mode-quotes))
+
+(defun nix-mode-combined-regexp
+  "Return combined regexp for matching items of interest."
+    (nix-mode-make-regexp (append nix-mode-caps
+                                  nix-mode-ends
+                                  nix-mode-quotes)))
+
+(defun nix-mode-search-backward ()
+  "Search backward for items of interest regarding indentation."
+  (re-search-backward nix-mode-combined-regexp nil t))
 
 (defun nix-indent-expression-start ()
-  (let ((matching-indentation (save-excursion (when (nix-indent-find-BOL-expression-start)
-                                                (current-indentation)))))
-    (when matching-indentation
-      (if (save-excursion (beginning-of-line)
-                          (skip-chars-forward "[:space:]")
-                          (looking-at "let\\|with\\|\\[\\|{\\|("))
-          (indent-line-to matching-indentation)
-        (indent-line-to (+ tab-width matching-indentation)))
-      t)))
+  (let* ((ends 0)
+         (once nil)
+         (done nil)
+         (indent (current-indentation)))
+    (save-excursion
+      ;; we want to indent this line, so we don't care what it contains
+      ;; skip to the beginning so reverse searching doesn't find any matches within
+      (beginning-of-line)
+      ;; search backward until an unbalanced cap is found or no cap or end is found
+      (while (and (not done) (nix-mode-search-backward))
+        (cond
+         ((looking-at (nix-mode-quotes-regexp))
+          ;; skip over strings entirely
+          (re-search-backward nix-mode-quotes-regexp nil t))
+         ((looking-at (nix-mode-ends-regexp))
+          ;; count the matched end
+          ;; this means we expect to find at least one more cap
+          (setq ends (+ ends 1)))
+         ((looking-at (nix-mode-caps-regexp))
+          ;; we found at least one cap
+          ;; this means our function will return true
+          ;; this signals to the caller we handled the indentation
+          (setq once t)
+          (if (> ends 0)
+              ;; this cap corresponds to a previously matched end
+              ;; reduce the number of unbalanced ends
+              (setq ends (- ends 1))
+            ;; no unbalanced ends correspond to this cap
+            ;; this means we have found the expression that contains our line
+            ;; we want to indent relative to this line
+            (setq indent (current-indentation))
+            ;; signal that the search loop should exit
+            (setq done t))))))
+    ;; done is t when we found an unbalanced expression cap
+    (when done
+      ;; indent relative to the indentation of the expression containing our line
+      (indent-line-to (+ tab-width indent)))
+    ;; return t to the caller if we found at least one cap
+    ;; this signals that we handled the indentation
+    once))
 
 (defun nix-indent-prev-level ()
   "Get the indent level of the previous line."
@@ -381,6 +448,19 @@ STRING-TYPE type of string based off of Emacs syntax table types"
     (beginning-of-line)
     (skip-chars-backward "\n[:space:]")
     (current-indentation)))
+
+;;;###autoload
+(defun nix-mode-format ()
+  "Format the entire nix-mode buffer"
+  (interactive)
+  (when (eq major-mode 'nix-mode)
+    (save-excursion
+      (beginning-of-buffer)
+      (while (not (equal (point) (point-max)))
+        (if (equal (string-match-p "^[\s-]*$" (thing-at-point 'line)) 0)
+            (delete-horizontal-space)
+          (nix-indent-line))
+        (next-line)))))
 
 ;;;###autoload
 (defun nix-indent-line ()
