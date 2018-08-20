@@ -36,7 +36,7 @@ Valid functions for this are:
   :type 'function)
 
 (defcustom nix-mode-caps
-  '(" =[ \n]" "\(" "\{" "\\[" "\\bwith " "\\blet\\b" "\\binherit\\b")
+  '(" =[ \n]" "\(" "\{" "\\[" "\\bwith\\b" "\\blet\\b" "\\binherit\\b")
   "Regular expressions to consider expression caps."
   :group 'nix-mode
   :type '(repeat string))
@@ -390,7 +390,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
   "Return regexp for matching string quotes."
   (nix-mode-make-regexp nix-mode-quotes))
 
-(defun nix-mode-combined-regexp
+(defun nix-mode-combined-regexp ()
   "Return combined regexp for matching items of interest."
     (nix-mode-make-regexp (append nix-mode-caps
                                   nix-mode-ends
