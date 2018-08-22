@@ -11,20 +11,23 @@
 ;;; Code:
 
 (require 'nix)
+(require 'nix-instantiate)
+(require 'nix-shell)
 (require 'json)
 
 ;;;###autoload
-(defun nix-search (&optional search nix-file)
+(defun nix-search (&optional search file)
   "Run nix search.
 SEARCH a search term to use.
-NIX-FILE a Nix expression to search in."
+FILE a Nix expression to search in."
   (interactive)
   (unless search (setq search ""))
-  (unless nix-file (setq nix-file "<nixpkgs>"))
+  (unless file (nix-read-file))
+
   (let ((stdout (generate-new-buffer "nix search"))
 	result)
     (call-process nix-executable nil (list stdout nil) nil
-		  "search" "--json" "-f" nix-file search)
+		  "search" "--json" "-f" file search)
     (with-current-buffer stdout
       (when (eq (buffer-size) 0)
 	(error "Error: nix search %s failed to produce any output" search))
@@ -46,12 +49,12 @@ NIX-FILE a Nix expression to search in."
     (kill-buffer stdout)
     result))
 
-(defun nix-search-read-attr (nix-file)
+(defun nix-search-read-attr (file)
   "Read from a list of attributes.
-NIX-FILE the nix file to look in."
+FILE the nix file to look in."
   (let ((collection
 	 (sort (mapcar (lambda (x) (symbol-name (car x)))
-		       (nix-search "" nix-file))
+		       (nix-search "" file))
 	       'string<))
 	(read (cond ((fboundp 'ivy-read) 'ivy-read)
 		    (t 'completing-read))))

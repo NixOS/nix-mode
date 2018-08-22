@@ -19,7 +19,6 @@
 (require 'nix)
 (require 'nix-instantiate)
 (require 'nix-store)
-(require 'nix-search)
 
 (defgroup nix-shell nil
   "All nix-shell options."
@@ -63,27 +62,31 @@ Should only be set in dir-locals.el file."
   "Run Nix’s unpackPhase.
 FILE is the file to unpack from.
 ATTR is the attribute to unpack."
-  (interactive
-   (list
-    (if nix-file nix-file "<nixpkgs>")
-    (if nix-attr nix-attr (nix-search-read-attr "<nixpkgs>"))))
+  (interactive (list (nix-read-file) nil))
+  (unless attr (setq attr (nix-read-attr file)))
+
   (nix-shell--run-phase "unpack" file attr))
 
-(defun nix-shell--find-file ()
+(defun nix-read-attr (_)
+  "Get nix attribute from user."
+  (read-string "Nix attr: "))
+
+(defun nix-read-file ()
+  "Get nix file from user."
   (cond
    (nix-file nix-file)
    ((file-exists-p "shell.nix") "shell.nix")
    ((file-exists-p "default.nix") "default.nix")
-   (t (read-file-name "Nix file: "))))
+   (t (read-file-name "Nix file: " nil "<nixpkgs>"))))
 
 ;;;###autoload
 (defun nix-shell-configure (file attr)
   "Run Nix’s configurePhase.
 FILE is the file to configure from.
 ATTR is the attribute to configure."
-  (interactive
-   (list (nix-shell--find-file)
-	 (if nix-attr nix-attr (nix-search-read-attr "<nixpkgs>"))))
+  (interactive (list (nix-read-file) nil))
+  (unless attr (setq attr (nix-read-attr file)))
+
   (nix-shell--run-phase "configure" file attr))
 
 ;;;###autoload
@@ -91,9 +94,9 @@ ATTR is the attribute to configure."
   "Run Nix’s buildPhase.
 FILE is the file to build from.
 ATTR is the attribute to build."
-  (interactive
-   (list (nix-shell--find-file)
-	 (if nix-attr nix-attr (nix-search-read-attr "<nixpkgs>"))))
+  (interactive (list (nix-read-file) nil))
+  (unless attr (setq attr (nix-read-attr file)))
+
   (nix-shell--run-phase "build" file attr))
 
 (defun nix-shell--run-phase (phase file attr)
@@ -197,7 +200,7 @@ PKGS-FILE a file to use to get the packages."
     (nix-shell--callback
      (current-buffer)
      (nix-instantiate
-      (nix-shell--with-packages-file packages pkgs-file)))
+      (nix-shell--with-packages-file packages pkgs-file) nil t))
 
     (eshell-mode)
     buffer))
@@ -206,11 +209,8 @@ PKGS-FILE a file to use to get the packages."
   "Create an Eshell buffer that has the shell environment in it.
 FILE the .nix expression to create a shell for.
 ATTR attribute to instantiate in NIX-FILE."
-  (interactive
-   (list
-    (if nix-file nix-file "<nixpkgs>")
-    (when (not nix-file)
-      (if nix-attr nix-attr (nix-search-read-attr "<nixpkgs>")))))
+  (interactive (list (nix-read-file) nil))
+  (unless attr (setq attr (nix-read-attr nix-file)))
 
   (let ((buffer (generate-new-buffer "*nix-eshell*")))
     (pop-to-buffer-same-window buffer)
@@ -219,7 +219,7 @@ ATTR attribute to instantiate in NIX-FILE."
 
     (nix-shell--callback
      (current-buffer)
-     (nix-instantiate file attribute))
+     (nix-instantiate file attr t))
 
     (eshell-mode)
     buffer))
@@ -238,12 +238,10 @@ STRING the nix expression to use."
 (defun nix-shell (file &optional attr)
   "A nix-shell emulator in Emacs.
 FILE the file to instantiate.
-ATTRIBUTE an attribute of the Nix file to use."
-  (interactive
-   (list
-    (if nix-file nix-file "<nixpkgs>")
-    (when (not nix-file)
-      (if nix-attr nix-attr (nix-search-read-attr "<nixpkgs>")))))
+ATTR an attribute of the Nix file to use."
+  (interactive (list (nix-read-file) nil))
+  (unless attr (setq attr (nix-read-attr file)))
+
   (nix-instantiate-async (apply-partially 'nix-shell--callback
 					  (current-buffer))
 			 file attr))
