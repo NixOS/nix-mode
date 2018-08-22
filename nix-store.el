@@ -1,4 +1,4 @@
-;;; nix.el -- run nix commands in Emacs -*- lexical-binding: t -*-
+;;; nix-store.el -- run nix commands in Emacs -*- lexical-binding: t -*-
 
 ;; Author: Matthew Bauer <mjbauer95@gmail.com>
 ;; Homepage: https://github.com/NixOS/nix-mode

@@ -153,7 +153,8 @@
     "trusted-users"))
 
 (defun nix--pcomplete-flags (options)
-  "Complete flags to the Nix command."
+  "Complete flags to the Nix command.
+OPTIONS a list of options to accept."
   (while (pcomplete-match "^-" 0)
     (pcomplete-here options)
     (let ((last-arg (nth (1- pcomplete-index) pcomplete-args)))

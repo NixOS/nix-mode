@@ -106,6 +106,8 @@ ATTR from NIX-FILE to get Nix expressions from."
 	   nix-shell-executable
 	   file attr phase phase phase)))
 
+(declare-function flycheck-buffer "flycheck")
+
 (defun nix-shell--callback (buffer drv)
   "Run the nix-shell callback to setup the buffer.
 The BUFFER to run in.
@@ -178,7 +180,7 @@ PKGS-FILE package set to pull from."
       (insert (format "with import %s { };\n" pkgs-file))
       (insert "runCommandCC \"shell\" {\n")
       (insert "	 nativeBuildInputs = [\n")
-      (mapcar (lambda (x) (insert (format "	  %s\n" x))) packages)
+      (mapc (lambda (x) (insert (format "	  %s\n" x))) packages)
       (insert "	 ];\n")
       (insert "} \"\"\n"))
     nix-file))

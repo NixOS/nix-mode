@@ -15,7 +15,9 @@
 (require 'nix-instantiate)
 
 (defun nix-log (file attr)
-  "Open the nix log."
+  "Open the nix log.
+FILE nix file to parse.
+ATTR attribute to load the log of."
   (interactive (list (nix-read-file) nil))
   (unless attr (setq attr (nix-read-attr file)))
 

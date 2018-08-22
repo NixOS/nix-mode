@@ -23,17 +23,20 @@ DRV file to load from."
     (setq result
 	  (cdar (with-current-buffer stdout
 		  (when (eq (buffer-size) 0)
-		    (error "nix show-derivation %s failed to produce any output"
+		    (error "Nix’s show-derivation %s failed to produce any output"
 			   drv))
 		  (goto-char (point-min))
 		  (json-read))))
     (kill-buffer stdout)
     result))
 
-(defun nix-instantiate (nix-file &optional attribute)
+(defun nix-instantiate (nix-file &optional attribute parse)
   "Run nix-instantiate on a Nix expression.
 NIX-FILE the file to instantiate.
-ATTRIBUTE an attribute of the Nix file to use."
+ATTRIBUTE an attribute of the Nix file to use.
+PARSE whether to parse nix-instantiate output."
+  (interactive (list (read-file-name "Nix file: ") nil t))
+
   (let ((stdout (generate-new-buffer "nix-instantiate"))
 	result)
     (if attribute
@@ -46,8 +49,9 @@ ATTRIBUTE an attribute of the Nix file to use."
 	(error
 	 "Error: nix-instantiate %s failed to produce any output"
 	 nix-file))
-      (setq result (nix-instantiate--parsed
-		    (substring (buffer-string) 0 (- (buffer-size) 1)))))
+      (setq result (substring (buffer-string) 0 (- (buffer-size) 1)))
+      (when parse
+	(setq result (nix-instantiate--parsed result))))
     (kill-buffer stdout)
     result))
 
