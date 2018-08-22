@@ -47,6 +47,16 @@
   :group 'nix
   :type 'string)
 
+(defcustom nix-store-dir "/nix/store"
+  "Nix store directory."
+  :group 'nix
+  :type 'string)
+
+(defcustom nix-state-dir "/nix/var"
+  "Nix store directory."
+  :group 'nix
+  :type 'string)
+
 (defun nix-system ()
   "Get the current system tuple."
   (let ((stdout (generate-new-buffer "nix eval"))
