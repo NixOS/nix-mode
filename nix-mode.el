@@ -398,7 +398,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
 
 (defun nix-mode-search-backward ()
   "Search backward for items of interest regarding indentation."
-  (re-search-backward nix-mode-combined-regexp nil t))
+  (re-search-backward (nix-mode-combined-regexp) nil t))
 
 (defun nix-indent-expression-start ()
   (let* ((ends 0)
