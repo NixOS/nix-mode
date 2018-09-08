@@ -414,7 +414,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
         (cond
          ((looking-at (nix-mode-quotes-regexp))
           ;; skip over strings entirely
-          (re-search-backward nix-mode-quotes-regexp nil t))
+          (re-search-backward (nix-mode-quotes-regexp) nil t))
          ((looking-at (nix-mode-ends-regexp))
           ;; count the matched end
           ;; this means we expect to find at least one more cap
