@@ -586,5 +586,8 @@ The hook `nix-mode-hook' is run when Nix mode is started.
 
   (easy-menu-add nix-mode-menu nix-mode-map))
 
+;;;###autoload
+(add-to-list 'auto-mode-alist '("\\.nix\\'" . nix-mode))
+
 (provide 'nix-mode)
 ;;; nix-mode.el ends here
