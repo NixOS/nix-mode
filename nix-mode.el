@@ -53,6 +53,12 @@ Valid functions for this are:
   :group 'nix-mode
   :type '(repeat string))
 
+(defcustom nix-mode-comments
+  '("#" "/*" "*/")
+  "Regular expressions to consider comment codes."
+  :group 'nix-mode
+  :type '(repeat string))
+
 (defgroup nix-faces nil
   "Nix faces."
   :group 'nix-mode
@@ -390,11 +396,15 @@ STRING-TYPE type of string based off of Emacs syntax table types"
   "Return regexp for matching string quotes."
   (nix-mode-make-regexp nix-mode-quotes))
 
+(defun nix-mode-comments-regexp ()
+  "Return regexp for matching comments."
+  (nix-mode-make-regexp nix-mode-comments))
+
 (defun nix-mode-combined-regexp ()
   "Return combined regexp for matching items of interest."
-    (nix-mode-make-regexp (append nix-mode-caps
-                                  nix-mode-ends
-                                  nix-mode-quotes)))
+  (nix-mode-make-regexp (append nix-mode-caps
+                                nix-mode-ends
+                                nix-mode-quotes)))
 
 (defun nix-mode-search-backward ()
   "Search backward for items of interest regarding indentation."
@@ -415,6 +425,9 @@ STRING-TYPE type of string based off of Emacs syntax table types"
          ((looking-at (nix-mode-quotes-regexp))
           ;; skip over strings entirely
           (re-search-backward (nix-mode-quotes-regexp) nil t))
+         ((looking-at (nix-mode-comments-regexp))
+          ;; skip over comments entirely
+          (re-search-backward (nix-mode-comments-regexp) nil t))
          ((looking-at (nix-mode-ends-regexp))
           ;; count the matched end
           ;; this means we expect to find at least one more cap
