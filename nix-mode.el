@@ -54,7 +54,7 @@ Valid functions for this are:
   :type '(repeat string))
 
 (defcustom nix-mode-comments
-  '("#" "/*" "*/")
+  '("#" "/\\*" "\\*/")
   "Regular expressions to consider comment codes."
   :group 'nix-mode
   :type '(repeat string))
