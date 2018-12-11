@@ -20,6 +20,7 @@
 (require 'nix-shebang)
 (require 'nix-shell)
 (require 'nix-repl)
+(require 'ffap)
 
 (defgroup nix-mode nil
   "Nix mode customizations"
@@ -520,6 +521,19 @@ STRING-TYPE type of string based off of Emacs syntax table types"
     (when (> end-of-indentation (point)) (goto-char end-of-indentation)))
   )
 
+;;;###autoload
+(defun nix-mode-ffap-nixpkgs-path (str)
+  "Support `ffap' for <nixpkgs> declarations.
+If STR contains brackets, call nix-instantiate to find the
+location of STR. If nix-instantiate has a nonzero exit code,
+don’t do anything"
+  (when (string-match nix-re-bracket-path str)
+    (with-temp-buffer
+      (when (eq (call-process nix-instantiate-executable nil (current-buffer)
+                              nil "--eval" "-E" str) 0)
+        ;; Remove trailing newline
+        (substring (buffer-string) 0 (- (buffer-size) 1))))))
+
 ;; Key maps
 
 (defvar nix-mode-menu (make-sparse-keymap "Nix")
@@ -597,7 +611,12 @@ The hook `nix-mode-hook' is run when Nix mode is started.
   (setq-local paragraph-start "[ \t]*\\(#+[ \t]*\\)?$")
   (setq-local paragraph-separate paragraph-start)
 
-  (easy-menu-add nix-mode-menu nix-mode-map))
+  (easy-menu-add nix-mode-menu nix-mode-map)
+
+  (push '(nix-mode . nix-mode-ffap-nixpkgs-path) ffap-alist)
+  (push '(nix-mode "--:\\\\${}<>+@-Z_[:alpha:]~*?" "@" "@;.,!:")
+        ffap-string-at-point-mode-alist)
+  )
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.nix\\'" . nix-mode))
