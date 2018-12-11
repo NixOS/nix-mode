@@ -520,6 +520,22 @@ STRING-TYPE type of string based off of Emacs syntax table types"
     (when (> end-of-indentation (point)) (goto-char end-of-indentation)))
   )
 
+;; ffap support
+(defun nix-mode-ffap-nixpkgs-path (str)
+  "Support `ffap' for <nixpkgs> declarations.
+If STR contains nixpkgs, call nix-instantiate to find the
+location of STR."
+  ;; The < > around <nixpkgs> don't get passed to us
+  (when (string-match "nixpkgs" str)
+    (let ((file (shell-command-to-string
+                 (concat nix-instantiate-executable " --eval -E '<" str ">'"))))
+      ;; Remove trailing newline
+      (replace-regexp-in-string "\n$" "" file))))
+
+(defvar ffap-alist)
+(eval-after-load "ffap"
+  (push '(nix-mode . nix-mode-ffap-nixpkgs-path) ffap-alist))
+
 ;; Key maps
 
 (defvar nix-mode-menu (make-sparse-keymap "Nix")
