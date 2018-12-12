@@ -133,16 +133,14 @@ Valid functions for this are:
   "\\<\\([a-zA-Z_][a-zA-Z0-9_'\-\.]*\\)[ \t]*=[^=]")
 
 (defconst nix-font-lock-keywords
-  `(
-    (,(regexp-opt nix-keywords 'symbols) 0 'nix-keyword-face)
+  `((,(regexp-opt nix-keywords 'symbols) 0 'nix-keyword-face)
     (,(regexp-opt nix-warning-keywords 'symbols) 0 'nix-keyword-warning-face)
     (,(regexp-opt nix-builtins 'symbols) 0 'nix-builtin-face)
     (,nix-re-url 0 'nix-constant-face)
     (,nix-re-file-path 0 'nix-constant-face)
     (,nix-re-variable-assign 1 'nix-attribute-face)
     (,nix-re-bracket-path 0 'nix-constant-face)
-    (nix--syntax-match-antiquote 0 'nix-antiquote-face t)
-    )
+    (nix--syntax-match-antiquote 0 'nix-antiquote-face t))
   "Font lock keywords for nix.")
 
 (defconst nix--variable-char "[a-zA-Z0-9_'\-]")
@@ -298,7 +296,8 @@ STRING-TYPE type of string based off of Emacs syntax table types"
                              'nix-string-type string-type)
           (put-text-property start (1+ start)
                              'nix-syntax-antiquote t)
-          (let ((ahead (buffer-substring (1+ start) (min (point-max) (+ 5 start)))))
+          (let ((ahead (buffer-substring (1+ start)
+                                         (min (point-max) (+ 5 start)))))
             (pcase string-type
               (`?\" (cond
                      ((or (string-match "^\\\\\"" ahead)
@@ -326,7 +325,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
   "Special syntax properties for Nix from START to END."
   (goto-char start)
   (remove-text-properties start end
-                          '(syntax-table nil nix-string-type nil nix-syntax-antiquote nil))
+                          '(nix-string-type nil nix-syntax-antiquote nil))
   (funcall
    (syntax-propertize-rules
     ("\\\\\\\\"
@@ -359,20 +358,18 @@ STRING-TYPE type of string based off of Emacs syntax table types"
   (cond
    ((looking-at "in\\b")
     (let ((counter 1))
-      (while (and (> counter 0) (re-search-backward "\\b\\(let\\|in\\)\\b" nil t))
+      (while (and (> counter 0)
+                  (re-search-backward "\\b\\(let\\|in\\)\\b" nil t))
         (unless (nix--inside-string-or-comment)
           (setq counter (cond ((looking-at "let") (- counter 1))
-                              ((looking-at "in") (+ counter 1))))
-          )
-        )
+                              ((looking-at "in") (+ counter 1))))))
       counter ))
    ((looking-at "}")
     (backward-up-list) t)
    ((looking-at "]")
     (backward-up-list) t)
    ((looking-at ")")
-    (backward-up-list) t)
-   ))
+    (backward-up-list) t)))
 
 (defun nix-indent-to-backward-match ()
   "Match the previous line’s indentation."
@@ -381,8 +378,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
                                 (skip-chars-forward "[:space:]")
                                 (if (nix-find-backward-matching-token)
                                     (current-indentation)))))
-    (when matching-indentation (indent-line-to matching-indentation) t))
-  )
+    (when matching-indentation (indent-line-to matching-indentation) t)))
 
 (defun nix-mode-make-regexp (parts)
   "Combine the regexps into a single or-delimited regexp.
@@ -423,10 +419,12 @@ PARTS a list of regexps"
          (done nil)
          (indent (current-indentation)))
     (save-excursion
-      ;; we want to indent this line, so we don't care what it contains
-      ;; skip to the beginning so reverse searching doesn't find any matches within
+      ;; we want to indent this line, so we don't care what it
+      ;; contains skip to the beginning so reverse searching doesn't
+      ;; find any matches within
       (beginning-of-line)
-      ;; search backward until an unbalanced cap is found or no cap or end is found
+      ;; search backward until an unbalanced cap is found or no cap or
+      ;; end is found
       (while (and (not done) (nix-mode-search-backward))
         (cond
          ((looking-at (nix-mode-quotes-regexp))
@@ -456,7 +454,8 @@ PARTS a list of regexps"
             (setq done t))))))
     ;; done is t when we found an unbalanced expression cap
     (when done
-      ;; indent relative to the indentation of the expression containing our line
+      ;; indent relative to the indentation of the expression
+      ;; containing our line
       (indent-line-to (+ tab-width indent)))
     ;; return t to the caller if we found at least one cap
     ;; this signals that we handled the indentation
@@ -486,46 +485,46 @@ PARTS a list of regexps"
 (defun nix-indent-line ()
   "Indent current line in a Nix expression."
   (interactive)
-  (let ((end-of-indentation (save-excursion
-  (cond
+  (let ((end-of-indentation
+         (save-excursion
+           (cond
 
-   ;; comment
-   ((save-excursion
-      (beginning-of-line)
-      (nth 4 (syntax-ppss)))
-    (indent-line-to (nix-indent-prev-level)))
+            ;; comment
+            ((save-excursion
+               (beginning-of-line)
+               (nth 4 (syntax-ppss)))
+             (indent-line-to (nix-indent-prev-level)))
 
-   ;; string
-   ((save-excursion
-      (beginning-of-line)
-      (nth 3 (syntax-ppss)))
-    (indent-line-to (+ (nix-indent-prev-level)
-                       (* tab-width (+ (if (save-excursion
-                                             (forward-line -1)
-                                             (end-of-line)
-                                             (skip-chars-backward "[:space:]")
-                                             (looking-back "''" 0)) 1 0)
-                                       (if (save-excursion
-                                             (beginning-of-line)
-                                             (skip-chars-forward
-                                              "[:space:]")
-                                             (looking-at "''")
-                                             ) -1 0)
-                                       )))))
+            ;; string
+            ((save-excursion
+               (beginning-of-line)
+               (nth 3 (syntax-ppss)))
+             (indent-line-to (+ (nix-indent-prev-level)
+                                (* tab-width
+                                   (+ (if (save-excursion
+                                            (forward-line -1)
+                                            (end-of-line)
+                                            (skip-chars-backward "[:space:]")
+                                            (looking-back "''" 0)) 1 0)
+                                      (if (save-excursion
+                                            (beginning-of-line)
+                                            (skip-chars-forward
+                                             "[:space:]")
+                                            (looking-at "''")
+                                            ) -1 0)
+                                      )))))
 
-   ;; dedent '}', ']', ')' 'in'
-   ((nix-indent-to-backward-match))
+            ;; dedent '}', ']', ')' 'in'
+            ((nix-indent-to-backward-match))
 
-   ;; indent between = and ; + 2, or to 2
-   ((nix-indent-expression-start))
+            ;; indent between = and ; + 2, or to 2
+            ((nix-indent-expression-start))
 
-   ;; else
-   (t
-      (indent-line-to (nix-indent-prev-level)))
-   )
-  (point))))
-    (when (> end-of-indentation (point)) (goto-char end-of-indentation)))
-  )
+            ;; else
+            (t
+             (indent-line-to (nix-indent-prev-level))))
+           (point))))
+    (when (> end-of-indentation (point)) (goto-char end-of-indentation))))
 
 ;;;###autoload
 (defun nix-mode-ffap-nixpkgs-path (str)
@@ -556,8 +555,7 @@ don’t do anything"
 (defun nix-create-menu ()
   "Create the Nix menu as shown in the menu bar."
   (let ((m '("Nix"
-             ["Format buffer" nix-format-buffer t])
-           ))
+             ["Format buffer" nix-format-buffer t])))
     (easy-menu-define ada-mode-menu nix-mode-map "Menu keymap for Nix mode" m)))
 
 (nix-create-keymap)
@@ -622,8 +620,7 @@ The hook `nix-mode-hook' is run when Nix mode is started.
 
   (push '(nix-mode . nix-mode-ffap-nixpkgs-path) ffap-alist)
   (push '(nix-mode "--:\\\\${}<>+@-Z_[:alpha:]~*?" "@" "@;.,!:")
-        ffap-string-at-point-mode-alist)
-  )
+        ffap-string-at-point-mode-alist))
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.nix\\'" . nix-mode))
