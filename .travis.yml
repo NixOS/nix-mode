@@ -1,14 +1,16 @@
-language: emacs-lisp
-env:
-  - EVM_EMACS=emacs-24.5-travis
-  - EVM_EMACS=emacs-git-snapshot-travis
-
-before_install:
-  - git clone https://github.com/rejeep/evm.git $HOME/.evm
-  - export PATH=$HOME/.evm/bin:$PATH
-
-  - evm config path /tmp
-  - evm install $EVM_EMACS --use --skip
+language: nix
 
 script:
-  - make test
+  - nix-build
+
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+    - os: linux
+      dist: trusty
+    - os: osx
+
+cache:
+  directories:
+    - /nix/store
