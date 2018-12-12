@@ -398,7 +398,6 @@ STRING-TYPE type of string based off of Emacs syntax table types"
   "Search backward for items of interest regarding indentation."
   (re-search-backward nix-re-ends nil t)
   (re-search-backward nix-re-quotes nil t)
-  (re-search-backward nix-re-comments nil t)
   (re-search-backward nix-re-caps nil t))
 
 (defun nix-indent-expression-start ()
@@ -528,6 +527,30 @@ STRING-TYPE type of string based off of Emacs syntax table types"
       (nix--get-string-type (nix--get-parse-state (point)))))
 
 ;;;###autoload
+(defun nix-indent-region (start end)
+  "Indent on a whole region. Enabled by default.
+START where to start in region.
+END where to end the region."
+  (save-excursion
+    (goto-char start)
+    (while (< (point) end)
+      (or (and (bolp) (eolp))
+          (when (and
+                 ;; Skip if previous line is empty or a comment.
+                 (save-excursion
+                   (let ((line-is-comment-p (nix-is-comment-p)))
+                     (forward-line -1)
+                     (not
+                      (or (and (nix-is-comment-p)
+                               ;; Unless this line is a comment too.
+                               (not line-is-comment-p))
+                          (nix-is-comment-p)))))
+                 ;; Don't mess with strings.
+                 (nix-is-string-p))
+            (nix-indent-line)))
+      (forward-line 1))))
+
+;;;###autoload
 (defun nix-mode-ffap-nixpkgs-path (str)
   "Support `ffap' for <nixpkgs> declarations.
 If STR contains brackets, call nix-instantiate to find the
@@ -605,6 +628,7 @@ The hook `nix-mode-hook' is run when Nix mode is started.
 
   ;; Automatic indentation [C-j]
   (setq-local indent-line-function nix-indent-function)
+  (set (make-local-variable 'indent-region-function) 'nix-indent-region)
 
   ;; Indenting of comments
   (setq-local comment-start "# ")
@@ -617,8 +641,10 @@ The hook `nix-mode-hook' is run when Nix mode is started.
   (setq-local paragraph-start "[ \t]*\\(#+[ \t]*\\)?$")
   (setq-local paragraph-separate paragraph-start)
 
+  ;; Menu
   (easy-menu-add nix-mode-menu nix-mode-map)
 
+  ;; Find file at point
   (push '(nix-mode . nix-mode-ffap-nixpkgs-path) ffap-alist)
   (push '(nix-mode "--:\\\\${}<>+@-Z_[:alpha:]~*?" "@" "@;.,!:")
         ffap-string-at-point-mode-alist))
