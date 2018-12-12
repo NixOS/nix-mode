@@ -533,7 +533,8 @@ PARTS a list of regexps"
 If STR contains brackets, call nix-instantiate to find the
 location of STR. If nix-instantiate has a nonzero exit code,
 don’t do anything"
-  (when (string-match nix-re-bracket-path str)
+  (when (and (string-match nix-re-bracket-path str)
+             (executable-find nix-instantiate-executable))
     (with-temp-buffer
       (when (eq (call-process nix-instantiate-executable nil (current-buffer)
                               nil "--eval" "-E" str) 0)
