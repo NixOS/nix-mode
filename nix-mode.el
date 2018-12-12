@@ -21,6 +21,7 @@
 (require 'nix-shell)
 (require 'nix-repl)
 (require 'ffap)
+(require 'subr-x)
 
 (defgroup nix-mode nil
   "Nix mode customizations"
@@ -349,10 +350,12 @@ STRING-TYPE type of string based off of Emacs syntax table types"
 ;;; Indentation
 
 (defun nix--inside-string-or-comment ()
+  "Determine whether we are inside of a string or comment."
   (or (nix--get-string-type (nix--get-parse-state (point)))
       (nth 4 (syntax-ppss))))
 
 (defun nix-find-backward-matching-token ()
+  "Find the previous Nix token."
   (cond
    ((looking-at "in\\b")
     (let ((counter 1))
@@ -372,6 +375,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
    ))
 
 (defun nix-indent-to-backward-match ()
+  "Match the previous line’s indentation."
   (let ((matching-indentation (save-excursion
                                 (beginning-of-line)
                                 (skip-chars-forward "[:space:]")
@@ -381,7 +385,8 @@ STRING-TYPE type of string based off of Emacs syntax table types"
   )
 
 (defun nix-mode-make-regexp (parts)
-  "Combine the regexps into a single or-delimited regexp."
+  "Combine the regexps into a single or-delimited regexp.
+PARTS a list of regexps"
   (declare (indent defun))
   (string-join parts "\\|"))
 
@@ -412,6 +417,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
   (re-search-backward (nix-mode-combined-regexp) nil t))
 
 (defun nix-indent-expression-start ()
+  "Indent the start of a nix expression."
   (let* ((ends 0)
          (once nil)
          (done nil)
@@ -465,16 +471,16 @@ STRING-TYPE type of string based off of Emacs syntax table types"
 
 ;;;###autoload
 (defun nix-mode-format ()
-  "Format the entire nix-mode buffer"
+  "Format the entire nix-mode buffer."
   (interactive)
   (when (eq major-mode 'nix-mode)
     (save-excursion
-      (beginning-of-buffer)
+      (goto-char (point-min))
       (while (not (equal (point) (point-max)))
         (if (equal (string-match-p "^[\s-]*$" (thing-at-point 'line)) 0)
             (delete-horizontal-space)
           (nix-indent-line))
-        (next-line)))))
+        (forward-line)))))
 
 ;;;###autoload
 (defun nix-indent-line ()
