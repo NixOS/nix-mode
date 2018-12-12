@@ -37,30 +37,6 @@ Valid functions for this are:
   :group 'nix-mode
   :type 'function)
 
-(defcustom nix-mode-caps
-  '(" =[ \n]" "\(" "\{" "\\[" "\\bwith\\b" "\\blet\\b" "\\binherit\\b")
-  "Regular expressions to consider expression caps."
-  :group 'nix-mode
-  :type '(repeat string))
-
-(defcustom nix-mode-ends
-  '(";" "\)" "\\]" "\}" "\\bin\\b")
-  "Regular expressions to consider expression ends."
-  :group 'nix-mode
-  :type '(repeat string))
-
-(defcustom nix-mode-quotes
-  '("''" "\"")
-  "Regular expressions to consider expression quotes."
-  :group 'nix-mode
-  :type '(repeat string))
-
-(defcustom nix-mode-comments
-  '("#" "/\\*" "\\*/")
-  "Regular expressions to consider comment codes."
-  :group 'nix-mode
-  :type '(repeat string))
-
 (defgroup nix-faces nil
   "Nix faces."
   :group 'nix-mode
@@ -96,11 +72,11 @@ Valid functions for this are:
   "Face used to highlight Nix antiquotes."
   :group 'nix-faces)
 
-(defvar nix-system-types
+;;; Constants
+
+(defconst nix-system-types
   '("x86_64-linux" "i686-linux" "aarch64-linux" "x86_64-darwin")
   "List of supported systems.")
-
-;;; Syntax coloring
 
 (defconst nix-keywords
   '("if" "then"
@@ -120,6 +96,8 @@ Valid functions for this are:
 (defconst nix-warning-keywords
   '("assert" "abort" "throw"))
 
+;;; Regexps
+
 (defconst nix-re-file-path
   "[a-zA-Z0-9._\\+-]*\\(/[a-zA-Z0-9._\\+-]+\\)+")
 
@@ -131,6 +109,15 @@ Valid functions for this are:
 
 (defconst nix-re-variable-assign
   "\\<\\([a-zA-Z_][a-zA-Z0-9_'\-\.]*\\)[ \t]*=[^=]")
+
+(defconst nix-re-caps
+  " =[ \n]\\|\(\\|\{\\|\\[\\|\\bwith\\b\\|\\blet\\b\\|\\binherit\\b")
+
+(defconst nix-re-ends ";\\|\)\\|\\]\\|\}\\|\\bin\\b")
+
+(defconst nix-re-quotes "''\\|\"")
+
+(defconst nix-re-comments "#\\|/\\*\\|\\*/")
 
 (defconst nix-font-lock-keywords
   `((,(regexp-opt nix-keywords 'symbols) 0 'nix-keyword-face)
@@ -148,8 +135,6 @@ Valid functions for this are:
 (defvar nix-mode-abbrev-table
   (make-abbrev-table)
   "Abbrev table for Nix mode.")
-
-(makunbound 'nix-mode-syntax-table)
 
 (defvar nix-mode-syntax-table
   (let ((table (make-syntax-table)))
@@ -348,11 +333,6 @@ STRING-TYPE type of string based off of Emacs syntax table types"
 
 ;;; Indentation
 
-(defun nix--inside-string-or-comment ()
-  "Determine whether we are inside of a string or comment."
-  (or (nix--get-string-type (nix--get-parse-state (point)))
-      (nth 4 (syntax-ppss))))
-
 (defun nix-find-backward-matching-token ()
   "Find the previous Nix token."
   (cond
@@ -360,7 +340,8 @@ STRING-TYPE type of string based off of Emacs syntax table types"
     (let ((counter 1))
       (while (and (> counter 0)
                   (re-search-backward "\\b\\(let\\|in\\)\\b" nil t))
-        (unless (nix--inside-string-or-comment)
+        (unless (or (nix--get-string-type (nix--get-parse-state (point)))
+                    (nix-is-comment-p))
           (setq counter (cond ((looking-at "let") (- counter 1))
                               ((looking-at "in") (+ counter 1))))))
       counter ))
@@ -413,37 +394,12 @@ STRING-TYPE type of string based off of Emacs syntax table types"
                                         (+ 2 (current-indentation))))))))
     (when matching-indentation (indent-line-to matching-indentation) t)))
 
-(defun nix-mode-make-regexp (parts)
-  "Combine the regexps into a single or-delimited regexp.
-PARTS a list of regexps"
-  (declare (indent defun))
-  (string-join parts "\\|"))
-
-(defun nix-mode-caps-regexp ()
-  "Return regexp for matching expression caps."
-  (nix-mode-make-regexp nix-mode-caps))
-
-(defun nix-mode-ends-regexp ()
-  "Return regexp for matching expression ends."
-  (nix-mode-make-regexp nix-mode-ends))
-
-(defun nix-mode-quotes-regexp ()
-  "Return regexp for matching string quotes."
-  (nix-mode-make-regexp nix-mode-quotes))
-
-(defun nix-mode-comments-regexp ()
-  "Return regexp for matching comments."
-  (nix-mode-make-regexp nix-mode-comments))
-
-(defun nix-mode-combined-regexp ()
-  "Return combined regexp for matching items of interest."
-  (nix-mode-make-regexp (append nix-mode-caps
-                                nix-mode-ends
-                                nix-mode-quotes)))
-
 (defun nix-mode-search-backward ()
   "Search backward for items of interest regarding indentation."
-  (re-search-backward (nix-mode-combined-regexp) nil t))
+  (re-search-backward nix-re-ends nil t)
+  (re-search-backward nix-re-quotes nil t)
+  (re-search-backward nix-re-comments nil t)
+  (re-search-backward nix-re-caps nil t))
 
 (defun nix-indent-expression-start ()
   "Indent the start of a nix expression."
@@ -460,17 +416,17 @@ PARTS a list of regexps"
       ;; end is found
       (while (and (not done) (nix-mode-search-backward))
         (cond
-         ((looking-at (nix-mode-quotes-regexp))
+         ((looking-at nix-re-quotes)
           ;; skip over strings entirely
-          (re-search-backward (nix-mode-quotes-regexp) nil t))
-         ((looking-at (nix-mode-comments-regexp))
+          (re-search-backward nix-re-quotes nil t))
+         ((looking-at nix-re-comments)
           ;; skip over comments entirely
-          (re-search-backward (nix-mode-comments-regexp) nil t))
-         ((looking-at (nix-mode-ends-regexp))
+          (re-search-backward nix-re-comments nil t))
+         ((looking-at nix-re-ends)
           ;; count the matched end
           ;; this means we expect to find at least one more cap
           (setq ends (+ ends 1)))
-         ((looking-at (nix-mode-caps-regexp))
+         ((looking-at nix-re-caps)
           ;; we found at least one cap
           ;; this means our function will return true
           ;; this signals to the caller we handled the indentation
@@ -525,7 +481,7 @@ PARTS a list of regexps"
             ;; comment
             ((save-excursion
                (beginning-of-line)
-               (nth 4 (syntax-ppss)))
+               (nix-is-comment-p))
              (indent-line-to (nix-indent-prev-level)))
 
             ;; string
@@ -561,6 +517,15 @@ PARTS a list of regexps"
              (indent-line-to (nix-indent-prev-level))))
            (point))))
     (when (> end-of-indentation (point)) (goto-char end-of-indentation))))
+
+(defun nix-is-comment-p ()
+  "Whether we are in a comment."
+  (nth 3 (syntax-ppss)))
+
+(defun nix-is-string-p ()
+  "Whether we are in a string."
+  (or (looking-at nix-re-quotes)
+      (nix--get-string-type (nix--get-parse-state (point)))))
 
 ;;;###autoload
 (defun nix-mode-ffap-nixpkgs-path (str)
