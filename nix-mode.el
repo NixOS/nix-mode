@@ -21,7 +21,7 @@
 (require 'nix-shell)
 (require 'nix-repl)
 (require 'ffap)
-(require 'subr-x)
+(eval-when-compile (require 'subr-x))
 
 (defgroup nix-mode nil
   "Nix mode customizations"
