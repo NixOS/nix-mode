@@ -70,5 +70,10 @@ function to do the indentation tests."
        ;; Run additional tests
        ,@body)))
 
+(ert-deftest nix-mode-indent-test-list-contents ()
+  "Proper indentation for items inside of a list."
+  (with-nix-mode-test ("list-contents.nix" :indent t)))
+
+
 (provide 'nix-mode-tests)
 ;;; nix-mode-tests.el ends here
