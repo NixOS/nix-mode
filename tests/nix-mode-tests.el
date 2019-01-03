@@ -74,6 +74,23 @@ function to do the indentation tests."
   "Proper indentation for items inside of a list."
   (with-nix-mode-test ("list-contents.nix" :indent t)))
 
+(ert-deftest nix-mode-test-indent-issue-60-1 ()
+  "Proper indentation of attrsets inside of lists inside of attrsets.
+
+Related issue: https://github.com/NixOS/nix-mode/issues/60"
+  (with-nix-mode-test ("issue-60.1.nix" :indent t)))
+
+(ert-deftest nix-mode-test-indent-issue-60-2 ()
+  "Proper indentation of code inside of let blocks.
+
+Related issue: https://github.com/NixOS/nix-mode/issues/60"
+  (with-nix-mode-test ("issue-60.2.nix" :indent t)))
+
+(ert-deftest nix-mode-test-indent-issue-60-3 ()
+  "Proper indentation of import and newline after equal.
+
+Related issue: https://github.com/NixOS/nix-mode/issues/60"
+  (with-nix-mode-test ("issue-60.3.nix" :indent t)))
 
 (provide 'nix-mode-tests)
 ;;; nix-mode-tests.el ends here
