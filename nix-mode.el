@@ -628,7 +628,6 @@ The hook `nix-mode-hook' is run when Nix mode is started.
 
   ;; Automatic indentation [C-j]
   (setq-local indent-line-function nix-indent-function)
-  (set (make-local-variable 'indent-region-function) 'nix-indent-region)
 
   ;; Indenting of comments
   (setq-local comment-start "# ")
