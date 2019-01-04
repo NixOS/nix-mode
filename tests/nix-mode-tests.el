@@ -70,6 +70,20 @@ function to do the indentation tests."
        ;; Run additional tests
        ,@body)))
 
+(ert-deftest nix-mode-test-indent-failed-ident ()
+  "Proper indentation for items inside of a list."
+  (with-nix-mode-test
+   ;; File to read
+   ("failed-ident-test.nix")
+
+   ;; Indent the buffer
+   (indent-region (point-min) (point-max))
+
+   ;; Compare buffer to the stored buffer contents
+   (should-not (equal
+                (buffer-substring-no-properties (point-min) (point-max))
+                raw-file))))
+
 (ert-deftest nix-mode-test-indent-list-contents ()
   "Proper indentation for items inside of a list."
   (with-nix-mode-test ("list-contents.nix" :indent t)))
