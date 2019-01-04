@@ -7,8 +7,6 @@ matrix:
   include:
     - os: linux
       dist: trusty
-    - os: linux
-      dist: trusty
     - os: osx
 
 cache:
