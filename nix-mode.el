@@ -117,7 +117,7 @@ Valid functions for this are:
 
 (defconst nix-re-quotes "''\\|\"")
 
-(defconst nix-re-comments "#\\|/\\*\\|\\*/")
+(defconst nix-re-comments "#\\|/*\\|*/")
 
 (defconst nix-font-lock-keywords
   `((,(regexp-opt nix-keywords 'symbols) 0 'nix-keyword-face)
