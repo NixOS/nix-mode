@@ -502,11 +502,11 @@ STRING-TYPE type of string based off of Emacs syntax table types"
                                             ) -1 0)
                                       )))))
 
-            ;; indent line after 'let', 'import', '[', '=', '(', '{'
-            ((nix-indent-first-line-in-block))
-
             ;; dedent '}', ']', ')' 'in'
             ((nix-indent-to-backward-match))
+
+            ;; indent line after 'let', 'import', '[', '=', '(', '{'
+            ((nix-indent-first-line-in-block))
 
             ;; indent between = and ; + 2, or to 2
             ((nix-indent-expression-start))

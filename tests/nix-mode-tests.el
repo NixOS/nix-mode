@@ -106,5 +106,17 @@ Related issue: https://github.com/NixOS/nix-mode/issues/60"
 Related issue: https://github.com/NixOS/nix-mode/issues/60"
   (with-nix-mode-test ("issue-60.3.nix" :indent t)))
 
+(ert-deftest nix-mode-test-indent-issue-69-1 ()
+  "Proper indentation of an empty attrset.
+
+Related issue: https://github.com/NixOS/nix-mode/issues/69"
+  (with-nix-mode-test ("issue-69.1.nix" :indent t)))
+
+(ert-deftest nix-mode-test-indent-issue-69-2 ()
+  "Proper indentation of an empty list.
+
+Related issue: https://github.com/NixOS/nix-mode/issues/69"
+  (with-nix-mode-test ("issue-60.2.nix" :indent t)))
+
 (provide 'nix-mode-tests)
 ;;; nix-mode-tests.el ends here
