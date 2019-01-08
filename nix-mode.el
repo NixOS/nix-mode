@@ -117,7 +117,7 @@ Valid functions for this are:
 
 (defconst nix-re-quotes "''\\|\"")
 
-(defconst nix-re-comments "#\\|/\\*\\|\\*/")
+(defconst nix-re-comments "#\\|/*\\|*/")
 
 (defconst nix-font-lock-keywords
   `((,(regexp-opt nix-keywords 'symbols) 0 'nix-keyword-face)
@@ -628,7 +628,6 @@ The hook `nix-mode-hook' is run when Nix mode is started.
 
   ;; Automatic indentation [C-j]
   (setq-local indent-line-function nix-indent-function)
-  (set (make-local-variable 'indent-region-function) 'nix-indent-region)
 
   ;; Indenting of comments
   (setq-local comment-start "# ")
