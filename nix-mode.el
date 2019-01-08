@@ -519,7 +519,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
 
 (defun nix-is-comment-p ()
   "Whether we are in a comment."
-  (nth 3 (syntax-ppss)))
+  (nth 4 (syntax-ppss)))
 
 (defun nix-is-string-p ()
   "Whether we are in a string."
