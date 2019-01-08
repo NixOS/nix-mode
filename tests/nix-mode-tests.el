@@ -118,5 +118,11 @@ Related issue: https://github.com/NixOS/nix-mode/issues/69"
 Related issue: https://github.com/NixOS/nix-mode/issues/69"
   (with-nix-mode-test ("issue-60.2.nix" :indent t)))
 
+(ert-deftest nix-mode-test-indent-issue-72 ()
+  "Proper indentation of strings in a multi-line string.
+
+Related issue: https://github.com/NixOS/nix-mode/issues/72"
+  (with-nix-mode-test ("issue-72.nix" :indent t)))
+
 (provide 'nix-mode-tests)
 ;;; nix-mode-tests.el ends here
