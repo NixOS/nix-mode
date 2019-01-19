@@ -365,33 +365,25 @@ STRING-TYPE type of string based off of Emacs syntax table types"
   "Indent the first line in a block."
 
   (let ((matching-indentation (save-excursion
-                                ;; If we're on the first line of the buffer
-                                (if (= (line-number-at-pos) 1)
-                                    ;; Return that we want to ident to position 0 if we're on th
-                                    ;; first line. This fixes bad indent of things and avoid endless
-                                    ;; indent loop of tokens that would match below if we press tab
-                                    ;; on the first line and it happens to match any of the ones below.
-                                    0
+                                ;; Go back to previous line that contain anything useful to check the
+                                ;; contents of that line.
+                                (beginning-of-line)
+                                (skip-chars-backward "\n[:space:]")
 
-                                  ;; Go back to previous line that contain anything useful to check the
-                                  ;; contents of that line.
-                                  (beginning-of-line)
-                                  (skip-chars-backward "\n[:space:]")
+                                ;; Grab the full string of the line before the one we're indenting
+                                (let ((line (buffer-substring-no-properties (line-beginning-position) (line-end-position))))
+                                  ;; Then regex-match strings at the end of the line to detect if we need to indent the line after.
+                                  ;; We could probably add more things to look for here in the future.
+                                  (if (or (string-match "let$" line)
+                                          (string-match "import$" line)
+                                          (string-match "\\[$" line)
+                                          (string-match "=$" line)
+                                          (string-match "\($" line)
+                                          (string-match "\{$" line))
 
-                                  ;; Grab the full string of the line before the one we're indenting
-                                  (let ((line (buffer-substring-no-properties (line-beginning-position) (line-end-position))))
-                                    ;; Then regex-match strings at the end of the line to detect if we need to indent the line after.
-                                    ;; We could probably add more things to look for here in the future.
-                                    (if (or (string-match "let$" line)
-                                            (string-match "import$" line)
-                                            (string-match "\\[$" line)
-                                            (string-match "=$" line)
-                                            (string-match "\($" line)
-                                            (string-match "\{$" line))
-
-                                        ;; If it matches any of the regexes above, grab the indent level
-                                        ;; of the line and add 2 to ident the line below this one.
-                                        (+ 2 (current-indentation))))))))
+                                      ;; If it matches any of the regexes above, grab the indent level
+                                      ;; of the line and add 2 to ident the line below this one.
+                                      (+ 2 (current-indentation)))))))
     (when matching-indentation (indent-line-to matching-indentation) t)))
 
 (defun nix-mode-search-backward ()
@@ -476,6 +468,9 @@ STRING-TYPE type of string based off of Emacs syntax table types"
   (let ((end-of-indentation
          (save-excursion
            (cond
+            ;; Indent first line of file to 0
+            ((= (line-number-at-pos) 1)
+             (indent-line-to 0))
 
             ;; comment
             ((save-excursion
