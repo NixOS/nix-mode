@@ -453,6 +453,10 @@ STRING-TYPE type of string based off of Emacs syntax table types"
        (nix-smie--indent-anchor))))
     (`(:after . ",")
      (smie-rule-parent tab-width))
+    (`(:before . "in")
+     (forward-word)
+     (smie-backward-sexp t)
+     (nix-smie--indent-anchor 0))
     (`(:before . ",")
      ;; The parent is either the enclosing "{" or some previous ",".
      ;; In both cases this is what we want to align to.
