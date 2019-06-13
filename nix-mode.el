@@ -444,9 +444,13 @@ STRING-TYPE type of string based off of Emacs syntax table types"
     (`(:after . ":")
      ;; Skip over the argument.
      (smie-backward-sexp " -bseqskip- ")
-     (if (smie-rule-bolp)
-         `(column . ,(current-column))
-       (nix-smie--indent-anchor)))
+     (cond
+      ((smie-rule-bolp)
+       `(column . ,(current-column)))
+      ((= (current-indentation) 0)
+       '(column . 0))
+      (t
+       (nix-smie--indent-anchor))))
     (`(:after . ",")
      (smie-rule-parent tab-width))
     (`(:before . ",")
