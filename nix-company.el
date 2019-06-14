@@ -2,6 +2,8 @@
 
 ;; This file is NOT part of GNU Emacs.
 
+;; Version: 1.4.0
+
 ;;; Commentary:
 
 ;;; Code:
