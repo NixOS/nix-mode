@@ -6,12 +6,10 @@ ELS  =  nix.el nix-company.el nix-drv-mode.el nix-format.el \
 	nix-shell.el nix-store.el
 ELCS = $(ELS:.el=.elc)
 
-DOCS = nix-mode.info nix-mode.html # nix-mode.pdf
-
 DESTDIR =
 PREFIX  = /usr
 
-all: $(ELCS) $(DOCS)
+all: $(ELCS) nix-mode.info nix-mode.html AUTHORS.md
 
 check:
 	emacs   -batch -L . \
@@ -19,15 +17,25 @@ check:
 		-l tests/nix-font-lock-tests.el \
 		-f ert-run-tests-batch-and-exit
 
-install: $(ELCS) $(DOCS)
+install: $(ELCS) nix-mode.info nix-mode.html AUTHORS.md
 	mkdir -p $(DESTDIR)$(PREFIX)/share/emacs/site-lisp/nix-mode/
 	cp $(ELCS) $(DESTDIR)$(PREFIX)/share/emacs/site-lisp/nix-mode/
 
 	mkdir -p $(DESTDIR)$(PREFIX)/share/doc/nix-mode/
 	cp nix-mode.html $(DESTDIR)$(PREFIX)/share/doc/nix-mode/
 
-	mkdir -p $(DESTDIR)$(PREFIX)/share/info
+	mkdir -p $(DESTDIR)$(PREFIX)/share/info/
 	cp nix-mode.info $(DESTDIR)$(PREFIX)/share/info/
+
+	mkdir -p $(DESTDIR)$(PREFIX)/share/doc/
+	cp AUTHORS.md $(DESTDIR)$(PREFIX)/share/doc/
+
+AUTHORS.md:
+	@test -e .git \
+	&& (printf "$$AUTHORS_HEADER\n" > $@ \
+	&& git log --pretty=format:'- %aN <%aE>' | sort -u >> $@ \
+	&& printf "done\n" ; ) \
+	|| printf "FAILED (non-fatal)\n"
 
 clean:
 	rm -f $(ELCS) $(DOCS)

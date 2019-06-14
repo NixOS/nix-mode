@@ -1,6 +1,6 @@
 { pkgs ? import <nixpkgs> {}}:
 let
-  inherit (pkgs) emacsWithPackages stdenvNoCC texinfo;
+  inherit (pkgs) emacsWithPackages stdenvNoCC texinfo git;
   emacs = emacsWithPackages (epkgs: with epkgs; [
     org-plus-contrib
     company
@@ -10,7 +10,7 @@ let
 in stdenvNoCC.mkDerivation {
   name = "nix-mode";
   src = ./.;
-  nativeBuildInputs = [ emacs texinfo ];
+  nativeBuildInputs = [ emacs texinfo git ];
   makeFlags = [ "PREFIX=$(out)" ];
   shellHook = ''
     echo Run make run to get vanilla emacs with nix-mode loaded.
