@@ -20,6 +20,7 @@
 (require 'nix-shebang)
 (require 'nix-shell)
 (require 'nix-repl)
+(require 'smie)
 (require 'ffap)
 (eval-when-compile (require 'subr-x))
 
@@ -33,7 +34,8 @@
 Valid functions for this are:
 
 - ‘indent-relative’
-- nix-indent-line (buggy)"
+- nix-indent-line (buggy)
+- smie-indent-line"
   :group 'nix-mode
   :type 'function)
 
@@ -142,6 +144,13 @@ Valid functions for this are:
     (modify-syntax-entry ?* ". 23" table)
     (modify-syntax-entry ?# "< b" table)
     (modify-syntax-entry ?\n "> b" table)
+    (modify-syntax-entry ?_ "_" table)
+    (modify-syntax-entry ?. "'" table)
+    (modify-syntax-entry ?- "'" table)
+    (modify-syntax-entry ?' "'" table)
+    (modify-syntax-entry ?= "." table)
+    (modify-syntax-entry ?< "." table)
+    (modify-syntax-entry ?> "." table)
     ;; We handle strings
     (modify-syntax-entry ?\" "." table)
     ;; We handle escapes
@@ -331,7 +340,269 @@ STRING-TYPE type of string based off of Emacs syntax table types"
      (0 (ignore (nix--double-quotes)))))
    start end))
 
-;;; Indentation
+;; Indentation using SMIE
+
+(defconst nix-smie-grammar
+  (smie-prec2->grammar
+   (smie-merge-prec2s
+    (smie-bnf->prec2
+     '((id)
+       (expr (arg ":" expr)
+             ("if" expr "then" expr "else" expr)
+             ("let" decls "in" expr)
+             ("with" expr "nonsep-;" expr)
+             ("assert" expr "nonsep-;" expr)
+             (attrset)
+             (id))
+       (attrset ("{" decls "}"))
+       (decls (decls ";" decls)
+              (id "=" expr))
+       (arg (id) ("{" args "}"))
+       (args (args "," args) (id "arg-?" expr)))
+     '((assoc ";"))
+     '((assoc ","))
+     ;; resolve "(with foo; a) <op> b" vs "with foo; (a <op> b)"
+     ;; in favor of the latter.
+     '((nonassoc "nonsep-;") (nonassoc " -dummy- "))
+     ;; resolve "(if ... then ... else a) <op> b"
+     ;; vs "if ... then ... else (a <op> b)" in favor of the latter.
+     '((nonassoc "in") (nonassoc " -dummy- ")))
+    (smie-precs->prec2
+     '((nonassoc " -dummy- ")
+       (nonassoc "=")
+       ;; " -bexpskip- " and " -fexpskip- " are handy tokens for skipping over
+       ;; whole expressions.
+       ;; For instance, suppose we have a line looking like this:
+       ;; "{ foo.bar // { x = y }"
+       ;; and point is at the end of the line. We can skip the whole
+       ;; expression (i.e. so the point is just before "foo") using
+       ;; `(smie-backward-sexp " -bexpskip- ")'. `(backward-sexp)' would
+       ;; skip over "{ x = y }", not over the whole expression.
+       (right " -bexpskip- ")
+       (left " -fexpskip- ")
+       (nonassoc "else")
+       (right ":")
+       (right "->")
+       (assoc "||")
+       (assoc "&&")
+       (nonassoc "==" "!=")
+       (nonassoc "<" "<=" ">" ">=")
+       (left "//")
+       (nonassoc "!")
+       (assoc "-" "+")
+       (assoc "*" "/")
+       (assoc "++")
+       (left "?")
+       ;; Tokens for skipping sequences of sexps
+       ;; (i.e. identifiers or balanced parens).
+       ;; For instance, suppose we have a line looking like this:
+       ;; "{ foo.bar // f x "
+       ;; and point is at the end of the line. We can skip the "f x"
+       ;; part by doing `(smie-backward-sexp " -bseqskip- ")'.
+       (right " -bseqskip- ")
+       (left " -fseqskip- "))))))
+
+(defconst nix-smie--symbol-chars ":->|&=!</-+*?,;!")
+
+(defconst nix-smie--infix-symbols-re
+  (regexp-opt '(":" "->" "||" "&&" "==" "!=" "<" "<=" ">" ">="
+                "//" "-" "+" "*" "/" "++" "?")))
+
+(defconst nix-smie-indent-tokens-re
+  (regexp-opt '("{" "(" "[" "=" "let" "if" "then" "else")))
+
+;; The core indentation algorithm is very simple:
+;; - If the last token on the previous line matches `nix-smie-indent-tokens-re',
+;;   then the current line is indented by `tab-width' relative to the
+;;   previous line's 'anchor'.
+;; - Otherwise, let SMIE handle it.
+;; The 'anchor' of a line is defined as follows:
+;; - If the line contains an assignment, it is the beginning of the
+;;   left-hand side of the first assignment on that line.
+;; - Otherwise, it is the position of the first token on that line.
+(defun nix-smie-rules (kind token)
+  (pcase (cons kind token)
+    (`(:after . ,(guard (string-match-p nix-smie-indent-tokens-re
+                                        token)))
+     (nix-smie--indent-anchor))
+    (`(:after . "in")
+     (cond
+      ((bolp) '(column . 0))
+      ((<= (line-beginning-position)
+           (save-excursion
+             (forward-word)
+             (smie-backward-sexp t)
+             (point)))
+       (smie-rule-parent))))
+    (`(:after . "nonsep-;")
+     (forward-char)
+     (backward-sexp)
+     (if (smie-rule-bolp)
+         `(column . ,(current-column))
+       (nix-smie--indent-anchor)))
+    (`(:after . ":")
+     ;; Skip over the argument.
+     (smie-backward-sexp " -bseqskip- ")
+     (cond
+      ((smie-rule-bolp)
+       `(column . ,(current-column)))
+      ((= (current-indentation) 0)
+       '(column . 0))
+      (t
+       (nix-smie--indent-anchor))))
+    (`(:after . ",")
+     (smie-rule-parent tab-width))
+    (`(:before . "in")
+     (forward-word)
+     (smie-backward-sexp t)
+     (nix-smie--indent-anchor 0))
+    (`(:before . ",")
+     ;; The parent is either the enclosing "{" or some previous ",".
+     ;; In both cases this is what we want to align to.
+     (smie-rule-parent))
+    (`(:before . "if")
+     (let ((bol (line-beginning-position)))
+       (save-excursion
+         (and
+          (equal (nix-smie--backward-token) "else")
+          (<= bol (point))
+          `(column . ,(current-column))))))
+    (`(:before . ,(guard (string-match-p nix-smie--infix-symbols-re token)))
+     (forward-comment (- (point)))
+     (let ((bol (line-beginning-position)))
+       (smie-backward-sexp token)
+       (if (< (point) bol)
+           (nix-smie--indent-anchor 0))))))
+
+(defun nix-smie--anchor ()
+  "Return the anchor's offset from the beginning of the current line."
+  (goto-char (+ (line-beginning-position) (current-indentation)))
+  (let ((eol (line-end-position))
+        (anchor (current-column))
+        tok)
+    (catch 'break
+      (while (and (setq tok (car (smie-indent-forward-token)))
+                  (<= (point) eol))
+        (when (equal "=" tok)
+          (backward-char)
+          (smie-backward-sexp " -bseqskip- ")
+          (setq anchor (current-column))
+          (throw 'break nil))))
+    anchor))
+
+(defun nix-smie--indent-anchor (&optional indent)
+  ;; Intended for use only in the rules function.
+  (let ((indent (or indent tab-width)))
+  `(column . ,(+ indent (nix-smie--anchor)))))
+
+(defconst nix-smie--path-chars "a-zA-Z0-9-+_.:/~")
+
+(defun nix-smie--skip-path (how)
+  (let ((start (point)))
+    (pcase how
+      ('forward (skip-chars-forward nix-smie--path-chars))
+      ('backward (skip-chars-backward nix-smie--path-chars))
+      (_ (error "expected 'forward or 'backward")))
+    (let ((sub (buffer-substring-no-properties start (point))))
+      (if (string-match-p "/" sub)
+          sub
+        (ignore (goto-char start))))))
+
+(defun nix-smie--forward-token-1 ()
+  (forward-comment (point-max))
+  (or (nix-smie--skip-path 'forward)
+      (buffer-substring-no-properties
+       (point)
+       (progn
+         (or (/= 0 (skip-syntax-forward "'w_"))
+             (/= 0 (skip-chars-forward nix-smie--symbol-chars))
+             (skip-syntax-forward ".'"))
+         (point)))))
+
+(defun nix-smie--forward-token ()
+  (let ((sym (nix-smie--forward-token-1)))
+    (if (member sym '(";" "?"))
+        ;; The important lexer for indentation's performance is the backward
+        ;; lexer, so for the forward lexer we delegate to the backward one.
+        (save-excursion (nix-smie--backward-token))
+      sym)))
+
+(defun nix-smie--backward-token-1 ()
+  (forward-comment (- (point)))
+  (or (nix-smie--skip-path 'backward)
+      (buffer-substring-no-properties
+       (point)
+       (progn
+         (or (/= 0 (skip-syntax-backward "'w_"))
+             (/= 0 (skip-chars-backward nix-smie--symbol-chars))
+             (skip-syntax-backward ".'"))
+         (point)))))
+
+(defun nix-smie--backward-token ()
+  (let ((sym (nix-smie--backward-token-1)))
+    (unless (zerop (length sym))
+      (pcase sym
+        (";" (if (nix-smie--nonsep-semicolon-p) "nonsep-;" ";"))
+        ("?" (if (nix-smie--arg-?-p) "arg-?" "?"))
+        (_ sym)))))
+
+(defun nix-smie--nonsep-semicolon-p ()
+  "Whether the semicolon at point terminates a `with' or `assert'."
+  (let (tok)
+    (save-excursion
+      ;; Skip over identifiers, balanced parens etc. as far back as we can.
+      (while (null (setq tok (nth 2 (smie-backward-sexp " -bexpskip- "))))))
+    (member tok '("with" "assert"))))
+
+(defun nix-smie--arg-?-p ()
+  "Whether the question mark at point is part of an argument declaration."
+  (member
+   (nth 2 (progn
+            (smie-backward-sexp)
+            (smie-backward-sexp)))
+   '("{" ",")))
+
+(defun nix-smie--indent-close ()
+  ;; Align close paren with opening paren.
+  (save-excursion
+    (when (looking-at "\\s)")
+      (forward-char 1)
+      (condition-case nil
+          (progn
+            (backward-sexp 1)
+            ;; Align to the first token on the line containing
+            ;; the opening paren.
+            (current-indentation))
+        (scan-error nil)))))
+
+(defun nix-smie--indent-exps ()
+  ;; This function replaces and is based on `smie-indent-exps'.
+  ;; An argument to a function is indented relative to the function,
+  ;; not to any other arguments.
+  (save-excursion
+    (let (parent   ;; token enclosing the expression list
+          skipped) ;; whether we skipped at least one expression
+      (let ((start (point)))
+        (setq parent (nth 2 (smie-backward-sexp " -bseqskip- ")))
+        (setq skipped (not (eq start (point))))
+        (cond
+         ((not skipped)
+          ;; We're the first expression of the list.  In that case, the
+          ;; indentation should be (have been) determined by its context.
+          nil)
+         ((equal parent "[")
+          ;; It's a list, align with the first expression.
+          (current-column))
+         ;; We're an argument.
+         (t
+          ;; We can use (current-column) or (current-indentation) here.
+          ;; (current-column) will indent relative to the first expression
+          ;; in the sequence, and (current-indentation) will indent relative
+          ;; to the indentation of the line on which the first expression
+          ;; begins. I'm not sure which one is better.
+          (+ tab-width (current-indentation))))))))
+
+;;; Indentation not using SMIE
 
 (defun nix-find-backward-matching-token ()
   "Find the previous Nix token."
@@ -542,7 +813,7 @@ END where to end the region."
                           (nix-is-comment-p)))))
                  ;; Don't mess with strings.
                  (nix-is-string-p))
-            (nix-indent-line)))
+            (smie-indent-line)))
       (forward-line 1))))
 
 ;;;###autoload
@@ -622,7 +893,15 @@ The hook `nix-mode-hook' is run when Nix mode is started.
   (setq-local parse-sexp-lookup-properties t)
 
   ;; Automatic indentation [C-j]
+  (smie-setup nix-smie-grammar 'nix-smie-rules
+              :forward-token 'nix-smie--forward-token
+              :backward-token 'nix-smie--backward-token)
+  (setq-local smie-indent-basic 2)
   (setq-local indent-line-function nix-indent-function)
+  (fset (make-local-variable 'smie-indent-exps)
+        (symbol-function 'nix-smie--indent-exps))
+  (fset (make-local-variable 'smie-indent-close)
+        (symbol-function 'nix-smie--indent-close))
 
   ;; Indenting of comments
   (setq-local comment-start "# ")
