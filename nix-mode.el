@@ -728,7 +728,7 @@ The hook `nix-mode-hook' is run when Nix mode is started.
               :forward-token 'nix-smie--forward-token
               :backward-token 'nix-smie--backward-token)
   (setq-local smie-indent-basic 2)
-  (setq-local indent-line-function 'smie-indent-line)
+  (setq-local indent-line-function nix-indent-function)
   (fset (make-local-variable 'smie-indent-exps)
         (symbol-function 'nix-smie--indent-exps))
   (fset (make-local-variable 'smie-indent-close)
