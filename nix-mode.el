@@ -556,7 +556,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
 
 (defun nix-smie--arg-?-p ()
   "Whether the question mark at point is part of an argument declaration."
-  (memq
+  (member
    (nth 2 (progn
             (smie-backward-sexp)
             (smie-backward-sexp)))
