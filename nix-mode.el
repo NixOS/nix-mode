@@ -34,7 +34,8 @@
 Valid functions for this are:
 
 - ‘indent-relative’
-- smie-indent-line (buggy)"
+- nix-indent-line (buggy)
+- smie-indent-line"
   :group 'nix-mode
   :type 'function)
 
@@ -601,6 +602,123 @@ STRING-TYPE type of string based off of Emacs syntax table types"
           ;; begins. I'm not sure which one is better.
           (+ tab-width (current-indentation))))))))
 
+;;; Indentation not using SMIE
+
+(defun nix-find-backward-matching-token ()
+  "Find the previous Nix token."
+  (cond
+   ((looking-at "in\\b")
+    (let ((counter 1))
+      (while (and (> counter 0)
+                  (re-search-backward "\\b\\(let\\|in\\)\\b" nil t))
+        (unless (or (nix--get-string-type (nix--get-parse-state (point)))
+                    (nix-is-comment-p))
+          (setq counter (cond ((looking-at "let") (- counter 1))
+                              ((looking-at "in") (+ counter 1))))))
+      counter ))
+   ((looking-at "}")
+    (backward-up-list) t)
+   ((looking-at "]")
+    (backward-up-list) t)
+   ((looking-at ")")
+    (backward-up-list) t)))
+
+(defun nix-indent-to-backward-match ()
+  "Match the previous line’s indentation."
+  (let ((matching-indentation (save-excursion
+                                (beginning-of-line)
+                                (skip-chars-forward "[:space:]")
+                                (if (nix-find-backward-matching-token)
+                                    (current-indentation)))))
+    (when matching-indentation (indent-line-to matching-indentation) t)))
+
+(defun nix-indent-first-line-in-block ()
+  "Indent the first line in a block."
+
+  (let ((matching-indentation (save-excursion
+                                ;; Go back to previous line that contain anything useful to check the
+                                ;; contents of that line.
+                                (beginning-of-line)
+                                (skip-chars-backward "\n[:space:]")
+
+                                ;; Grab the full string of the line before the one we're indenting
+                                (let ((line (buffer-substring-no-properties (line-beginning-position) (line-end-position))))
+                                  ;; Then regex-match strings at the end of the line to detect if we need to indent the line after.
+                                  ;; We could probably add more things to look for here in the future.
+                                  (if (or (string-match "let$" line)
+                                          (string-match "import$" line)
+                                          (string-match "\\[$" line)
+                                          (string-match "=$" line)
+                                          (string-match "\($" line)
+                                          (string-match "\{$" line))
+
+                                      ;; If it matches any of the regexes above, grab the indent level
+                                      ;; of the line and add 2 to ident the line below this one.
+                                      (+ 2 (current-indentation)))))))
+    (when matching-indentation (indent-line-to matching-indentation) t)))
+
+(defun nix-mode-search-backward ()
+  "Search backward for items of interest regarding indentation."
+  (re-search-backward nix-re-ends nil t)
+  (re-search-backward nix-re-quotes nil t)
+  (re-search-backward nix-re-caps nil t))
+
+(defun nix-indent-expression-start ()
+  "Indent the start of a nix expression."
+  (let* ((ends 0)
+         (once nil)
+         (done nil)
+         (indent (current-indentation)))
+    (save-excursion
+      ;; we want to indent this line, so we don't care what it
+      ;; contains skip to the beginning so reverse searching doesn't
+      ;; find any matches within
+      (beginning-of-line)
+      ;; search backward until an unbalanced cap is found or no cap or
+      ;; end is found
+      (while (and (not done) (nix-mode-search-backward))
+        (cond
+         ((looking-at nix-re-quotes)
+          ;; skip over strings entirely
+          (re-search-backward nix-re-quotes nil t))
+         ((looking-at nix-re-comments)
+          ;; skip over comments entirely
+          (re-search-backward nix-re-comments nil t))
+         ((looking-at nix-re-ends)
+          ;; count the matched end
+          ;; this means we expect to find at least one more cap
+          (setq ends (+ ends 1)))
+         ((looking-at nix-re-caps)
+          ;; we found at least one cap
+          ;; this means our function will return true
+          ;; this signals to the caller we handled the indentation
+          (setq once t)
+          (if (> ends 0)
+              ;; this cap corresponds to a previously matched end
+              ;; reduce the number of unbalanced ends
+              (setq ends (- ends 1))
+            ;; no unbalanced ends correspond to this cap
+            ;; this means we have found the expression that contains our line
+            ;; we want to indent relative to this line
+            (setq indent (current-indentation))
+            ;; signal that the search loop should exit
+            (setq done t))))))
+    ;; done is t when we found an unbalanced expression cap
+    (when done
+      ;; indent relative to the indentation of the expression
+      ;; containing our line
+      (indent-line-to (+ tab-width indent)))
+    ;; return t to the caller if we found at least one cap
+    ;; this signals that we handled the indentation
+    once))
+
+(defun nix-indent-prev-level ()
+  "Get the indent level of the previous line."
+  (save-excursion
+    (beginning-of-line)
+    (skip-chars-backward "\n[:space:]")
+    (current-indentation)))
+
 ;;;###autoload
 (defun nix-mode-format ()
   "Format the entire nix-mode buffer."
@@ -611,8 +729,59 @@ STRING-TYPE type of string based off of Emacs syntax table types"
       (while (not (equal (point) (point-max)))
         (if (equal (string-match-p "^[\s-]*$" (thing-at-point 'line)) 0)
             (delete-horizontal-space)
-          (smie-indent-line))
+          (nix-indent-line))
         (forward-line)))))
+
+;;;###autoload
+(defun nix-indent-line ()
+  "Indent current line in a Nix expression."
+  (interactive)
+  (let ((end-of-indentation
+         (save-excursion
+           (cond
+            ;; Indent first line of file to 0
+            ((= (line-number-at-pos) 1)
+             (indent-line-to 0))
+
+            ;; comment
+            ((save-excursion
+               (beginning-of-line)
+               (nix-is-comment-p))
+             (indent-line-to (nix-indent-prev-level)))
+
+            ;; string
+            ((save-excursion
+               (beginning-of-line)
+               (nth 3 (syntax-ppss)))
+             (indent-line-to (+ (nix-indent-prev-level)
+                                (* tab-width
+                                   (+ (if (save-excursion
+                                            (forward-line -1)
+                                            (end-of-line)
+                                            (skip-chars-backward "[:space:]")
+                                            (looking-back "''" 0)) 1 0)
+                                      (if (save-excursion
+                                            (beginning-of-line)
+                                            (skip-chars-forward
+                                             "[:space:]")
+                                            (looking-at "''")
+                                            ) -1 0)
+                                      )))))
+
+            ;; dedent '}', ']', ')' 'in'
+            ((nix-indent-to-backward-match))
+
+            ;; indent line after 'let', 'import', '[', '=', '(', '{'
+            ((nix-indent-first-line-in-block))
+
+            ;; indent between = and ; + 2, or to 2
+            ((nix-indent-expression-start))
+
+            ;; else
+            (t
+             (indent-line-to (nix-indent-prev-level))))
+           (point))))
+    (when (> end-of-indentation (point)) (goto-char end-of-indentation))))
 
 (defun nix-is-comment-p ()
   "Whether we are in a comment."
