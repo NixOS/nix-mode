@@ -164,5 +164,17 @@ Related issue: https://github.com/NixOS/nix-mode/issues/72"
 Related issue: https://github.com/NixOS/nix-mode/issues/72"
   (with-nix-mode-test ("issue-72.nix" :indent 'nix-indent-line)))
 
+(ert-deftest nix-mode-test-indent-hello-smie ()
+  "Proper indentation of strings in a multi-line string.
+
+Related issue: https://github.com/NixOS/nix-mode/issues/72"
+  (with-nix-mode-test ("hello.nix" :indent 'smie-indent-line)))
+
+(ert-deftest nix-mode-test-indent-hello ()
+  "Proper indentation of strings in a multi-line string.
+
+Related issue: https://github.com/NixOS/nix-mode/issues/72"
+  (with-nix-mode-test ("hello.nix" :indent 'nix-indent-line)))
+
 (provide 'nix-mode-tests)
 ;;; nix-mode-tests.el ends here
