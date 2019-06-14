@@ -421,6 +421,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
 ;;   left-hand side of the first assignment on that line.
 ;; - Otherwise, it is the position of the first token on that line.
 (defun nix-smie-rules (kind token)
+  "Core smie rules."
   (pcase (cons kind token)
     (`(:after . ,(guard (string-match-p nix-smie-indent-tokens-re
                                         token)))
@@ -491,13 +492,14 @@ STRING-TYPE type of string based off of Emacs syntax table types"
     anchor))
 
 (defun nix-smie--indent-anchor (&optional indent)
-  ;; Intended for use only in the rules function.
+  "Intended for use only in the rules function."
   (let ((indent (or indent tab-width)))
-  `(column . ,(+ indent (nix-smie--anchor)))))
+    `(column . ,(+ indent (nix-smie--anchor)))))
 
 (defconst nix-smie--path-chars "a-zA-Z0-9-+_.:/~")
 
 (defun nix-smie--skip-path (how)
+  "Skip path related characters."
   (let ((start (point)))
     (pcase how
       ('forward (skip-chars-forward nix-smie--path-chars))
@@ -509,6 +511,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
         (ignore (goto-char start))))))
 
 (defun nix-smie--forward-token-1 ()
+  "Move forward one token."
   (forward-comment (point-max))
   (or (nix-smie--skip-path 'forward)
       (buffer-substring-no-properties
@@ -520,6 +523,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
          (point)))))
 
 (defun nix-smie--forward-token ()
+  "Move forward one token, skipping certain characters."
   (let ((sym (nix-smie--forward-token-1)))
     (if (member sym '(";" "?"))
         ;; The important lexer for indentation's performance is the backward
@@ -528,6 +532,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
       sym)))
 
 (defun nix-smie--backward-token-1 ()
+  "Move backward one token."
   (forward-comment (- (point)))
   (or (nix-smie--skip-path 'backward)
       (buffer-substring-no-properties
@@ -539,6 +544,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
          (point)))))
 
 (defun nix-smie--backward-token ()
+  "Move backward one token, skipping certain characters."
   (let ((sym (nix-smie--backward-token-1)))
     (unless (zerop (length sym))
       (pcase sym
@@ -563,7 +569,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
    '("{" ",")))
 
 (defun nix-smie--indent-close ()
-  ;; Align close paren with opening paren.
+  "Align close paren with opening paren."
   (save-excursion
     (when (looking-at "\\s)")
       (forward-char 1)
@@ -576,9 +582,9 @@ STRING-TYPE type of string based off of Emacs syntax table types"
         (scan-error nil)))))
 
 (defun nix-smie--indent-exps ()
-  ;; This function replaces and is based on `smie-indent-exps'.
-  ;; An argument to a function is indented relative to the function,
-  ;; not to any other arguments.
+  "This function replaces and is based on `smie-indent-exps'.
+An argument to a function is indented relative to the function,
+not to any other arguments."
   (save-excursion
     (let (parent   ;; token enclosing the expression list
           skipped) ;; whether we skipped at least one expression
@@ -721,7 +727,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
 
 ;;;###autoload
 (defun nix-mode-format ()
-  "Format the entire nix-mode buffer."
+  "Format the entire `nix-mode' buffer."
   (interactive)
   (when (eq major-mode 'nix-mode)
     (save-excursion
@@ -819,8 +825,8 @@ END where to end the region."
 ;;;###autoload
 (defun nix-mode-ffap-nixpkgs-path (str)
   "Support `ffap' for <nixpkgs> declarations.
-If STR contains brackets, call nix-instantiate to find the
-location of STR. If nix-instantiate has a nonzero exit code,
+If STR contains brackets, call `nix-instantiate' to find the
+location of STR. If `nix-instantiate' has a nonzero exit code,
 don’t do anything"
   (when (and (string-match nix-re-bracket-path str)
              (executable-find nix-instantiate-executable))
