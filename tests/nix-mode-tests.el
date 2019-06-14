@@ -176,5 +176,17 @@ Related issue: https://github.com/NixOS/nix-mode/issues/72"
   "Proper indentation of strings in a multi-line string."
   (with-nix-mode-test ("all-packages.nix" :indent 'smie-indent-line)))
 
+(ert-deftest nix-mode-test-indent-issue-74-smie ()
+  "Proper indentation of strings in a multi-line string."
+  (with-nix-mode-test ("issue-74.nix" :indent 'smie-indent-line)))
+
+(ert-deftest nix-mode-test-indent-issue-77-smie ()
+  "Proper indentation of strings in a multi-line string."
+  (with-nix-mode-test ("issue-77.nix" :indent 'smie-indent-line)))
+
+(ert-deftest nix-mode-test-indent-issue-78-smie ()
+  "Proper indentation of strings in a multi-line string."
+  (with-nix-mode-test ("issue-78.nix" :indent 'smie-indent-line)))
+
 (provide 'nix-mode-tests)
 ;;; nix-mode-tests.el ends here
