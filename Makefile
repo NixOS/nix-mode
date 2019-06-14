@@ -13,7 +13,7 @@ PREFIX  = /usr
 
 all: $(ELCS) $(DOCS)
 
-test:
+check:
 	emacs   -batch -L . \
 		-l tests/nix-mode-tests.el \
 		-l tests/nix-font-lock-tests.el \

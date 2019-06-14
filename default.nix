@@ -16,5 +16,4 @@ in stdenvNoCC.mkDerivation {
     echo Run make run to get vanilla emacs with nix-mode loaded.
   '';
   doCheck = true;
-  checkTarget = "test";
 }
