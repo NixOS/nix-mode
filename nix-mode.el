@@ -729,12 +729,10 @@ The hook `nix-mode-hook' is run when Nix mode is started.
               :backward-token 'nix-smie--backward-token)
   (setq-local smie-indent-basic 2)
   (setq-local indent-line-function 'smie-indent-line)
-  (ignore-errors
-    (setf (car (memq 'smie-indent-exps smie-indent-functions))
-          'nix-smie--indent-exps)
-    (setf (car (memq 'smie-indent-close smie-indent-functions))
-          'nix-smie--indent-close))
-
+  (fset (make-local-variable 'smie-indent-exps)
+        (symbol-function 'nix-smie--indent-exps))
+  (fset (make-local-variable 'smie-indent-close)
+        (symbol-function 'nix-smie--indent-close))
 
   ;; Indenting of comments
   (setq-local comment-start "# ")
