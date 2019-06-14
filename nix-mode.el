@@ -520,12 +520,11 @@ STRING-TYPE type of string based off of Emacs syntax table types"
 
 (defun nix-smie--forward-token ()
   (let ((sym (nix-smie--forward-token-1)))
-    (cond
-     ((equal sym ";")
-      ;; The important lexer for indentation's performance is the backward
-      ;; lexer, so for the forward lexer we delegate to the backward one.
-      (save-excursion (nix-smie--backward-token)))
-     (t sym))))
+    (if (member sym '(";" "?"))
+        ;; The important lexer for indentation's performance is the backward
+        ;; lexer, so for the forward lexer we delegate to the backward one.
+        (save-excursion (nix-smie--backward-token))
+      sym)))
 
 (defun nix-smie--backward-token-1 ()
   (forward-comment (- (point)))
