@@ -803,6 +803,7 @@ not to any other arguments."
   "Indent on a whole region. Enabled by default.
 START where to start in region.
 END where to end the region."
+  (interactive (list (region-beginning) (region-end)))
   (save-excursion
     (goto-char start)
     (while (< (point) end)
