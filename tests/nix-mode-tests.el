@@ -54,15 +54,15 @@ function to do the indentation tests."
        (nix-mode)
 
        ;; If we're doing an indentation test
-       (if ,indent
-           (progn
-             ;; Indent the buffer
-             (indent-region (point-min) (point-max))
+       (when ,indent
+         (let ((indent-line-function 'smie-indent-line))
+           ;; Indent the buffer
+           (indent-region (point-min) (point-max))
 
-             ;; Compare buffer to the stored buffer contents
-             (should (equal
-                      (buffer-substring-no-properties (point-min) (point-max))
-                      raw-file))))
+           ;; Compare buffer to the stored buffer contents
+           (should (equal
+                    (buffer-substring-no-properties (point-min) (point-max))
+                    raw-file))))
 
        ;; Go to beginning
        (goto-char (point-min))
@@ -84,45 +84,85 @@ function to do the indentation tests."
                 (buffer-substring-no-properties (point-min) (point-max))
                 raw-file))))
 
+(ert-deftest nix-mode-test-indent-list-contents-smie ()
+  "Proper indentation for items inside of a list."
+  (with-nix-mode-test ("list-contents.nix" :indent 'smie-indent-line)))
+
 (ert-deftest nix-mode-test-indent-list-contents ()
   "Proper indentation for items inside of a list."
-  (with-nix-mode-test ("list-contents.nix" :indent t)))
+  (with-nix-mode-test ("list-contents.nix" :indent 'nix-indent-line)))
+
+(ert-deftest nix-mode-test-indent-issue-60-1-smie ()
+  "Proper indentation of attrsets inside of lists inside of attrsets.
+
+Related issue: https://github.com/NixOS/nix-mode/issues/60"
+  (with-nix-mode-test ("issue-60.1.nix" :indent 'smie-indent-line)))
 
 (ert-deftest nix-mode-test-indent-issue-60-1 ()
   "Proper indentation of attrsets inside of lists inside of attrsets.
 
 Related issue: https://github.com/NixOS/nix-mode/issues/60"
-  (with-nix-mode-test ("issue-60.1.nix" :indent t)))
+  (with-nix-mode-test ("issue-60.1.nix" :indent 'nix-indent-line)))
+
+(ert-deftest nix-mode-test-indent-issue-60-2-smie ()
+  "Proper indentation of code inside of let blocks.
+
+Related issue: https://github.com/NixOS/nix-mode/issues/60"
+  (with-nix-mode-test ("issue-60.2.nix" :indent 'smie-indent-line)))
 
 (ert-deftest nix-mode-test-indent-issue-60-2 ()
   "Proper indentation of code inside of let blocks.
 
 Related issue: https://github.com/NixOS/nix-mode/issues/60"
-  (with-nix-mode-test ("issue-60.2.nix" :indent t)))
+  (with-nix-mode-test ("issue-60.2.nix" :indent 'nix-indent-line)))
 
-(ert-deftest nix-mode-test-indent-issue-60-3 ()
+(ert-deftest nix-mode-test-indent-issue-60-3-smie ()
   "Proper indentation of import and newline after equal.
 
 Related issue: https://github.com/NixOS/nix-mode/issues/60"
-  (with-nix-mode-test ("issue-60.3.nix" :indent t)))
+  (with-nix-mode-test ("issue-60.3.nix" :indent 'smie-indent-line)))
+
+;; nix-indent-line and smie-indent-line conflict, so we just use smie
+;; (ert-deftest nix-mode-test-indent-issue-60-3 ()
+;;   "Proper indentation of import and newline after equal.
+;; Related issue: https://github.com/NixOS/nix-mode/issues/60"
+;;   (with-nix-mode-test ("issue-60.3.nix" :indent 'nix-indent-line)))
+
+(ert-deftest nix-mode-test-indent-issue-69-1-smie ()
+  "Proper indentation of an empty attrset.
+
+Related issue: https://github.com/NixOS/nix-mode/issues/69"
+  (with-nix-mode-test ("issue-69.1.nix" :indent 'smie-indent-line)))
 
 (ert-deftest nix-mode-test-indent-issue-69-1 ()
   "Proper indentation of an empty attrset.
 
 Related issue: https://github.com/NixOS/nix-mode/issues/69"
-  (with-nix-mode-test ("issue-69.1.nix" :indent t)))
+  (with-nix-mode-test ("issue-69.1.nix" :indent 'nix-indent-line)))
+
+(ert-deftest nix-mode-test-indent-issue-69-2-smie ()
+  "Proper indentation of an empty list.
+
+Related issue: https://github.com/NixOS/nix-mode/issues/69"
+  (with-nix-mode-test ("issue-60.2.nix" :indent 'smie-indent-line)))
 
 (ert-deftest nix-mode-test-indent-issue-69-2 ()
   "Proper indentation of an empty list.
 
 Related issue: https://github.com/NixOS/nix-mode/issues/69"
-  (with-nix-mode-test ("issue-60.2.nix" :indent t)))
+  (with-nix-mode-test ("issue-60.2.nix" :indent 'nix-indent-line)))
+
+(ert-deftest nix-mode-test-indent-issue-72-smie ()
+  "Proper indentation of strings in a multi-line string.
+
+Related issue: https://github.com/NixOS/nix-mode/issues/72"
+  (with-nix-mode-test ("issue-72.nix" :indent 'smie-indent-line)))
 
 (ert-deftest nix-mode-test-indent-issue-72 ()
   "Proper indentation of strings in a multi-line string.
 
 Related issue: https://github.com/NixOS/nix-mode/issues/72"
-  (with-nix-mode-test ("issue-72.nix" :indent t)))
+  (with-nix-mode-test ("issue-72.nix" :indent 'nix-indent-line)))
 
 (provide 'nix-mode-tests)
 ;;; nix-mode-tests.el ends here
