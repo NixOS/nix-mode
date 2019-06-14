@@ -91,7 +91,13 @@ recommended configuration,
 
 You can also use the traditional require usage, but use-package
 provides many useful helpers for our purposes. In the next sections,
-some of the things provided will be explained
+some of the things provided will be explained. This snippet will work
+to set up just nix-mode without use-package:
+
+#+BEGIN_SRC emacs-lisp
+(require 'nix-mode)
+(add-to-list 'auto-mode-alist '("\\.nix\\'" . nix-mode))
+#+END_SRC
 
 ** Modes
 
@@ -115,12 +121,15 @@ typing,
 M-x customize-variable RET nix-indent-function RET
 #+END_SRC
 
-To set it to the experimental indentation, set this value to the
-function, nix-indent-line. Note that there are major bugs that
-prevents this from becoming the default. Certain kinds of code
-involving lots of hanging indents will be incorrect. But, we welcome
-attempts to improve this experience! Please submit pull requests at
-https://github.com/NixOS/nix-mode/pulls.
+There are three possible values for nix-mode. They are:
+
+- indent-relative
+- smie-indent-line (default)
+- nix-indent-line
+
+Starting in version 1.4.0, SMIE is the default and it works very well
+(kudos to @j-piecuch on GitHub). You can restore the old behavior by
+setting =nix-indent-function= to =indent-relative=.
 
 *** nix-drv-mode
 
@@ -255,3 +264,8 @@ It is available at [[https://github.com/shlevy/nix-buffer][shlevy/nix-buffer]].
 
 @travisbhartwell also has some package dealing with Nix. They are
 available at [[https://github.com/travisbhartwell/nix-emacs][travisbhartwell/nix-emacs]].
+** Contributing
+
+Please submit pull requests at https://github.com/NixOS/nix-mode/pulls
+and issues at https://github.com/NixOS/nix-mode/issues. All
+contributions are welcome!

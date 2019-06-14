@@ -4,11 +4,30 @@
 [![MELPA Stable](https://stable.melpa.org/packages/nix-mode-badge.svg)](https://stable.melpa.org/#/nix-mode)
 [![Build Status](https://travis-ci.com/NixOS/nix-mode.svg?branch=master)](https://travis-ci.com/NixOS/nix-mode)
 
-An emacs major mode for editing nix expressions.
+An emacs major mode for editing nix expressions. There is also a
+manual available at nix-mode.org.
 
 ## Submodes
 
 A quick list of what is provided.
+
+### nix-mode.el
+
+This is the main usage of nix-mode. This provides basic handling of
+.nix files. Syntax highlighting and indentation support using SMIE are
+provided. nix-mode can be used with the following snippet:
+
+~~~
+(require 'nix-mode)
+(add-to-list 'auto-mode-alist '("\\.nix\\'" . nix-mode))
+~~~
+
+or with use-package:
+
+~~~
+(use-package nix-mode
+  :mode "\\.nix\\'")
+~~~
 
 ### nix.el
 
