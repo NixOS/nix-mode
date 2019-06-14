@@ -28,7 +28,7 @@
   "Nix mode customizations"
   :group 'nix)
 
-(defcustom nix-indent-function 'indent-relative
+(defcustom nix-indent-function 'smie-indent-line
   "The function to use to indent.
 
 Valid functions for this are:
@@ -819,7 +819,7 @@ END where to end the region."
                           (nix-is-comment-p)))))
                  ;; Don't mess with strings.
                  (nix-is-string-p))
-            (smie-indent-line)))
+            (funcall nix-indent-function)))
       (forward-line 1))))
 
 ;;;###autoload
