@@ -24,7 +24,10 @@ install: $(ELCS) $(DOCS)
 	cp $(ELCS) $(DESTDIR)$(PREFIX)/share/emacs/site-lisp/nix-mode/
 
 	mkdir -p $(DESTDIR)$(PREFIX)/share/doc/nix-mode/
-	cp $(DOCS) $(DESTDIR)$(PREFIX)/share/doc/nix-mode/
+	cp nix-mode.html $(DESTDIR)$(PREFIX)/share/doc/nix-mode/
+
+	mkdir -p $(DESTDIR)$(PREFIX)/share/info
+	cp nix-mode.info $(DESTDIR)$(PREFIX)/share/info/
 
 clean:
 	rm -f $(ELCS) $(DOCS)
