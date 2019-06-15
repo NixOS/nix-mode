@@ -39,8 +39,9 @@
 (cl-defmacro with-nix-mode-test ((file &key indent) &rest body)
   "Set up environment for testing `nix-mode'.
 Execute BODY in a temporary buffer containing the contents of
-FILE, in `nix-mode'. All tests will use the `nix-indent-line'
-function to do the indentation tests."
+FILE, in `nix-mode'. INDENT should be the desired value of
+`nix-indent-function'. If it's non-nil, an indentation test
+will be run before executing BODY."
 
   `(with-temp-buffer
      ;; Read test data file
@@ -48,21 +49,21 @@ function to do the indentation tests."
 
      ;; Store the file as a local variable and set the right indentation function to use
      (let ((raw-file (buffer-substring-no-properties (point-min) (point-max)))
-           (nix-indent-function 'nix-indent-line)
+           (nix-indent-function
+            ,(or indent `',(default-value 'nix-indent-function)))
            (inhibit-message t))
        ;; Load up nix-mode
        (nix-mode)
 
        ;; If we're doing an indentation test
        (when ,indent
-         (let ((indent-line-function 'smie-indent-line))
-           ;; Indent the buffer
-           (indent-region (point-min) (point-max))
+         ;; Indent the buffer
+         (indent-region (point-min) (point-max))
 
-           ;; Compare buffer to the stored buffer contents
-           (should (equal
-                    (buffer-substring-no-properties (point-min) (point-max))
-                    raw-file))))
+         ;; Compare buffer to the stored buffer contents
+         (should (equal
+                  (buffer-substring-no-properties (point-min) (point-max))
+                  raw-file)))
 
        ;; Go to beginning
        (goto-char (point-min))
@@ -165,19 +166,19 @@ Related issue: https://github.com/NixOS/nix-mode/issues/72"
   (with-nix-mode-test ("issue-72.nix" :indent 'nix-indent-line)))
 
 (ert-deftest nix-mode-test-indent-hello-smie ()
-  "Proper indentation of strings in a multi-line string."
+  "Proper indentation of a simple derivation."
   (with-nix-mode-test ("hello.nix" :indent 'smie-indent-line)))
 
 (ert-deftest nix-mode-test-indent-hello ()
-  "Proper indentation of strings in a multi-line string."
+  "Proper indentation of a simple derivation."
   (with-nix-mode-test ("hello.nix" :indent 'nix-indent-line)))
 
 (ert-deftest nix-mode-test-indent-all-packages-smie ()
-  "Proper indentation of strings in a multi-line string."
+  "Proper indentation of a set of package definitions."
   (with-nix-mode-test ("all-packages.nix" :indent 'smie-indent-line)))
 
 (ert-deftest nix-mode-test-indent-issue-74-smie ()
-  "Proper indentation of strings in a multi-line string."
+  "Proper indentation of a set of package definitions."
   (with-nix-mode-test ("issue-74.nix" :indent 'smie-indent-line)))
 
 (ert-deftest nix-mode-test-indent-issue-77-smie ()
@@ -187,6 +188,14 @@ Related issue: https://github.com/NixOS/nix-mode/issues/72"
 (ert-deftest nix-mode-test-indent-issue-78-smie ()
   "Proper indentation of strings in a multi-line string."
   (with-nix-mode-test ("issue-78.nix" :indent 'smie-indent-line)))
+
+(ert-deftest nix-mode-test-indent-lambdas-smie ()
+  "Proper indentation of function bodies."
+  (with-nix-mode-test ("smie-lambdas.nix" :indent 'smie-indent-line)))
+
+(ert-deftest nix-mode-test-close-parens-smie ()
+  "Proper indentation of closing parentheses."
+  (with-nix-mode-test ("smie-close-parens.nix" :indent 'smie-indent-line)))
 
 (provide 'nix-mode-tests)
 ;;; nix-mode-tests.el ends here

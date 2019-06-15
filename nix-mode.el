@@ -442,15 +442,8 @@ STRING-TYPE type of string based off of Emacs syntax table types"
          `(column . ,(current-column))
        (nix-smie--indent-anchor)))
     (`(:after . ":")
-     ;; Skip over the argument.
-     (smie-backward-sexp " -bseqskip- ")
-     (cond
-      ((smie-rule-bolp)
-       `(column . ,(current-column)))
-      ((= (current-indentation) 0)
-       '(column . 0))
-      (t
-       (nix-smie--indent-anchor))))
+     (or (nix-smie--indent-args-line)
+         (nix-smie--indent-anchor)))
     (`(:after . ",")
      (smie-rule-parent tab-width))
     (`(:before . "in")
@@ -477,24 +470,42 @@ STRING-TYPE type of string based off of Emacs syntax table types"
 
 (defun nix-smie--anchor ()
   "Return the anchor's offset from the beginning of the current line."
-  (goto-char (+ (line-beginning-position) (current-indentation)))
-  (let ((eol (line-end-position))
-        (anchor (current-column))
-        tok)
-    (catch 'break
-      (while (and (setq tok (car (smie-indent-forward-token)))
-                  (<= (point) eol))
-        (when (equal "=" tok)
-          (backward-char)
-          (smie-backward-sexp " -bseqskip- ")
-          (setq anchor (current-column))
-          (throw 'break nil))))
-    anchor))
+  (save-excursion
+    (beginning-of-line)
+    (let ((eol (line-end-position))
+          anchor
+          tok)
+      (forward-comment (point-max))
+      (unless (or (eobp) (< eol (point)))
+        (setq anchor (current-column))
+        (catch 'break
+          (while (and (not (eobp))
+                      (progn
+                        (setq tok (car (smie-indent-forward-token)))
+                        (<= (point) eol)))
+            (when (equal "=" tok)
+              (backward-char)
+              (smie-backward-sexp " -bseqskip- ")
+              (setq anchor (current-column))
+              (throw 'break nil))))
+        anchor))))
 
 (defun nix-smie--indent-anchor (&optional indent)
   "Intended for use only in the rules function."
   (let ((indent (or indent tab-width)))
     `(column . ,(+ indent (nix-smie--anchor)))))
+
+(defun nix-smie--indent-args-line ()
+  "Indent the body of a lambda whose argument(s) are on a line of their own."
+  (save-excursion
+    ;; Assume that point is right before ':', skip it
+    (forward-char)
+    (let ((tok ":"))
+      (catch 'break
+        (while (equal tok ":")
+          (setq tok (nth 2 (smie-backward-sexp t)))
+          (when (smie-rule-bolp)
+            (throw 'break `(column . ,(current-column)))))))))
 
 (defconst nix-smie--path-chars "a-zA-Z0-9-+_.:/~")
 
@@ -554,11 +565,8 @@ STRING-TYPE type of string based off of Emacs syntax table types"
 
 (defun nix-smie--nonsep-semicolon-p ()
   "Whether the semicolon at point terminates a `with' or `assert'."
-  (let (tok)
-    (save-excursion
-      ;; Skip over identifiers, balanced parens etc. as far back as we can.
-      (while (null (setq tok (nth 2 (smie-backward-sexp " -bexpskip- "))))))
-    (member tok '("with" "assert"))))
+  (save-excursion
+    (member (nth 2 (smie-backward-sexp " -bexpskip- ")) '("with" "assert"))))
 
 (defun nix-smie--arg-?-p ()
   "Whether the question mark at point is part of an argument declaration."
@@ -568,6 +576,14 @@ STRING-TYPE type of string based off of Emacs syntax table types"
             (smie-backward-sexp)))
    '("{" ",")))
 
+(defun nix-smie--eol-p ()
+  "Whether there are no tokens after point on the current line."
+  (let ((eol (line-end-position)))
+    (save-excursion
+      (forward-comment (point-max))
+      (or (eobp)
+          (< eol (point))))))
+
 (defun nix-smie--indent-close ()
   "Align close paren with opening paren."
   (save-excursion
@@ -576,9 +592,13 @@ STRING-TYPE type of string based off of Emacs syntax table types"
       (condition-case nil
           (progn
             (backward-sexp 1)
-            ;; Align to the first token on the line containing
-            ;; the opening paren.
-            (current-indentation))
+            ;; If the opening paren is not the last token on its line,
+            ;; and it's either '[' or '{', align to the opening paren's
+            ;; position. Otherwise, align its line's anchor.
+            (if (and (memq (char-after) '(?\[ ?{))
+                     (not (save-excursion (forward-char) (nix-smie--eol-p))))
+                (current-column)
+             (nix-smie--anchor)))
         (scan-error nil)))))
 
 (defun nix-smie--indent-exps ()
