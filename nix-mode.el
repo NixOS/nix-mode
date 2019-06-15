@@ -442,15 +442,8 @@ STRING-TYPE type of string based off of Emacs syntax table types"
          `(column . ,(current-column))
        (nix-smie--indent-anchor)))
     (`(:after . ":")
-     ;; Skip over the argument.
-     (smie-backward-sexp " -bseqskip- ")
-     (cond
-      ((smie-rule-bolp)
-       `(column . ,(current-column)))
-      ((= (current-indentation) 0)
-       '(column . 0))
-      (t
-       (nix-smie--indent-anchor))))
+     (or (nix-smie--indent-args-line)
+         (nix-smie--indent-anchor)))
     (`(:after . ",")
      (smie-rule-parent tab-width))
     (`(:before . "in")
@@ -501,6 +494,18 @@ STRING-TYPE type of string based off of Emacs syntax table types"
   "Intended for use only in the rules function."
   (let ((indent (or indent tab-width)))
     `(column . ,(+ indent (nix-smie--anchor)))))
+
+(defun nix-smie--indent-args-line ()
+  "Indent the body of a lambda whose argument(s) are on a line of their own."
+  (save-excursion
+    ;; Assume that point is right before ':', skip it
+    (forward-char)
+    (let ((tok ":"))
+      (catch 'break
+        (while (equal tok ":")
+          (setq tok (nth 2 (smie-backward-sexp t)))
+          (when (smie-rule-bolp)
+            (throw 'break `(column . ,(current-column)))))))))
 
 (defconst nix-smie--path-chars "a-zA-Z0-9-+_.:/~")
 
