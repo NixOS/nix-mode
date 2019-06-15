@@ -938,7 +938,11 @@ The hook `nix-mode-hook' is run when Nix mode is started.
 	  (symbol-function 'nix-smie--indent-close)))
 
   ;; Automatic indentation [C-j]
-  (setq-local indent-line-function (lambda () (funcall nix-indent-function)))
+  (setq-local indent-line-function (lambda ()
+				     (if (and (not nix-mode-use-smie)
+					      (eq nix-indent-function 'smie-indent-line))
+					 (indent-relative)
+				       (funcall nix-indent-function))))
 
   ;; Indenting of comments
   (setq-local comment-start "# ")
