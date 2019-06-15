@@ -477,19 +477,25 @@ STRING-TYPE type of string based off of Emacs syntax table types"
 
 (defun nix-smie--anchor ()
   "Return the anchor's offset from the beginning of the current line."
-  (goto-char (+ (line-beginning-position) (current-indentation)))
-  (let ((eol (line-end-position))
-        (anchor (current-column))
-        tok)
-    (catch 'break
-      (while (and (setq tok (car (smie-indent-forward-token)))
-                  (<= (point) eol))
-        (when (equal "=" tok)
-          (backward-char)
-          (smie-backward-sexp " -bseqskip- ")
-          (setq anchor (current-column))
-          (throw 'break nil))))
-    anchor))
+  (save-excursion
+    (beginning-of-line)
+    (let ((eol (line-end-position))
+          anchor
+          tok)
+      (forward-comment (point-max))
+      (unless (or (eobp) (< eol (point)))
+        (setq anchor (current-column))
+        (catch 'break
+          (while (and (not (eobp))
+                      (progn
+                        (setq tok (car (smie-indent-forward-token)))
+                        (<= (point) eol)))
+            (when (equal "=" tok)
+              (backward-char)
+              (smie-backward-sexp " -bseqskip- ")
+              (setq anchor (current-column))
+              (throw 'break nil))))
+        anchor))))
 
 (defun nix-smie--indent-anchor (&optional indent)
   "Intended for use only in the rules function."
