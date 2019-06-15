@@ -565,11 +565,8 @@ STRING-TYPE type of string based off of Emacs syntax table types"
 
 (defun nix-smie--nonsep-semicolon-p ()
   "Whether the semicolon at point terminates a `with' or `assert'."
-  (let (tok)
-    (save-excursion
-      ;; Skip over identifiers, balanced parens etc. as far back as we can.
-      (while (null (setq tok (nth 2 (smie-backward-sexp " -bexpskip- "))))))
-    (member tok '("with" "assert"))))
+  (save-excursion
+    (member (nth 2 (smie-backward-sexp " -bexpskip- ")) '("with" "assert"))))
 
 (defun nix-smie--arg-?-p ()
   "Whether the question mark at point is part of an argument declaration."
