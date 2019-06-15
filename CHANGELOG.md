@@ -8,6 +8,8 @@
   bit to load. You can smie by setting nix-mode-use-smie to nil. It is
   still enabled by default.
 
+* Tweaks to how smie works.
+
 ## 1.4.0
 
 ### Changes
