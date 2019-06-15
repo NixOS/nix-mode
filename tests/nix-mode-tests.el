@@ -166,19 +166,19 @@ Related issue: https://github.com/NixOS/nix-mode/issues/72"
   (with-nix-mode-test ("issue-72.nix" :indent 'nix-indent-line)))
 
 (ert-deftest nix-mode-test-indent-hello-smie ()
-  "Proper indentation of strings in a multi-line string."
+  "Proper indentation of a simple derivation."
   (with-nix-mode-test ("hello.nix" :indent 'smie-indent-line)))
 
 (ert-deftest nix-mode-test-indent-hello ()
-  "Proper indentation of strings in a multi-line string."
+  "Proper indentation of a simple derivation."
   (with-nix-mode-test ("hello.nix" :indent 'nix-indent-line)))
 
 (ert-deftest nix-mode-test-indent-all-packages-smie ()
-  "Proper indentation of strings in a multi-line string."
+  "Proper indentation of a set of package definitions."
   (with-nix-mode-test ("all-packages.nix" :indent 'smie-indent-line)))
 
 (ert-deftest nix-mode-test-indent-issue-74-smie ()
-  "Proper indentation of strings in a multi-line string."
+  "Proper indentation of a set of package definitions."
   (with-nix-mode-test ("issue-74.nix" :indent 'smie-indent-line)))
 
 (ert-deftest nix-mode-test-indent-issue-77-smie ()
