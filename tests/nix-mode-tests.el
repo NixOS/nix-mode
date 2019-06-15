@@ -39,8 +39,9 @@
 (cl-defmacro with-nix-mode-test ((file &key indent) &rest body)
   "Set up environment for testing `nix-mode'.
 Execute BODY in a temporary buffer containing the contents of
-FILE, in `nix-mode'. All tests will use the `nix-indent-line'
-function to do the indentation tests."
+FILE, in `nix-mode'. INDENT should be the desired value of
+`nix-indent-function'. If it's non-nil, an indentation test
+will be run before executing BODY."
 
   `(with-temp-buffer
      ;; Read test data file
@@ -48,21 +49,21 @@ function to do the indentation tests."
 
      ;; Store the file as a local variable and set the right indentation function to use
      (let ((raw-file (buffer-substring-no-properties (point-min) (point-max)))
-           (nix-indent-function 'nix-indent-line)
+           (nix-indent-function
+            ,(or indent `',(default-value 'nix-indent-function)))
            (inhibit-message t))
        ;; Load up nix-mode
        (nix-mode)
 
        ;; If we're doing an indentation test
        (when ,indent
-         (let ((indent-line-function 'smie-indent-line))
-           ;; Indent the buffer
-           (indent-region (point-min) (point-max))
+         ;; Indent the buffer
+         (indent-region (point-min) (point-max))
 
-           ;; Compare buffer to the stored buffer contents
-           (should (equal
-                    (buffer-substring-no-properties (point-min) (point-max))
-                    raw-file))))
+         ;; Compare buffer to the stored buffer contents
+         (should (equal
+                  (buffer-substring-no-properties (point-min) (point-max))
+                  raw-file)))
 
        ;; Go to beginning
        (goto-char (point-min))
