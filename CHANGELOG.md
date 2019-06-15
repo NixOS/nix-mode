@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.4.1
+
+### Changes
+
+* Made smie-setup optional. Some really large files can take a little
+  bit to load. You can smie by setting nix-mode-use-smie to nil. It is
+  still enabled by default.
+
 ## 1.4.0
 
 ### Changes

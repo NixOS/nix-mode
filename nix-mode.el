@@ -34,10 +34,17 @@
 Valid functions for this are:
 
 - ‘indent-relative’
-- nix-indent-line (buggy)
-- smie-indent-line"
+- ‘nix-indent-line' (buggy)
+- `smie-indent-line' (‘nix-mode-use-smie’ must be enabled)"
   :group 'nix-mode
   :type 'function)
+
+(defcustom nix-mode-use-smie t
+  "Whether to use SMIE when editing Nix files.
+This is enabled by default, but can take a while to load with
+very large Nix files (all-packages.nix)."
+  :group 'nix-mode
+  :type 'boolean)
 
 (defgroup nix-faces nil
   "Nix faces."
@@ -919,16 +926,19 @@ The hook `nix-mode-hook' is run when Nix mode is started.
   ;; Look at text properties when parsing
   (setq-local parse-sexp-lookup-properties t)
 
+  ;; Setup SMIE integration
+  (when nix-mode-use-smie
+    (smie-setup nix-smie-grammar 'nix-smie-rules
+		:forward-token 'nix-smie--forward-token
+		:backward-token 'nix-smie--backward-token)
+    (setq-local smie-indent-basic 2)
+    (fset (make-local-variable 'smie-indent-exps)
+	  (symbol-function 'nix-smie--indent-exps))
+    (fset (make-local-variable 'smie-indent-close)
+	  (symbol-function 'nix-smie--indent-close)))
+
   ;; Automatic indentation [C-j]
-  (smie-setup nix-smie-grammar 'nix-smie-rules
-              :forward-token 'nix-smie--forward-token
-              :backward-token 'nix-smie--backward-token)
-  (setq-local smie-indent-basic 2)
-  (setq-local indent-line-function nix-indent-function)
-  (fset (make-local-variable 'smie-indent-exps)
-        (symbol-function 'nix-smie--indent-exps))
-  (fset (make-local-variable 'smie-indent-close)
-        (symbol-function 'nix-smie--indent-close))
+  (setq-local indent-line-function (lambda () (funcall nix-indent-function)))
 
   ;; Indenting of comments
   (setq-local comment-start "# ")
