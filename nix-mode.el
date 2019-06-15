@@ -574,6 +574,14 @@ STRING-TYPE type of string based off of Emacs syntax table types"
             (smie-backward-sexp)))
    '("{" ",")))
 
+(defun nix-smie--eol-p ()
+  "Whether there are no tokens after point on the current line."
+  (let ((eol (line-end-position)))
+    (save-excursion
+      (forward-comment (point-max))
+      (or (eobp)
+          (< eol (point))))))
+
 (defun nix-smie--indent-close ()
   "Align close paren with opening paren."
   (save-excursion
@@ -582,9 +590,13 @@ STRING-TYPE type of string based off of Emacs syntax table types"
       (condition-case nil
           (progn
             (backward-sexp 1)
-            ;; Align to the first token on the line containing
-            ;; the opening paren.
-            (current-indentation))
+            ;; If the opening paren is not the last token on its line,
+            ;; and it's either '[' or '{', align to the opening paren's
+            ;; position. Otherwise, align its line's anchor.
+            (if (and (memq (char-after) '(?\[ ?{))
+                     (not (save-excursion (forward-char) (nix-smie--eol-p))))
+                (current-column)
+             (nix-smie--anchor)))
         (scan-error nil)))))
 
 (defun nix-smie--indent-exps ()
