@@ -197,5 +197,9 @@ Related issue: https://github.com/NixOS/nix-mode/issues/72"
   "Proper indentation of closing parentheses."
   (with-nix-mode-test ("smie-close-parens.nix" :indent 'smie-indent-line)))
 
+(ert-deftest nix-mode-test-let-smie ()
+  "Proper indentation of let expressions."
+  (with-nix-mode-test ("smie-let.nix" :indent 'smie-indent-line)))
+
 (provide 'nix-mode-tests)
 ;;; nix-mode-tests.el ends here
