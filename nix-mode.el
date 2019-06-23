@@ -433,15 +433,21 @@ STRING-TYPE type of string based off of Emacs syntax table types"
     (`(:after . ,(guard (string-match-p nix-smie-indent-tokens-re
                                         token)))
      (nix-smie--indent-anchor))
-    (`(:after . "in")
-     (cond
-      ((bolp) '(column . 0))
-      ((<= (line-beginning-position)
-           (save-excursion
-             (forward-word)
-             (smie-backward-sexp t)
-             (point)))
-       (smie-rule-parent))))
+    (`(,_ . "in")
+     (let ((bol (line-beginning-position)))
+       (forward-word)
+       ;; Go back to the corresponding "let".
+       (smie-backward-sexp t)
+       (pcase kind
+         (:before
+          (if (smie-rule-hanging-p)
+              (nix-smie--indent-anchor 0)
+            `(column . ,(current-column))))
+         (:after
+          (cond
+           ((bolp) '(column . 0))
+           ((<= bol (point))
+            `(column . ,(current-column))))))))
     (`(:after . "nonsep-;")
      (forward-char)
      (backward-sexp)
@@ -453,10 +459,6 @@ STRING-TYPE type of string based off of Emacs syntax table types"
          (nix-smie--indent-anchor)))
     (`(:after . ",")
      (smie-rule-parent tab-width))
-    (`(:before . "in")
-     (forward-word)
-     (smie-backward-sexp t)
-     (nix-smie--indent-anchor 0))
     (`(:before . ",")
      ;; The parent is either the enclosing "{" or some previous ",".
      ;; In both cases this is what we want to align to.
