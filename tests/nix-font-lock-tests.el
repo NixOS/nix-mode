@@ -40,7 +40,7 @@ after a test as this aids interactive debugging."
 (defun check-properties (lines-or-contents props &optional mode)
   "Check if syntax properties and font-lock properties as set properly.
 LINES is a list of strings that will be inserted to a new
-buffer. Then PROPS is a list of tripples of (string syntax
+buffer. Then PROPS is a list of triples of (string syntax
 face). String is searched for in the buffer and then is checked
 if all of its characters have syntax and face. See
 `check-syntax-and-face-match-range`."
@@ -64,7 +64,6 @@ if all of its characters have syntax and face. See
                               (search-forward string))
                             (check-syntax-and-face-match-range (match-beginning 0) (match-end 0) syntax face)))))
 
-
 (ert-deftest nix-equals-1 ()
   (check-properties
    '("pattern = 3")
@@ -74,6 +73,13 @@ if all of its characters have syntax and face. See
   (check-properties
    '("pattern == 3")
    '(("pattern" t nil))))
+
+(ert-deftest nix-issue-84 ()
+  (check-properties
+   '("{ with-a ? {let-in=1; } , ... }:with with-a; { foo = \"bar\"; }")
+   '(("let-in" t nix-attribute-face)
+     ("with" t nix-keyword-face)
+     ("foo" t nix-attribute-face))))
 
 ;; Local Variables:
 ;; flycheck-disabled-checkers: (emacs-lisp-checkdoc)

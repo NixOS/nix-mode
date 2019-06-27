@@ -128,10 +128,19 @@ very large Nix files (all-packages.nix)."
 
 (defconst nix-re-comments "#\\|/*\\|*/")
 
+(defun nix-re-keywords (keywords)
+  "Produce a regexp matching some keywords of Nix.
+KEYWORDS a list of strings to match as Nix keywords."
+  (concat
+   "\\(?:[[:space:];:{}()]\\|^\\)"
+   (regexp-opt keywords t)
+   "\\(?:[[:space:];:{}()]\\|$\\)"
+   ))
+
 (defconst nix-font-lock-keywords
-  `((,(regexp-opt nix-keywords 'symbols) 0 'nix-keyword-face)
-    (,(regexp-opt nix-warning-keywords 'symbols) 0 'nix-keyword-warning-face)
-    (,(regexp-opt nix-builtins 'symbols) 0 'nix-builtin-face)
+  `((,(nix-re-keywords nix-keywords) 1 'nix-keyword-face)
+    (,(nix-re-keywords nix-warning-keywords) 1 'nix-keyword-warning-face)
+    (,(nix-re-keywords nix-builtins) 1 'nix-builtin-face)
     (,nix-re-url 0 'nix-constant-face)
     (,nix-re-file-path 0 'nix-constant-face)
     (,nix-re-variable-assign 1 'nix-attribute-face)
