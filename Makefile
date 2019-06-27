@@ -6,15 +6,16 @@ ELS  =  nix.el nix-company.el nix-drv-mode.el nix-format.el \
 	nix-shell.el nix-store.el
 ELCS = $(ELS:.el=.elc)
 
+TESTS = tests/nix-mode-tests.el tests/nix-font-lock-tests.el
+
 DESTDIR =
 PREFIX  = /usr
 
 all: $(ELCS) nix-mode.info nix-mode.html AUTHORS.md
 
-check:
+check: $(TESTS) $(ELCS)
 	emacs   -batch -L . \
-		-l tests/nix-mode-tests.el \
-		-l tests/nix-font-lock-tests.el \
+		$(foreach test,$(TESTS),-l $(test)) \
 		-f ert-run-tests-batch-and-exit
 
 install: $(ELCS) nix-mode.info nix-mode.html AUTHORS.md
