@@ -76,7 +76,7 @@ if all of its characters have syntax and face. See
 
 (ert-deftest nix-issue-84 ()
   (check-properties
-   '("{ with-a ? { let-in = 1; } , ... }: with with-a; { foo = \"bar\"; }")
+   '("{ with-a ? {let-in=1; } , ... }:with with-a; { foo = \"bar\"; }")
    '(("let-in" t nix-attribute-face)
      ("with" t nix-keyword-face)
      ("foo" t nix-attribute-face))))

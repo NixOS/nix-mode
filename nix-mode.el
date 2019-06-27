@@ -132,9 +132,9 @@ very large Nix files (all-packages.nix)."
   "Produce a regexp matching some keywords of Nix.
 KEYWORDS a list of strings to match as Nix keywords."
   (concat
-   "\\(?:[[:space:]]\\|^\\)"
+   "\\(?:[[:space:];:{}()]\\|^\\)"
    (regexp-opt keywords t)
-   "\\(?:[[:space:]]\\|$\\)"
+   "\\(?:[[:space:];:{}()]\\|$\\)"
    ))
 
 (defconst nix-font-lock-keywords
