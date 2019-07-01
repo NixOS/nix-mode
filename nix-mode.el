@@ -527,21 +527,48 @@ STRING-TYPE type of string based off of Emacs syntax table types"
 
 (defconst nix-smie--path-chars "a-zA-Z0-9-+_.:/~")
 
-(defun nix-smie--skip-path (how)
+(defun nix-smie--skip-angle-path-forward ()
+  "Skip forward a path enclosed in angle brackets, e.g <nixpkgs>"
+  (let ((start (point)))
+    (when (eq (char-after) ?<)
+      (forward-char)
+      (if (and (nix-smie--skip-path 'forward t)
+               (eq (char-after) ?>))
+          (progn
+            (forward-char)
+            (buffer-substring-no-properties start (point)))
+        (ignore (goto-char start))))))
+
+(defun nix-smie--skip-angle-path-backward ()
+    "Skip backward a path enclosed in angle brackets, e.g <nixpkgs>"
+  (let ((start (point)))
+    (when (eq (char-before) ?>)
+      (backward-char)
+      (if (and (nix-smie--skip-path 'backward t)
+               (eq (char-before) ?<))
+          (progn
+            (backward-char)
+            (buffer-substring-no-properties start (point)))
+        (ignore (goto-char start))))))
+
+(defun nix-smie--skip-path (how &optional no-sep-check)
   "Skip path related characters."
   (let ((start (point)))
     (pcase-exhaustive how
       ('forward (skip-chars-forward nix-smie--path-chars))
       ('backward (skip-chars-backward nix-smie--path-chars)))
     (let ((sub (buffer-substring-no-properties start (point))))
-      (if (string-match-p "/" sub)
+      (if (or (and no-sep-check
+                   (< 0 (length sub)))
+              (string-match-p "/" sub))
           sub
         (ignore (goto-char start))))))
 
 (defun nix-smie--forward-token-1 ()
   "Move forward one token."
   (forward-comment (point-max))
-  (or (nix-smie--skip-path 'forward)
+  (or (nix-smie--skip-angle-path-forward)
+      (nix-smie--skip-path 'forward)
       (buffer-substring-no-properties
        (point)
        (progn
@@ -562,7 +589,8 @@ STRING-TYPE type of string based off of Emacs syntax table types"
 (defun nix-smie--backward-token-1 ()
   "Move backward one token."
   (forward-comment (- (point)))
-  (or (nix-smie--skip-path 'backward)
+  (or (nix-smie--skip-angle-path-backward)
+      (nix-smie--skip-path 'backward)
       (buffer-substring-no-properties
        (point)
        (progn
