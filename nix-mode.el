@@ -530,10 +530,9 @@ STRING-TYPE type of string based off of Emacs syntax table types"
 (defun nix-smie--skip-path (how)
   "Skip path related characters."
   (let ((start (point)))
-    (pcase how
+    (pcase-exhaustive how
       ('forward (skip-chars-forward nix-smie--path-chars))
-      ('backward (skip-chars-backward nix-smie--path-chars))
-      (_ (error "expected 'forward or 'backward")))
+      ('backward (skip-chars-backward nix-smie--path-chars)))
     (let ((sub (buffer-substring-no-properties start (point))))
       (if (string-match-p "/" sub)
           sub
