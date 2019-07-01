@@ -27,6 +27,44 @@
             (nix-mode)
             (eq (nix--get-string-type (nix--get-parse-state (point))) nil))))
 
+(ert-deftest nix-smie-angle-path-backward-detection ()
+  (should (with-temp-buffer
+            (nix-mode)
+            (insert "<nixpkgs/nixos>")
+            (nix-smie--skip-angle-path-backward)
+            (bobp))))
+
+(ert-deftest nix-smie-angle-path-backward-invalid ()
+  (should (with-temp-buffer
+            (nix-mode)
+            (insert "<nixpkgs/nixos>foo/bar>")
+            (null (nix-smie--skip-angle-path-backward)))))
+
+(ert-deftest nix-smie-angle-path-backward-early ()
+  (should (with-temp-buffer
+            (nix-mode)
+            (insert "<nixpkgs/nixos<foo/bar>")
+            (equal "<foo/bar>" (nix-smie--skip-angle-path-backward)))))
+
+(ert-deftest nix-smie-angle-path-forward-detection ()
+  (should (with-temp-buffer
+            (nix-mode)
+            (save-excursion (insert "<nixpkgs/nixos>"))
+            (nix-smie--forward-token)
+            (eobp))))
+
+(ert-deftest nix-smie-angle-path-forward-invalid ()
+  (should (with-temp-buffer
+            (nix-mode)
+            (save-excursion (insert "<nixpkgs/nixos<foo/bar>"))
+            (null (nix-smie--skip-angle-path-forward)))))
+
+(ert-deftest nix-smie-angle-path-forward-early ()
+  (should (with-temp-buffer
+            (nix-mode)
+            (save-excursion (insert "<foo/bar>nixpkgs/nixos>"))
+            (equal "<foo/bar>" (nix-smie--skip-angle-path-forward)))))
+
 ;;; Indentation tests
 
 (defvar nix-mode-test-dir (expand-file-name "testcases"
