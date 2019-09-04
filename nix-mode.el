@@ -162,7 +162,7 @@ KEYWORDS a list of strings to match as Nix keywords."
     (modify-syntax-entry ?\n "> b" table)
     (modify-syntax-entry ?_ "_" table)
     (modify-syntax-entry ?. "'" table)
-    (modify-syntax-entry ?- "'" table)
+    (modify-syntax-entry ?- "_" table)
     (modify-syntax-entry ?' "'" table)
     (modify-syntax-entry ?= "." table)
     (modify-syntax-entry ?< "." table)
