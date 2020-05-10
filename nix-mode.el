@@ -418,7 +418,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
        (right " -bseqskip- ")
        (left " -fseqskip- "))))))
 
-(defconst nix-smie--symbol-chars ":->|&=!</-+*?,;!")
+(defconst nix-smie--symbol-chars "[:->|&=!</-+*?,;!]")
 
 (defconst nix-smie--infix-symbols-re
   (regexp-opt '(":" "->" "||" "&&" "==" "!=" "<" "<=" ">" ">="
@@ -573,8 +573,8 @@ STRING-TYPE type of string based off of Emacs syntax table types"
        (point)
        (progn
          (or (/= 0 (skip-syntax-forward "'w_"))
-             (/= 0 (skip-chars-forward nix-smie--symbol-chars))
-             (skip-syntax-forward ".'"))
+             (when (looking-at nix-smie--symbol-chars) (forward-char) t)
+             (skip-syntax-forward "'"))
          (point)))))
 
 (defun nix-smie--forward-token ()
@@ -595,8 +595,8 @@ STRING-TYPE type of string based off of Emacs syntax table types"
        (point)
        (progn
          (or (/= 0 (skip-syntax-backward "'w_"))
-             (/= 0 (skip-chars-backward nix-smie--symbol-chars))
-             (skip-syntax-backward ".'"))
+             (when (looking-back nix-smie--symbol-chars) (backward-char) t)
+             (skip-syntax-backward "'"))
          (point)))))
 
 (defun nix-smie--backward-token ()
