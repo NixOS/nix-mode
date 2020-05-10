@@ -56,7 +56,7 @@ run:
 
 %.texi: %.org
 	emacs   --batch \
-		-l ox-extra -l org-man -l ox-texinfo $< \
+		-l ox-extra -l ox-texinfo $< \
 		-f org-texinfo-export-to-texinfo
 
 %.info: %.texi
