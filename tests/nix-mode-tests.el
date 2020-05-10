@@ -227,6 +227,12 @@ Related issue: https://github.com/NixOS/nix-mode/issues/72"
   "Proper indentation of strings in a multi-line string."
   (with-nix-mode-test ("issue-78.nix" :indent 'smie-indent-line)))
 
+(ert-deftest nix-mode-test-indent-issue-94 ()
+  "Proper indentation of attrsets inside of lists inside of attrsets.
+
+Related issue: https://github.com/NixOS/nix-mode/issues/94"
+  (with-nix-mode-test ("issue-60.1.nix" :indent 'smie-indent-line)))
+
 (ert-deftest nix-mode-test-indent-lambdas-smie ()
   "Proper indentation of function bodies."
   (with-nix-mode-test ("smie-lambdas.nix" :indent 'smie-indent-line)))
