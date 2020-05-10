@@ -418,11 +418,12 @@ STRING-TYPE type of string based off of Emacs syntax table types"
        (right " -bseqskip- ")
        (left " -fseqskip- "))))))
 
-(defconst nix-smie--symbol-chars ":->|&=!</-+*?,;!")
+(defconst nix-smie--2char-symbols
+  '("->" "||" "&&" "==" "!=" "<=" ">=" "++" "//"))
 
 (defconst nix-smie--infix-symbols-re
-  (regexp-opt '(":" "->" "||" "&&" "==" "!=" "<" "<=" ">" ">="
-                "//" "-" "+" "*" "/" "++" "?")))
+  (regexp-opt (append '(":" "<" ">" "-" "+" "*" "/" "?")
+                      nix-smie--2char-symbols)))
 
 (defconst nix-smie-indent-tokens-re
   (regexp-opt '("{" "(" "[" "=" "let" "if" "then" "else")))
@@ -564,6 +565,22 @@ STRING-TYPE type of string based off of Emacs syntax table types"
           sub
         (ignore (goto-char start))))))
 
+;; Returns non-nil if it successfully skipped a symbol.
+(defun nix-smie--skip-symbol (how)
+  (let* ((start (point))
+         (nskip (pcase-exhaustive how
+                  ('backward (skip-syntax-backward "._"))
+                  ('forward  (skip-syntax-forward "._"))))
+         (abs-skip (abs nskip)))
+    (or (= 1 abs-skip)
+        (and (= 2 abs-skip)
+             (member (buffer-substring-no-properties (point) start)
+                     nix-smie--2char-symbols))
+        (if (< 0 abs-skip)
+            (goto-char (+ start (signum nskip)))
+          (goto-char start)
+          nil))))
+
 (defun nix-smie--forward-token-1 ()
   "Move forward one token."
   (forward-comment (point-max))
@@ -573,7 +590,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
        (point)
        (progn
          (or (/= 0 (skip-syntax-forward "'w_"))
-             (/= 0 (skip-chars-forward nix-smie--symbol-chars))
+             (nix-smie--skip-symbol 'forward)
              (skip-syntax-forward ".'"))
          (point)))))
 
@@ -595,7 +612,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
        (point)
        (progn
          (or (/= 0 (skip-syntax-backward "'w_"))
-             (/= 0 (skip-chars-backward nix-smie--symbol-chars))
+             (nix-smie--skip-symbol 'backward)
              (skip-syntax-backward ".'"))
          (point)))))
 
