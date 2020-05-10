@@ -970,10 +970,15 @@ The hook `nix-mode-hook' is run when Nix mode is started.
 		:forward-token 'nix-smie--forward-token
 		:backward-token 'nix-smie--backward-token)
     (setq-local smie-indent-basic 2)
-    (fset (make-local-variable 'smie-indent-exps)
-	  (symbol-function 'nix-smie--indent-exps))
-    (fset (make-local-variable 'smie-indent-close)
-	  (symbol-function 'nix-smie--indent-close)))
+
+    (let ((nix-smie-indent-functions
+           ;; Replace the smie-indent-* equivalents with nix-mode's.
+           (mapcar (lambda (fun) (pcase fun
+                                   ('smie-indent-exps  'nix-smie--indent-exps)
+                                   ('smie-indent-close 'nix-smie--indent-close)
+                                   (_ fun)))
+                   smie-indent-functions)))
+      (setq-local smie-indent-functions nix-smie-indent-functions)))
 
   ;; Automatic indentation [C-j]
   (setq-local indent-line-function (lambda ()
