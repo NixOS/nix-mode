@@ -590,8 +590,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
        (point)
        (progn
          (or (/= 0 (skip-syntax-forward "'w_"))
-             (nix-smie--skip-symbol 'forward)
-             (skip-syntax-forward ".'"))
+             (nix-smie--skip-symbol 'forward))
          (point)))))
 
 (defun nix-smie--forward-token ()
@@ -612,8 +611,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
        (point)
        (progn
          (or (/= 0 (skip-syntax-backward "'w_"))
-             (nix-smie--skip-symbol 'backward)
-             (skip-syntax-backward ".'"))
+             (nix-smie--skip-symbol 'backward))
          (point)))))
 
 (defun nix-smie--backward-token ()
