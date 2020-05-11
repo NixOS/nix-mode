@@ -231,7 +231,7 @@ Related issue: https://github.com/NixOS/nix-mode/issues/72"
   "Proper indentation of attrsets inside of lists inside of attrsets.
 
 Related issue: https://github.com/NixOS/nix-mode/issues/94"
-  (with-nix-mode-test ("issue-60.1.nix" :indent 'smie-indent-line)))
+  (with-nix-mode-test ("issue-94.nix" :indent 'smie-indent-line)))
 
 (ert-deftest nix-mode-test-indent-lambdas-smie ()
   "Proper indentation of function bodies."
