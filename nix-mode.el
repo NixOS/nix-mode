@@ -577,7 +577,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
              (member (buffer-substring-no-properties (point) start)
                      nix-smie--2char-symbols))
         (if (< 0 abs-skip)
-            (goto-char (+ start (signum nskip)))
+            (goto-char (+ start (if (< 0 nskip) 1 -1)))
           (goto-char start)
           nil))))
 
