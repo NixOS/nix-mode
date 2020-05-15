@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.4.2
+
+### Changes
+
+* Fixed build scripts to work with newer org-mode.
+* Invoke smie indent function locally, instead of globally.
+* Indent correctly when encountering preceding angle bracket paths.
+* Require Emacs 25.
+* Add json-mode dependency.
+
 ## 1.4.1
 
 ### Changes
