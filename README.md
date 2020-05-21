@@ -72,6 +72,13 @@ open this with:
 
 M-x nix-repl<RET>
 
+### nix-prettify-mode.el
+
+When nix-prettify-mode is enabled, hash-parts of the Nix store file names are
+prettified, i.e. displayed as `nix-prettify-char' character (`…` by default.).
+
+This is based on a similar mode for Guix: [[https://emacs-guix.gitlab.io/website/manual/0.4/html_node/Prettify-Mode.html][Prettify Mode (Emacs-Guix Reference Manual)]]
+
 ## Origins
 
 This repository is based off of the nix-mode.el file originally located in
