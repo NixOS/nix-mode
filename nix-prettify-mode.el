@@ -15,8 +15,8 @@
 
 ;; This package provides minor-mode for prettifying Nix store file
 ;; names — i.e., after enabling `nix-prettify-mode',
-;; '/gnu/store/72f54nfp6g1hz873w8z3gfcah0h4nl9p-foo-0.1' names will be
-;; replaced with '/gnu/store/…-foo-0.1' in the current buffer.  There is
+;; '/nix/store/72f54nfp6g1hz873w8z3gfcah0h4nl9p-foo-0.1' names will be
+;; replaced with '/nix/store/…-foo-0.1' in the current buffer.  There is
 ;; also `global-nix-prettify-mode' for global prettifying.
 
 ;; To install, add the following to your Emacs init file:
@@ -71,10 +71,9 @@ disabling `nix-prettify-mode' a little faster."
 (defcustom nix-prettify-regexp
   ;; The following file names / URLs should be abbreviated:
 
-  ;; /gnu/store/…-foo-0.1
   ;; /nix/store/…-foo-0.1
-  ;; http://hydra.gnu.org/nar/…-foo-0.1
-  ;; http://hydra.gnu.org/log/…-foo-0.1
+  ;; http://hydra.nixos.org/nar/…-foo-0.1
+  ;; http://hydra.nixos.org/log/…-foo-0.1
 
   (rx "/" (or "store" "nar" "log") "/"
       ;; Hash-parts do not include "e", "o", "u" and "t".  See base32Chars
@@ -91,8 +90,8 @@ Example of a \"deeper\" prettifying:
         nix-prettify-regexp-group 0)
 
 This will transform
-'/gnu/store/72f54nfp6g1hz873w8z3gfcah0h4nl9p-foo-0.1' into
-'/gnu/…-foo-0.1'"
+'/nix/store/72f54nfp6g1hz873w8z3gfcah0h4nl9p-foo-0.1' into
+'/nix/…-foo-0.1'"
   :type 'regexp
   :group 'nix-prettify)
 
