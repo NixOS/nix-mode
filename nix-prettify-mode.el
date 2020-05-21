@@ -53,21 +53,6 @@
   :type 'character
   :group 'nix-prettify)
 
-(defcustom nix-prettify-decompose-force nil
-  "If non-nil, remove any composition.
-
-By default, after disabling `nix-prettify-mode',
-compositions (prettifying names with `nix-prettify-char') are
-removed only from strings matching `nix-prettify-regexp', so
-that compositions created by other modes are left untouched.
-
-Set this variable to non-nil, if you want to remove any
-composition unconditionally (like variable `prettify-symbols-mode' does).
-Most likely it will do no harm and will make the process of
-disabling `nix-prettify-mode' a little faster."
-  :type 'boolean
-  :group 'nix-prettify)
-
 (defcustom nix-prettify-regexp
   ;; The following file names / URLs should be abbreviated:
 
@@ -131,15 +116,9 @@ enabling/disabling `nix-prettify-mode'.  If nil, do nothing.")
   "Remove file names compositions from the current buffer."
   (with-silent-modifications
     (let ((inhibit-read-only t))
-      (if nix-prettify-decompose-force
-          (remove-text-properties (point-min)
-                                  (point-max)
-                                  '(composition nil))
-        (nix-while-search nix-prettify-regexp
-          (remove-text-properties
-           (match-beginning nix-prettify-regexp-group)
-           (match-end       nix-prettify-regexp-group)
-           '(composition nil)))))))
+      (remove-text-properties (point-min)
+                              (point-max)
+                              '(composition nil)))))
 
 ;;;###autoload
 (define-minor-mode nix-prettify-mode
