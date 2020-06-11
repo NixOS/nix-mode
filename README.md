@@ -42,7 +42,7 @@ Interactive functions include:
 
   Followed by your Nix path & attribute path.
 
-- nix-build - build a Nix derviation.
+- nix-build - build a Nix derivation.
 
   This is meant to work similarly to M-x compile. It will use your
   current directory & build it if there is a default.nix there.
