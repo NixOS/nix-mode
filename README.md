@@ -4,7 +4,7 @@
 [![MELPA Stable](https://stable.melpa.org/packages/nix-mode-badge.svg)](https://stable.melpa.org/#/nix-mode)
 [![Build Status](https://travis-ci.com/NixOS/nix-mode.svg?branch=master)](https://travis-ci.com/NixOS/nix-mode)
 
-An emacs major mode for editing nix expressions. There is also a
+An Emacs major mode for editing Nix expressions. There is also a
 manual available at nix-mode.org.
 
 ## Submodes

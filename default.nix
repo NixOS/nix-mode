@@ -1,19 +1,3 @@
-{ pkgs ? import <nixpkgs> {}}:
-let
-  inherit (pkgs) emacsWithPackages stdenvNoCC texinfo git;
-  emacs = emacsWithPackages (epkgs: with epkgs; [
-    org-plus-contrib
-    company
-    json-mode
-    mmm-mode
-  ]);
-in stdenvNoCC.mkDerivation {
-  name = "nix-mode";
+(import (fetchTarball https://github.com/edolstra/flake-compat/archive/master.tar.gz) {
   src = ./.;
-  nativeBuildInputs = [ emacs texinfo git ];
-  makeFlags = [ "PREFIX=$(out)" ];
-  shellHook = ''
-    echo Run make run to get vanilla emacs with nix-mode loaded.
-  '';
-  doCheck = true;
-}
+}).defaultNix

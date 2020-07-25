@@ -1,0 +1,19 @@
+name: "Test"
+on:
+  pull_request:
+  push:
+jobs:
+  tests:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - uses: cachix/install-nix-action@v10
+    - run: nix build
+     - run: nix-build -E '(import ./. {}).defaultPackage.${builtins.currentSystem}'
+    #- run: nix flake check
+    # - run: nix-build -E '(import ./. {}).checks.${builtins.currentSystem}'
