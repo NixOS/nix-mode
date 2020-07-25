@@ -32,7 +32,8 @@
   "All nix-shell options."
   :group 'nix)
 
-(defcustom nix-shell-inputs '(depsBuildBuild
+(defcustom nix-shell-inputs '(buildInputs
+			      depsBuildBuild
 			      depsBuildBuildPropagated
 			      nativeBuildInputs
 			      propagatedNativeBuildInputs
@@ -205,12 +206,14 @@ PKGS-FILE a file to use to get the packages."
 
     (setq-local nix-shell-clear-environment t)
 
+    ;; We must start this before the callback otherwise the path is cleared
+    (eshell-mode)
+
     (nix-shell--callback
      (current-buffer)
      (nix-instantiate
       (nix-shell--with-packages-file packages pkgs-file) nil t))
 
-    (eshell-mode)
     buffer))
 
 (defun nix-eshell (file &optional attr)
@@ -225,11 +228,13 @@ ATTR attribute to instantiate in NIX-FILE."
 
     (setq-local nix-shell-clear-environment t)
 
+    ;; We must start this before the callback otherwise the path is cleared
+    (eshell-mode)
+
     (nix-shell--callback
      (current-buffer)
      (nix-instantiate file attr t))
 
-    (eshell-mode)
     buffer))
 
 ;;;###autoload
