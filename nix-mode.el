@@ -100,7 +100,9 @@ very large Nix files (all-packages.nix)."
     "true" "false" "null"
     "isNull" "toString"
     "fetchTarball" "import"
-    "map" "removeAttrs"))
+    "map" "removeAttrs"
+    "toString" "derivationStrict" "placeholder" "scopedImport" "fromTOML"
+    "fetchTarball" "fetchGit" "fetchTree" "fetchMercurial"))
 
 (defconst nix-warning-keywords
   '("assert" "abort" "throw"))
