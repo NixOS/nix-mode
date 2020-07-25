@@ -29,7 +29,7 @@ install: $(ELCS) nix-mode.info nix-mode.html AUTHORS.md
 	cp nix-mode.info $(DESTDIR)$(PREFIX)/share/info/
 
 	mkdir -p $(DESTDIR)$(PREFIX)/share/doc/
-	cp AUTHORS.md $(DESTDIR)$(PREFIX)/share/doc/
+	test -f AUTHORS.md && cp AUTHORS.md $(DESTDIR)$(PREFIX)/share/doc/ || true
 
 AUTHORS.md:
 	@test -e .git \
