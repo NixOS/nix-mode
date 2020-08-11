@@ -67,6 +67,17 @@
     (kill-buffer stdout)
     result))
 
+(defvar nix-version)
+(defun nix-version ()
+  "Get the version of Nix"
+  (if nix-version nix-version
+    (let ((stdout (generate-new-buffer "nix eval"))
+          result)
+      (call-process nix-executable nil (list stdout nil) nil "--version")
+      (with-current-buffer stdout (setq result (buffer-string)))
+      (kill-buffer stdout)
+      result)))
+
 (defvar nix-commands
   '("add-to-store"
     "build"
@@ -179,111 +190,132 @@ OPTIONS a list of options to accept."
 ;;;###autoload
 (defun pcomplete/nix ()
   "Completion for the nix command."
-  (nix--pcomplete-flags nix-toplevel-options)
-  (pcomplete-here nix-commands)
-  (pcase (nth (1- pcomplete-index) pcomplete-args)
-    ("run"
-     (nix--pcomplete-flags
-      (append nix-toplevel-options '("--arg" "--argstr" "-c" "--command"
-                                     "-f" "--file" "-i" "-I" "--include"
-                                     "-k" "--keep" "-u" "--unset"))))
-    ("build"
-     (nix--pcomplete-flags
-      (append nix-toplevel-options '("--arg" "--argstr" "--dry-run"
-                                     "-f" "--file" "-I" "--include"
-                                     "--no-link" "-o" "--out-link"))))
-    ("add-to-store"
-     (nix--pcomplete-flags
-      (append nix-toplevel-options '("--dry-run" "-n" "--name"))))
-    ("copy"
-     (nix--pcomplete-flags
-      (append nix-toplevel-options '("--all" "--arg" "--argstr"
-                                     "-f" "--file" "--from"
-                                     "-I" "--include" "--no-check-sigs"
-                                     "--no-recursive" "-s" "--substitute"
-                                     "--to"))))
-    ("copy-sigs"
-     (nix--pcomplete-flags
-      (append nix-toplevel-options '("--all" "--arg" "--argstr"
-                                     "-f" "--file" "-I" "--include"
-                                     "-r" "--recursive" "-s" "--substituter"))))
-    ("dump-path"
-     (nix--pcomplete-flags
-      (append nix-toplevel-options '("--arg" "--argstr"
-                                     "-f" "--file" "-I" "--include"))))
-    ("edit"
-     (nix--pcomplete-flags
-      (append nix-toplevel-options '("--arg" "--argstr"
-                                     "-f" "--file" "-I" "--include"))))
-    ("eval"
-     (nix--pcomplete-flags
-      (append nix-toplevel-options '("--arg" "--argstr"
-                                     "-f" "--file" "-I" "--include"
-                                     "--json" "--raw"))))
-    ("hash-file"
-     (nix--pcomplete-flags
-      (append nix-toplevel-options '("--base16" "--base32"
-                                     "--base64" "--type"))))
-    ("hash-path"
-     (nix--pcomplete-flags
-      (append nix-toplevel-options '("--base16" "--base32"
-                                     "--base64" "--type"))))
-    ("log"
-     (nix--pcomplete-flags
-      (append nix-toplevel-options '("--arg" "--argstr"
-                                     "-f" "--file" "-I" "--include"
-                                     "--json" "--raw"))))
-    ("ls-nar"
-     (nix--pcomplete-flags
-      (append nix-toplevel-options '("-d" "--directory"
-                                     "--json" "-l" "--long"
-                                     "-R" "--recursive"))))
-    ("ls-store"
-     (nix--pcomplete-flags
-      (append nix-toplevel-options '("-d" "--directory"
-                                     "--json" "-l" "--long"
-                                     "-R" "--recursive"))))
-    ("repl"
-     (nix--pcomplete-flags
-      (append nix-toplevel-options '("--arg" "--argstr"
-                                     "-I" "--include"))))
-    ("search"
-     (nix--pcomplete-flags
-      (append nix-toplevel-options '("--arg" "--argstr"
-                                     "-f" "--file"
-                                     "-I" "--include"
-                                     "--json" "--no-cache"
-                                     "-u" "--update-cache"))))
-    ("show-config"
-     (nix--pcomplete-flags
-      (append nix-toplevel-options '("--json"))))
-    ("show-derivation"
-     (nix--pcomplete-flags
-      (append nix-toplevel-options '("--arg" "--argstr"
-                                     "-f" "--file"
-                                     "-I" "--include"
-                                     "-r" "--recursive"))))
-    ("sign-paths"
-     (nix--pcomplete-flags
-      (append nix-toplevel-options '("--all" "--arg" "--argstr"
-                                     "-f" "--file" "-I" "--include"
-                                     "-k" "--key-file" "-r" "--recursive"))))
-    ("upgrade-nix"
-     (nix--pcomplete-flags
-      (append nix-toplevel-options '("-p" "--profile"))))
-    ("verify"
-     (nix--pcomplete-flags
-      (append nix-toplevel-options '("--all" "--arg" "--argstr"
-                                     "-f" "--file" "-I" "--include"
-                                     "--no-contents" "--no-trust"
-                                     "-r" "--recursive" "-n" "--sigs-needed"
-                                     "-s" "--substuter"))))
-    ("why-depends"
-     (nix--pcomplete-flags
-      (append nix-toplevel-options '("-a" "--all" "--arg" "--argstr"
-                                     "-f" "--file" "-I" "--include"))))
-    (_ (nix--pcomplete-flags nix-toplevel-options)))
-  (pcomplete-here (pcomplete-entries)))
+  (if (string-prefix-p "nix (Nix) 3" (nix-version))
+      (let ((stdout (generate-new-buffer "nix-completions"))
+            (process-environment
+             (cons (format "NIX_GET_COMPLETIONS=%s" (1- (length pcomplete-args)))
+                   process-environment))
+            result)
+        (apply 'call-process nix-executable nil (list stdout nil) nil
+               (cdr pcomplete-args))
+        (with-current-buffer stdout (setq result (buffer-string)))
+        (kill-buffer stdout)
+        (let ((lines (split-string result "\n"))
+              completions)
+          (when (string= (nth 1 lines) "filenames")
+            (pcomplete-here (pcomplete-entries nil 'file-exists-p)))
+          (dolist (val (cdr lines))
+            (unless (string= val "")
+              (setq completions (cons val completions))))
+          (dolist (val (cddr pcomplete-args))
+            (pcomplete-here))
+          (pcomplete-here completions)))
+    (progn
+      (nix--pcomplete-flags nix-toplevel-options)
+      (pcomplete-here nix-commands)
+      (pcase (nth (1- pcomplete-index) pcomplete-args)
+        ("run"
+         (nix--pcomplete-flags
+          (append nix-toplevel-options '("--arg" "--argstr" "-c" "--command"
+                                         "-f" "--file" "-i" "-I" "--include"
+                                         "-k" "--keep" "-u" "--unset"))))
+        ("build"
+         (nix--pcomplete-flags
+          (append nix-toplevel-options '("--arg" "--argstr" "--dry-run"
+                                         "-f" "--file" "-I" "--include"
+                                         "--no-link" "-o" "--out-link"))))
+        ("add-to-store"
+         (nix--pcomplete-flags
+          (append nix-toplevel-options '("--dry-run" "-n" "--name"))))
+        ("copy"
+         (nix--pcomplete-flags
+          (append nix-toplevel-options '("--all" "--arg" "--argstr"
+                                         "-f" "--file" "--from"
+                                         "-I" "--include" "--no-check-sigs"
+                                         "--no-recursive" "-s" "--substitute"
+                                         "--to"))))
+        ("copy-sigs"
+         (nix--pcomplete-flags
+          (append nix-toplevel-options '("--all" "--arg" "--argstr"
+                                         "-f" "--file" "-I" "--include"
+                                         "-r" "--recursive" "-s" "--substituter"))))
+        ("dump-path"
+         (nix--pcomplete-flags
+          (append nix-toplevel-options '("--arg" "--argstr"
+                                         "-f" "--file" "-I" "--include"))))
+        ("edit"
+         (nix--pcomplete-flags
+          (append nix-toplevel-options '("--arg" "--argstr"
+                                         "-f" "--file" "-I" "--include"))))
+        ("eval"
+         (nix--pcomplete-flags
+          (append nix-toplevel-options '("--arg" "--argstr"
+                                         "-f" "--file" "-I" "--include"
+                                         "--json" "--raw"))))
+        ("hash-file"
+         (nix--pcomplete-flags
+          (append nix-toplevel-options '("--base16" "--base32"
+                                         "--base64" "--type"))))
+        ("hash-path"
+         (nix--pcomplete-flags
+          (append nix-toplevel-options '("--base16" "--base32"
+                                         "--base64" "--type"))))
+        ("log"
+         (nix--pcomplete-flags
+          (append nix-toplevel-options '("--arg" "--argstr"
+                                         "-f" "--file" "-I" "--include"
+                                         "--json" "--raw"))))
+        ("ls-nar"
+         (nix--pcomplete-flags
+          (append nix-toplevel-options '("-d" "--directory"
+                                         "--json" "-l" "--long"
+                                         "-R" "--recursive"))))
+        ("ls-store"
+         (nix--pcomplete-flags
+          (append nix-toplevel-options '("-d" "--directory"
+                                         "--json" "-l" "--long"
+                                         "-R" "--recursive"))))
+        ("repl"
+         (nix--pcomplete-flags
+          (append nix-toplevel-options '("--arg" "--argstr"
+                                         "-I" "--include"))))
+        ("search"
+         (nix--pcomplete-flags
+          (append nix-toplevel-options '("--arg" "--argstr"
+                                         "-f" "--file"
+                                         "-I" "--include"
+                                         "--json" "--no-cache"
+                                         "-u" "--update-cache"))))
+        ("show-config"
+         (nix--pcomplete-flags
+          (append nix-toplevel-options '("--json"))))
+        ("show-derivation"
+         (nix--pcomplete-flags
+          (append nix-toplevel-options '("--arg" "--argstr"
+                                         "-f" "--file"
+                                         "-I" "--include"
+                                         "-r" "--recursive"))))
+        ("sign-paths"
+         (nix--pcomplete-flags
+          (append nix-toplevel-options '("--all" "--arg" "--argstr"
+                                         "-f" "--file" "-I" "--include"
+                                         "-k" "--key-file" "-r" "--recursive"))))
+        ("upgrade-nix"
+         (nix--pcomplete-flags
+          (append nix-toplevel-options '("-p" "--profile"))))
+        ("verify"
+         (nix--pcomplete-flags
+          (append nix-toplevel-options '("--all" "--arg" "--argstr"
+                                         "-f" "--file" "-I" "--include"
+                                         "--no-contents" "--no-trust"
+                                         "-r" "--recursive" "-n" "--sigs-needed"
+                                         "-s" "--substuter"))))
+        ("why-depends"
+         (nix--pcomplete-flags
+          (append nix-toplevel-options '("-a" "--all" "--arg" "--argstr"
+                                         "-f" "--file" "-I" "--include"))))
+        (_ (nix--pcomplete-flags nix-toplevel-options)))
+      (pcomplete-here (pcomplete-entries)))))
 
 (provide 'nix)
 ;;; nix.el ends here
