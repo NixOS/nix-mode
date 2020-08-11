@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.4.3
+
+### Changes
+
+* Better documentation for nix-prettify-mode
+* Fixes for nix-eshell.el
+* Use `NIX_GET_COMPLETIONS` if Nix 3.0 is installed
+* Add flake.nix
+
 ## 1.4.2
 
 ### Changes
