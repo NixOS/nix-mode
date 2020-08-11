@@ -207,7 +207,7 @@ OPTIONS a list of options to accept."
               (setq completions (cons val completions))))
           (dolist (val (cddr pcomplete-args))
             (pcomplete-here))
-          (pcomplete-here completions)))
+          (pcomplete-here completions nil t)))
     (progn
       (nix--pcomplete-flags nix-toplevel-options)
       (pcomplete-here nix-commands)
