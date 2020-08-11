@@ -67,7 +67,7 @@
     (kill-buffer stdout)
     result))
 
-(defvar nix-version)
+(defvar nix-version nil)
 (defun nix-version ()
   "Get the version of Nix"
   (if nix-version nix-version
