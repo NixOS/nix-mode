@@ -202,8 +202,6 @@ OPTIONS a list of options to accept."
         (kill-buffer stdout)
         (let ((lines (split-string result "\n"))
               completions)
-          (when (string= (nth 1 lines) "filenames")
-            (pcomplete-here (pcomplete-entries nil 'file-exists-p)))
           (dolist (val (cdr lines))
             (unless (string= val "")
               (setq completions (cons val completions))))
