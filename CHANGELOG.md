@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.4
+
+### Changes
+
+* Fix a bug causing Nix-based completions to throw an error
+
 ## 1.4.3
 
 ### Changes
