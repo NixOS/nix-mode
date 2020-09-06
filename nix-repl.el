@@ -21,10 +21,20 @@
   "Arguments to provide to nix-repl."
   :type 'list)
 
+(defvar nix-repl-completion-redirect-buffer
+  " *nix-repl completions redirect*"
+  "Buffer to be used to redirect output of readline commands.")
+
+(defcustom nix-repl-completion-output-timeout 1.0
+  "Time in seconds to wait for completion output before giving up."
+  :type 'float)
+
 (define-derived-mode nix-repl-mode comint-mode "Nix-REPL"
   "Interactive prompt for Nix."
   (setq-local comint-prompt-regexp nix-prompt-regexp)
-  (setq-local comint-prompt-read-only t))
+  (setq-local comint-prompt-read-only t)
+  (add-hook 'completion-at-point-functions
+            #'nix-repl-completion-at-point nil 'local))
 
 (defmacro nix--with-temp-process-filter (proc &rest body)
   "Use temp process PROC filter on BODY."
@@ -58,33 +68,97 @@
    (append `("Nix-REPL" ,buffer ,nix-executable nil)
            nix-repl-executable-args)))
 
-(defun nix-get-completions (proc prefix)
-  "Get Nix completions from Nix-repl process PROC and based off of PREFIX."
-  (save-match-data
-    (nix--with-temp-process-filter proc
-                                   (goto-char (point-min))
-                                   (process-send-string proc (concat prefix "\t\"" (nix--char-with-ctrl ?a) "\"\n"))
-                                   (let ((i 0))
-                                     (while (and (< (setq i (1+ i)) 100)
-                                                 (not (search-forward-regexp "\"\\([^\"]*\\)\"[\n]*nix-repl>" nil t)))
-                                       (sleep-for 0.01))
-                                     (let ((new-prefix (match-string 1))
-                                           (start-compl (point)))
-                                       (if (string-suffix-p " " new-prefix)
-                                           (list (substring new-prefix 0 -1))
-                                         (process-send-string proc (concat new-prefix "\t\t" (nix--char-with-ctrl ?u) "\n"))
-                                         (goto-char start-compl)
-                                         (setq i 0)
-                                         (while (and (< (setq i (1+ i)) 100)
-                                                     (not (search-forward-regexp
-                                                           "[\n]+nix-repl>\\|Display all \\([0-9]+\\)" nil t)))
-                                           (sleep-for 0.01))
-                                         (if (match-string 1)
-                                             (progn
-                                               (process-send-string proc "n")
-                                               '())
-                                           (search-backward "\n" nil t)
-                                           (split-string (buffer-substring start-compl (1- (point)))))))))))
+(defun nix-get-completions (process input)
+  "Get completions for INPUT using native readline for PROCESS."
+  (with-current-buffer (process-buffer process)
+    (let* ((original-filter-fn (process-filter process))
+           (redirect-buffer (get-buffer-create
+                             nix-repl-completion-redirect-buffer))
+           (trigger "\t")
+           (new-input (concat input trigger))
+           (input-length
+            (save-excursion
+              (+ (- (point-max) (comint-bol)) (length new-input))))
+           (delete-line-command (make-string input-length ?\b))
+           (input-to-send (concat new-input delete-line-command)))
+      ;; Ensure restoring the process filter, even if the user quits
+      ;; or there's some other error.
+      (unwind-protect
+          (with-current-buffer redirect-buffer
+            ;; Cleanup the redirect buffer
+            (erase-buffer)
+            ;; Mimic `comint-redirect-send-command', unfortunately it
+            ;; can't be used here because it expects a newline in the
+            ;; command and that's exactly what we are trying to avoid.
+            (let ((comint-redirect-echo-input nil)
+                  (comint-redirect-completed nil)
+                  (comint-redirect-perform-sanity-check nil)
+                  (comint-redirect-insert-matching-regexp t)
+                  (comint-redirect-finished-regexp nix-prompt-regexp)
+                  (comint-redirect-output-buffer redirect-buffer))
+              (set-process-filter
+               process (apply-partially
+                        #'comint-redirect-filter original-filter-fn))
+              (process-send-string process input-to-send)
+              ;; Grab output until our dummy completion used as
+              ;; output end marker is found.
+              (when (nix--accept-process-output
+                     process nix-repl-completion-output-timeout
+                     comint-redirect-finished-regexp)
+                (beginning-of-line)
+                (if (eq (char-after) ?\r)
+                    (cdr
+                     (split-string
+                      (buffer-substring-no-properties
+                       (line-beginning-position) (point-min))
+                      "[ \f\t\n\r\v]+" t))
+                  (search-forward "" nil t)
+                  (backward-char)
+                  (if (eq (char-before) ?\a)
+                      nil
+                    (list (buffer-substring-no-properties (line-beginning-position) (point))))))))
+        (set-process-filter process original-filter-fn)))))
+
+(defun nix--accept-process-output (process &optional timeout regexp)
+  "Accept PROCESS output with TIMEOUT until REGEXP is found.
+Optional argument TIMEOUT is the timeout argument to
+`accept-process-output' calls.  Optional argument REGEXP
+overrides the regexp to match the end of output, defaults to
+`comint-prompt-regexp'.  Returns non-nil when output was
+properly captured.
+
+This utility is useful in situations where the output may be
+received in chunks, since `accept-process-output' gives no
+guarantees they will be grabbed in a single call."
+  (let ((regexp (or regexp comint-prompt-regexp)))
+    (catch 'found
+      (while t
+        (when (not (accept-process-output process timeout))
+          (throw 'found nil))
+        (when (progn (re-search-backward regexp nil t))
+          (throw 'found t))))))
+
+;;;###autoload
+(defun nix-repl-completion-at-point ()
+  "Completion at point function for Nix using \"nix-repl\".
+See `completion-at-point-functions'."
+  (save-excursion
+    (let ((prefix (and (derived-mode-p 'nix-repl-mode)
+                       (executable-find nix-executable)
+                       (nix--prefix-bounds))))
+      (pcase prefix
+        (`(,beg . ,end)
+         (list beg end
+               (nix-get-completions
+                (get-buffer-process (current-buffer))
+                (buffer-substring beg end))
+               :exclusive 'no))))))
+
+(defun nix--prefix-bounds ()
+  "Get bounds of Nix attribute path at point as a (BEG . END) pair, or nil."
+  (save-excursion
+    (when (< (skip-chars-backward "a-zA-Z0-9'\\-_\\.") 0)
+      (cons (point) (+ (point) (skip-chars-forward "a-zA-Z0-9'\\-_\\."))))))
 
 (defun nix--send-repl (input &optional process mute)
   "Send INPUT to PROCESS.
@@ -93,7 +167,7 @@ MUTE if true then don’t alert user."
   (let ((proc (or process (get-buffer-process (current-buffer)))))
     (if mute
         (nix--with-temp-process-filter proc
-                                       (process-send-string proc input))
+          (process-send-string proc input))
       (process-send-string proc input))))
 
 (defun nix--char-with-ctrl (char)
