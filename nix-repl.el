@@ -29,6 +29,11 @@
   "Time in seconds to wait for completion output before giving up."
   :type 'float)
 
+(defvar nix-repl-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "\t" 'completion-at-point)
+    map))
+
 (define-derived-mode nix-repl-mode comint-mode "Nix-REPL"
   "Interactive prompt for Nix."
   (setq-local comint-prompt-regexp nix-prompt-regexp)
