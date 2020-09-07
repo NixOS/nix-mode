@@ -543,7 +543,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
         (ignore (goto-char start))))))
 
 (defun nix-smie--skip-angle-path-backward ()
-    "Skip backward a path enclosed in angle brackets, e.g <nixpkgs>"
+  "Skip backward a path enclosed in angle brackets, e.g <nixpkgs>"
   (let ((start (point)))
     (when (eq (char-before) ?>)
       (backward-char)
@@ -660,7 +660,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
             (if (and (memq (char-after) '(?\[ ?{))
                      (not (save-excursion (forward-char) (nix-smie--eol-p))))
                 (current-column)
-             (nix-smie--anchor)))
+              (nix-smie--anchor)))
         (scan-error nil)))))
 
 (defun nix-smie--indent-exps ()
@@ -984,8 +984,8 @@ The hook `nix-mode-hook' is run when Nix mode is started.
   ;; Setup SMIE integration
   (when nix-mode-use-smie
     (smie-setup nix-smie-grammar 'nix-smie-rules
-		:forward-token 'nix-smie--forward-token
-		:backward-token 'nix-smie--backward-token)
+                :forward-token 'nix-smie--forward-token
+                :backward-token 'nix-smie--backward-token)
     (setq-local smie-indent-basic 2)
 
     (let ((nix-smie-indent-functions
@@ -998,11 +998,12 @@ The hook `nix-mode-hook' is run when Nix mode is started.
       (setq-local smie-indent-functions nix-smie-indent-functions)))
 
   ;; Automatic indentation [C-j]
-  (setq-local indent-line-function (lambda ()
-				     (if (and (not nix-mode-use-smie)
-					      (eq nix-indent-function 'smie-indent-line))
-					 (indent-relative)
-				       (funcall nix-indent-function))))
+  (setq-local indent-line-function
+              (lambda ()
+                (if (and (not nix-mode-use-smie)
+                         (eq nix-indent-function 'smie-indent-line))
+                    (indent-relative)
+                  (funcall nix-indent-function))))
 
   ;; Indenting of comments
   (setq-local comment-start "# ")
