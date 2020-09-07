@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.5
+
+* Fixed completion support in nix-repl-mode for Nix 2.
+
 ## 1.4.4
 
 ### Changes
