@@ -148,14 +148,16 @@ guarantees they will be grabbed in a single call."
   "Completion at point function for Nix using \"nix-repl\".
 See `completion-at-point-functions'."
   (save-excursion
-    (let ((prefix (and (derived-mode-p 'nix-repl-mode)
-                       (executable-find nix-executable)
-                       (nix--prefix-bounds))))
+    (let* ((proc (get-buffer-process (current-buffer)))
+           (prefix (and (derived-mode-p 'nix-repl-mode)
+                        proc
+                        (executable-find nix-executable)
+                        (nix--prefix-bounds))))
       (pcase prefix
         (`(,beg . ,end)
          (list beg end
                (nix-get-completions
-                (get-buffer-process (current-buffer))
+                proc
                 (buffer-substring beg end))
                :exclusive 'no))))))
 
