@@ -149,6 +149,7 @@ guarantees they will be grabbed in a single call."
 See `completion-at-point-functions'."
   (save-excursion
     (let* ((proc (get-buffer-process (current-buffer)))
+           (process-live-p proc)
            (prefix (and (derived-mode-p 'nix-repl-mode)
                         proc
                         (executable-find nix-executable)
