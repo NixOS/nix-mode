@@ -131,7 +131,9 @@ The DRV file to use."
 			 (apply 'append
 				(mapcar (lambda (prop)
 					  (split-string (alist-get prop env)))
-					nix-shell-inputs)))))
+					nix-shell-inputs))))
+	 ;; This attribute is in `mkShell' — ideally, we'd only check this variable in those cases.
+	 (ld-library-path (alist-get 'LD_LIBRARY_PATH env)))
 
     ;; Prevent accidentally rebuilding the world.
     (unless (file-directory-p stdenv)
@@ -151,6 +153,13 @@ The DRV file to use."
 	(setq-local eshell-path-env "")
 	;; (setq-local process-environment nil)
 	)
+
+      ;; Set the LD_LIBRARY_PATH where applicable
+      (when ld-library-path
+	(make-local-variable 'process-environment)
+	(setq process-environment
+	      (cons (format "LD_LIBRARY_PATH=%s" ld-library-path)
+		    process-environment)))
 
       (dolist (input inputs)
 	(when (and (not (file-directory-p input))
