@@ -34,10 +34,33 @@
     (define-key map "\t" 'completion-at-point)
     map))
 
+(defun nix-repl-save-all-histories ()
+  "Call `comint-write-input-ring' for all `nix-repl-mode' buffers."
+  (dolist (buf (buffer-list))
+    (with-current-buffer buf
+      (when (eq major-mode 'nix-repl-mode)
+        (comint-write-input-ring)))))
+
 (define-derived-mode nix-repl-mode comint-mode "Nix-REPL"
   "Interactive prompt for Nix."
   (setq-local comint-prompt-regexp nix-prompt-regexp)
   (setq-local comint-prompt-read-only t)
+  (let* ((is-remote (file-remote-p default-directory))
+         (maybe-xdg-data-home (if is-remote
+                                  (shell-command-to-string "echo -n $XDG_DATA_HOME")
+                                (or (getenv "XDG_DATA_HOME")
+                                    "")))
+         (path-prefix (if (string-empty-p maybe-xdg-data-home)
+                          "~/.local/share"
+                        maybe-xdg-data-home))
+         (history-path (concat
+                        is-remote
+                        path-prefix
+                        "/nix/repl-history")))
+    (setq-local comint-input-ring-file-name history-path))
+  (comint-read-input-ring t)
+  (add-hook 'kill-buffer-hook #'comint-write-input-ring nil 'local)
+  (add-hook 'kill-emacs-hook #'nix-repl-save-all-histories nil 'local)
   (add-hook 'completion-at-point-functions
             #'nix-repl-completion-at-point nil 'local))
 
