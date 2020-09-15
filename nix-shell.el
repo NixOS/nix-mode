@@ -158,7 +158,14 @@ The DRV file to use."
       (when ld-library-path
 	(make-local-variable 'process-environment)
 	(setq process-environment
-	      (cons (format "LD_LIBRARY_PATH=%s" ld-library-path)
+	      (cons
+	       (let*
+		   ((var "LD_LIBRARY_PATH")
+		    (current-path (getenv var)))
+		 (if current-path
+		     ;; LD_LIBRARY_PATH defined in derivation takes precedence
+		     (format "%s=%s:%s" var ld-library-path current-path)
+		   (format "%s=%s" var ld-library-path)))
 		    process-environment)))
 
       (dolist (input inputs)
