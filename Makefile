@@ -42,7 +42,7 @@ clean:
 	rm -f $(ELCS) $(DOCS)
 
 run:
-	emacs -l nix-mode.el
+	emacs -Q -l nix-mode.el
 
 %.elc: %.el
 	emacs -batch -L . --eval "(progn\
