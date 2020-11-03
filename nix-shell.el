@@ -179,11 +179,13 @@ The DRV file to use."
 	  (add-to-list 'exec-path bin)
 	  (setq-local eshell-path-env
 		      (format "%s:%s" bin eshell-path-env))
-	  (add-to-list 'woman-manpath man)
+      (when (boundp 'woman-manpath)
+	    (add-to-list 'woman-manpath man))
 	  (add-to-list 'ffap-c-path include)
 	  (add-to-list 'Man-header-file-path include)
-	  (add-to-list 'irony-additional-clang-options
-		       (format "-I%s" include))))
+      (when (boundp 'irony-additional-clang-options)
+	    (add-to-list 'irony-additional-clang-options
+		       (format "-I%s" include)))))
 
       (when (bound-and-true-p flycheck-mode)
 	(flycheck-buffer))
