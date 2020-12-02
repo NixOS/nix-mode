@@ -1021,7 +1021,7 @@ The hook `nix-mode-hook' is run when Nix mode is started.
 
   ;; Find file at point
   (push '(nix-mode . nix-mode-ffap-nixpkgs-path) ffap-alist)
-  (push '(nix-mode "--:\\\\${}<>+@-Z_[:alpha:]~*?" "@" "@;.,!:")
+  (push '(nix-mode "--:\\\\$<>+@-Z_[:alpha:]~*?" "@" "@;.,!:")
         ffap-string-at-point-mode-alist))
 
 ;;;###autoload
