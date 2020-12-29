@@ -22,5 +22,3 @@
 
 (development
  (depends-on "ert"))
-
-(depends-on "json-mode")

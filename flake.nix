@@ -12,7 +12,6 @@
         emacs = emacsWithPackages (epkgs: with epkgs; [
           org-plus-contrib
           company
-          json-mode
           mmm-mode
         ]);
       in stdenvNoCC.mkDerivation {

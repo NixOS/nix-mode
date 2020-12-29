@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+* Removed json-mode dependency, using js instead.
+
 ## 1.4.5
 
 * Fixed completion support in nix-repl-mode for Nix 2.

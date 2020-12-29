@@ -16,7 +16,7 @@
 
 ;;; Code:
 
-(require 'javascript-mode)
+(require 'js)
 (require 'nix)
 
 (defvar-local nix-drv-mode nil)
@@ -40,7 +40,7 @@
                  (format "%s show-derivation \"%s\""
 		         nix-executable
 		         (buffer-file-name))))
-        (javascript-mode)
+        (js-mode)
         (set-buffer-modified-p nil)
         (read-only-mode 1)))))
 
