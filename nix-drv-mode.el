@@ -4,7 +4,7 @@
 ;; Homepage: https://github.com/NixOS/nix-mode
 ;; Version: 1.2.1
 ;; Keywords: nix, languages, tools, unix
-;; Package-Requires: ((emacs "24.3") (json-mode "1.6.0"))
+;; Package-Requires: ((emacs "24.3"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -16,7 +16,7 @@
 
 ;;; Code:
 
-(require 'json-mode)
+(require 'javascript-mode)
 (require 'nix)
 
 (defvar-local nix-drv-mode nil)
@@ -40,7 +40,7 @@
                  (format "%s show-derivation \"%s\""
 		         nix-executable
 		         (buffer-file-name))))
-        (json-mode)
+        (javascript-mode)
         (set-buffer-modified-p nil)
         (read-only-mode 1)))))
 
