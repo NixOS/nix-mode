@@ -16,11 +16,11 @@
 
 ;;; Code:
 
-(require 'javascript-mode)
+(require 'js)
 (require 'nix)
 
 ;;;###autoload
-(define-derived-mode nix-drv-mode javascript-mode "Nix-Derivation"
+(define-derived-mode nix-drv-mode js-mode "Nix-Derivation"
   "Pretty print Nix’s .drv files."
   (let ((inhibit-read-only t))
     (erase-buffer)
