@@ -173,7 +173,7 @@ See `nix-prettify-special-modes' for details."
   nix-prettify-mode nix-prettify-turn-on)
 
 ;;;###autoload
-(define-obsolete-function-alias 'global-nix-prettify-mode 'nix-prettify-global-mode)
+(define-obsolete-function-alias 'global-nix-prettify-mode 'nix-prettify-global-mode "v1.2.2")
 
 (provide 'nix-prettify-mode)
 
