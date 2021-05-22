@@ -60,6 +60,12 @@ Should only be set in dir-locals.el file."
   :type 'stringp
   :group 'nix-shell)
 
+(defcustom nix-flake nil
+  "Nix flake to build expressions from.
+Should only be set in dir-locals.el file."
+  :type 'stringp
+  :group 'nix-shell)
+
 (defcustom nix-attr nil
   "Nix attribute path to use.
 Should only be set in dir-locals.el file."
@@ -79,6 +85,13 @@ ATTR is the attribute to unpack."
 (defun nix-read-attr (_)
   "Get nix attribute from user."
   (read-string "Nix attr: "))
+
+(defun nix-read-flake ()
+  "Get nix flake from user."
+  (cond
+   (nix-flake nix-flake)
+   ((and (nix-has-flakes) (file-exists-p "flake.nix")) ".")
+   (t (read-string "Nix flake: " "nixpkgs"))))
 
 (defun nix-read-file ()
   "Get nix file from user."
