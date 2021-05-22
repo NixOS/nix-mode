@@ -17,38 +17,37 @@
 (require 'json)
 
 ;;;###autoload
-(defun nix-search (&optional search file)
+(defun nix-search--search (search file &optional no-cache)
+  (with-temp-buffer
+    (call-process nix-executable nil (list t nil) nil
+      "search" "--json" (if no-cache "--no-cache" "") "--file" file search)
+    (goto-char (point-min))
+    (json-read)))
+
+;;;###autoload
+(defun nix-search--display (results &optional display-buffer)
+  (unless display-buffer (setq display-buffer (generate-new-buffer "*nix search*")))
+  (with-current-buffer display-buffer
+    (dolist (entry results)
+      (widget-insert
+        (format "attr: %s\nname: %s\nversion: %s\ndescription: %s\n\n"
+          (car entry)
+          (alist-get 'pkgName (cdr entry))
+          (alist-get 'version (cdr entry))
+          (alist-get 'description (cdr entry))))))
+  (display-buffer display-buffer))
+
+;;;###autoload
+(defun nix-search (search &optional file)
   "Run nix search.
 SEARCH a search term to use.
 FILE a Nix expression to search in."
-  (interactive)
-  (unless search (setq search ""))
-  (unless file (nix-read-file))
-
-  (let ((stdout (generate-new-buffer "nix search"))
-	result)
-    (call-process nix-executable nil (list stdout nil) nil
-		  "search" "--json" "-f" file search)
-    (with-current-buffer stdout
-      (when (eq (buffer-size) 0)
-	(error "Error: nix search %s failed to produce any output" search))
-      (goto-char (point-min))
-      (setq result (json-read)))
-    (kill-buffer stdout)
+  (interactive "snix-search> \n")
+  (setq file (or file (nix-read-file)))
+  (let ((results (nix-search--search search file)))
     (when (called-interactively-p 'any)
-      (let ((display (generate-new-buffer "*nix search*")))
-	(with-current-buffer display
-	  (dolist (entry result)
-	    (widget-insert
-	     (format "attr: %s\nname: %s\nversion: %s\ndescription: %s\n\n"
-                     (car entry)
-		     (alist-get 'pkgName (cdr entry))
-		     (alist-get 'version (cdr entry))
-		     (alist-get 'description (cdr entry)))))
-	  )
-	(display-buffer display 'display-buffer-pop-up-window)))
-    (kill-buffer stdout)
-    result))
+      (nix-search--display results))
+    results))
 
 (defun nix-search-read-attr (file)
   "Read from a list of attributes.
