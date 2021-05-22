@@ -17,6 +17,7 @@
 ;;; Code:
 
 (require 'pcomplete)
+(require 'json)
 
 (defgroup nix nil
   "Nix-related customizations"
@@ -59,35 +60,24 @@
 
 (defun nix-system ()
   "Get the current system tuple."
-  (let ((stdout (generate-new-buffer "nix eval"))
-        result)
-    (call-process nix-executable nil (list stdout nil) nil
-		  "eval" "--raw" "(builtins.currentSystem)")
-    (with-current-buffer stdout (setq result (buffer-string)))
-    (kill-buffer stdout)
-    result))
+  (with-temp-buffer
+    (call-process nix-executable nil (list t nil) nil "eval" "--raw" "(builtins.currentSystem)")
+    (buffer-string)))
 
 (defvar nix-version nil)
 (defun nix-version ()
   "Get the version of Nix"
-  (if nix-version nix-version
-    (let ((stdout (generate-new-buffer "nix eval"))
-          result)
-      (call-process nix-executable nil (list stdout nil) nil "--version")
-      (with-current-buffer stdout (setq result (buffer-string)))
-      (kill-buffer stdout)
-      result)))
+  (or nix-version
+    (with-temp-buffer
+      (call-process nix-executable nil (list t nil) nil "--version")
+      (buffer-string))))
 
 (defun nix-show-config ()
   "Show nix config."
-  (let ((stdout (generate-new-buffer "nix config"))
-        result)
-    (call-process nix-executable nil (list stdout nil) nil "show-config" "--json")
-    (setq result (with-current-buffer stdout
-	           (goto-char (point-min))
-	           (json-read)))
-    (kill-buffer stdout)
-    result))
+  (with-temp-buffer
+    (call-process nix-executable nil (list t nil) nil "show-config" "--json")
+    (goto-char (point-min))
+    (json-read)))
 
 (defvar nix-commands
   '("add-to-store"
