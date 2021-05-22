@@ -78,6 +78,17 @@
       (kill-buffer stdout)
       result)))
 
+(defun nix-show-config ()
+  "Show nix config."
+  (let ((stdout (generate-new-buffer "nix config"))
+        result)
+    (call-process nix-executable nil (list stdout nil) nil "show-config" "--json")
+    (setq result (with-current-buffer stdout
+	           (goto-char (point-min))
+	           (json-read)))
+    (kill-buffer stdout)
+    result))
+
 (defvar nix-commands
   '("add-to-store"
     "build"
@@ -187,10 +198,23 @@ OPTIONS a list of options to accept."
        ((or (string= "-s" last-arg) (string= "--substituter" last-arg))
         (pcomplete-here))))))
 
+(defun nix-is-24 ()
+  "Whether Nix is a version with Flakes support."
+  ;; earlier versions reported as 3, now it’s just nix-2.4
+  (let ((version (nix-version)))
+    (or (string-prefix-p "nix (Nix) 3" version)
+        (string-prefix-p "nix (Nix) 2.4" version))))
+
+(defun nix-has-flakes ()
+  "Whether Nix is a version with Flakes support."
+  ;; earlier versions reported as 3, now it’s just nix-2.4
+  (and (nix-is-24)
+       (seq-contains-p (alist-get 'value (alist-get 'experimental-features (nix-show-config))) "flakes")))
+
 ;;;###autoload
 (defun pcomplete/nix ()
   "Completion for the nix command."
-  (if (string-prefix-p "nix (Nix) 3" (nix-version))
+  (if (nix-is-24)
       (let ((stdout (generate-new-buffer "nix-completions"))
             (process-environment
              (cons (format "NIX_GET_COMPLETIONS=%s" (1- (length pcomplete-args)))
