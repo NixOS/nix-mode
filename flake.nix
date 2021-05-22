@@ -23,6 +23,7 @@
           echo Run make run to get vanilla emacs with nix-mode loaded.
         '';
         doCheck = true;
+        meta.description = "An emacs major mode for editing Nix expressions";
       };
     });
 
