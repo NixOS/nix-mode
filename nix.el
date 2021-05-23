@@ -61,7 +61,9 @@
 (defun nix-system ()
   "Get the current system tuple."
   (with-temp-buffer
-    (call-process nix-executable nil (list t nil) nil "eval" "--raw" "(builtins.currentSystem)")
+    (if (nix-is-24)
+	(call-process nix-executable nil (list t nil) nil "eval" "--impure" "--raw" "--expr" "(builtins.currentSystem)")
+      (call-process nix-executable nil (list t nil) nil "eval" "--raw" "(builtins.currentSystem)"))
     (buffer-string)))
 
 (defvar nix-version nil)
