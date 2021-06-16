@@ -18,6 +18,7 @@
 
 (require 'pcomplete)
 (require 'json)
+(require 'f)
 
 (defgroup nix nil
   "Nix-related customizations"
@@ -60,26 +61,20 @@
 
 (defun nix-system ()
   "Get the current system tuple."
-  (with-temp-buffer
-    (if (nix-is-24)
-	(call-process nix-executable nil (list t nil) nil "eval" "--impure" "--raw" "--expr" "(builtins.currentSystem)")
-      (call-process nix-executable nil (list t nil) nil "eval" "--raw" "(builtins.currentSystem)"))
-    (buffer-string)))
+  (nix--process-string "eval"
+    "--raw"
+    (if (nix-is-24) "--impure" )
+    (if (nix-is-24) "--expr" )
+    "(builtins.currentSystem)"))
 
 (defvar nix-version nil)
 (defun nix-version ()
   "Get the version of Nix"
-  (or nix-version
-    (with-temp-buffer
-      (call-process nix-executable nil (list t nil) nil "--version")
-      (buffer-string))))
+  (or nix-version (nix--process-string "--version")))
 
 (defun nix-show-config ()
   "Show nix config."
-  (with-temp-buffer
-    (call-process nix-executable nil (list t nil) nil "show-config" "--json")
-    (goto-char (point-min))
-    (json-read)))
+  (nix--process-json "show-config" "--json"))
 
 (defvar nix-commands
   '("add-to-store"
@@ -330,6 +325,32 @@ OPTIONS a list of options to accept."
                                          "-f" "--file" "-I" "--include"))))
         (_ (nix--pcomplete-flags nix-toplevel-options)))
       (pcomplete-here (pcomplete-entries)))))
+
+(defun nix--process (&rest args)
+  (with-temp-buffer
+    (let* ((tmpfile  (make-temp-file "nix--process-stderr"))
+	 (cleaned-args (seq-filter #'stringp args))
+	 (exitcode (apply #'call-process `(,nix-executable nil (t ,tmpfile) nil ,@cleaned-args )))
+	 (stderr (f-read-text tmpfile)))
+      (delete-file tmpfile)
+      (list (buffer-string) stderr exitcode))))
+
+(defun nix--process-string (&rest args)
+  (cl-multiple-value-bind (stdout stderr exitcode) (apply #'nix--process args)
+    (if (not (eq exitcode 0))
+      (error stderr))
+    ;; cut-off the trailing newline
+    (string-trim-right stdout)))
+
+(defun nix--process-json (&rest args)
+  (json-read-from-string
+    (apply #'nix--process-string args)))
+
+(defun nix--process-json-nocheck (&rest args)
+  ;; No checking of exitcode is possible here until
+  ;; https://github.com/NixOS/nix/issues/2474 is resolved
+  (let ((result (apply #'nix--process args)))
+    (json-read-from-string (car result))))
 
 (provide 'nix)
 ;;; nix.el ends here
