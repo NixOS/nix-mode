@@ -245,5 +245,9 @@ Related issue: https://github.com/NixOS/nix-mode/issues/94"
   "Proper indentation of let expressions."
   (with-nix-mode-test ("smie-let.nix" :indent 'smie-indent-line)))
 
+(ert-deftest nix-mode-test-indent-issue-128 ()
+  "Proper indentation of let expressions."
+  (with-nix-mode-test ("issue-128.nix" :indent 'nix-indent-line)))
+
 (provide 'nix-mode-tests)
 ;;; nix-mode-tests.el ends here

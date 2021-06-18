@@ -733,8 +733,8 @@ not to any other arguments."
                                 (let ((line (buffer-substring-no-properties (line-beginning-position) (line-end-position))))
                                   ;; Then regex-match strings at the end of the line to detect if we need to indent the line after.
                                   ;; We could probably add more things to look for here in the future.
-                                  (if (or (string-match "let$" line)
-                                          (string-match "import$" line)
+                                  (if (or (string-match "\\blet$" line)
+                                          (string-match "\\bimport$" line)
                                           (string-match "\\[$" line)
                                           (string-match "=$" line)
                                           (string-match "\($" line)
