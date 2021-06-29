@@ -18,14 +18,10 @@
 
 ;;;###autoload
 (defun nix-search--search (search file &optional no-cache use-flakes)
-  (with-temp-buffer
-    (if use-flakes
-	(call-process nix-executable nil (list t nil) nil
-		      "search" "--json" file (if (string= search "") "." search))
-      (call-process nix-executable nil (list t nil) nil
-		    "search" "--json" (if no-cache "--no-cache" "") "--file" file search))
-    (goto-char (point-min))
-    (json-read)))
+  (nix--process-json-nocheck "search" "--json"
+    (if use-flakes "" "--file") file
+    (if no-cache  "--no-cache" "")
+    search))
 
 (defface nix-search-pname
   '((t :height 1.5

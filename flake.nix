@@ -13,6 +13,7 @@
           org-plus-contrib
           company
           mmm-mode
+          f
         ]);
       in stdenvNoCC.mkDerivation {
         name = "nix-mode-1.4.5";
