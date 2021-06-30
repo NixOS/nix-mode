@@ -35,12 +35,12 @@
   :type 'string)
 
 (defcustom nix-instantiate-executable "nix-instantiate"
-  "Nix executable location."
+  "Nix-instantiate executable location."
   :group 'nix
   :type 'string)
 
 (defcustom nix-store-executable "nix-store"
-  "Nix executable location."
+  "Nix-store executable location."
   :group 'nix
   :type 'string)
 
@@ -55,7 +55,7 @@
   :type 'string)
 
 (defcustom nix-state-dir "/nix/var"
-  "Nix store directory."
+  "Nix state directory."
   :group 'nix
   :type 'string)
 
