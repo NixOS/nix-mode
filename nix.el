@@ -76,7 +76,7 @@
   "Show nix config."
   (nix--process-json "show-config" "--json"))
 
-(defvar nix-commands
+(defconst nix-commands
   '("add-to-store"
     "build"
     "cat-nar"
@@ -107,7 +107,7 @@
     "verify"
     "why-depends"))
 
-(defvar nix-toplevel-options
+(defconst nix-toplevel-options
   '("-v"
     "--verbose"
     "-h"
@@ -117,7 +117,7 @@
     "--option"
     "--version"))
 
-(defvar nix-config-options
+(defconst nix-config-options
   '("allowed-uris"
     "allow-import-from-derivation"
     "allow-new-priveleges"
