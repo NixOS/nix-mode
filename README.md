@@ -67,7 +67,7 @@ nix-repl.el has two purposes.
 
 First, it provides an interface for completion, used by nix-company.el.
 
-Second, it provides an interactive function to open an repl. You can
+Second, it provides an interactive function to open a repl. You can
 open this with:
 
 M-x nix-repl<RET>
