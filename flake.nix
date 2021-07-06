@@ -16,7 +16,8 @@
           f
         ]);
       in stdenvNoCC.mkDerivation {
-        name = "nix-mode-1.4.5";
+        pname = "nix-mode";
+        version = "1.4.5";
         src = self;
         nativeBuildInputs = [ emacs texinfo git ];
         makeFlags = [ "PREFIX=$(out)" ];
