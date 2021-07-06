@@ -52,12 +52,12 @@
 (defcustom nix-store-dir "/nix/store"
   "Nix store directory."
   :group 'nix
-  :type 'string)
+  :type 'directory)
 
 (defcustom nix-state-dir "/nix/var"
   "Nix state directory."
   :group 'nix
-  :type 'string)
+  :type 'directory)
 
 (defun nix-system ()
   "Get the current system tuple."
