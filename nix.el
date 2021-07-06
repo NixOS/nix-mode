@@ -35,12 +35,12 @@
   :type 'string)
 
 (defcustom nix-instantiate-executable "nix-instantiate"
-  "Nix executable location."
+  "Nix-instantiate executable location."
   :group 'nix
   :type 'string)
 
 (defcustom nix-store-executable "nix-store"
-  "Nix executable location."
+  "Nix-store executable location."
   :group 'nix
   :type 'string)
 
@@ -52,12 +52,12 @@
 (defcustom nix-store-dir "/nix/store"
   "Nix store directory."
   :group 'nix
-  :type 'string)
+  :type 'directory)
 
 (defcustom nix-state-dir "/nix/var"
-  "Nix store directory."
+  "Nix state directory."
   :group 'nix
-  :type 'string)
+  :type 'directory)
 
 (defun nix-system ()
   "Get the current system tuple."
@@ -76,7 +76,7 @@
   "Show nix config."
   (nix--process-json "show-config" "--json"))
 
-(defvar nix-commands
+(defconst nix-commands
   '("add-to-store"
     "build"
     "cat-nar"
@@ -107,7 +107,7 @@
     "verify"
     "why-depends"))
 
-(defvar nix-toplevel-options
+(defconst nix-toplevel-options
   '("-v"
     "--verbose"
     "-h"
@@ -117,7 +117,7 @@
     "--option"
     "--version"))
 
-(defvar nix-config-options
+(defconst nix-config-options
   '("allowed-uris"
     "allow-import-from-derivation"
     "allow-new-priveleges"

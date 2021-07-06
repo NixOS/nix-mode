@@ -5,7 +5,7 @@
 [![Build Status](https://travis-ci.com/NixOS/nix-mode.svg?branch=master)](https://travis-ci.com/NixOS/nix-mode)
 
 An Emacs major mode for editing Nix expressions. There is also a
-manual available at nix-mode.org.
+manual available at [nix-mode.org](./nix-mode.org).
 
 ## Submodes
 
@@ -67,7 +67,7 @@ nix-repl.el has two purposes.
 
 First, it provides an interface for completion, used by nix-company.el.
 
-Second, it provides an interactive function to open an repl. You can
+Second, it provides an interactive function to open a repl. You can
 open this with:
 
 M-x nix-repl<RET>
