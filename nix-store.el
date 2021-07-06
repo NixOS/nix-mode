@@ -18,7 +18,7 @@
 PATH the path within /nix/store to realise"
   (make-process
    :buffer nil
-   :command (list nix-store-executable "-r" path)
+   :command (list nix-store-executable "--realise" path)
    :noquery t
    :name (format "*nix-store*<%s>" path)))
 
