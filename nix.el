@@ -346,6 +346,11 @@ OPTIONS a list of options to accept."
   (json-read-from-string
     (apply #'nix--process-string args)))
 
+(defun nix--process-lines (&rest args)
+  (seq-filter (lambda (el) (not (string= "" el)))
+    (split-string
+      (apply #'nix--process-string args) "\n")))
+
 (defun nix--process-json-nocheck (&rest args)
   ;; No checking of exitcode is possible here until
   ;; https://github.com/NixOS/nix/issues/2474 is resolved
