@@ -35,7 +35,7 @@
   "Find the nixfmt binary, or error if it's missing."
   (let ((nixfmt-bin (executable-find nix-nixfmt-bin)))
     (unless nixfmt-bin
-      (error "Could not locate executable \"%s\"" nix-nixfmt-bin))
+      (error "Could not locate executable %S" nix-nixfmt-bin))
     nixfmt-bin))
 
 (defun nix-format-buffer ()
