@@ -13,16 +13,22 @@
   :group 'nix
   :type 'string)
 
+(if (fboundp 'replace-buffer-contents)
+    (defun nix--replace-buffer-contents (src dst)
+      (with-current-buffer dst (replace-buffer-contents src)))
+  (defun nix--replace-buffer-contents (src dst)
+    (if (not (string= (with-current-buffer src (buffer-string))
+		      (with-current-buffer dst (buffer-string))))
+	(with-current-buffer src
+	  (copy-to-buffer dst (point-min) (point-max))))))
+
 (defun nix--format-call (buf nixfmt-bin)
   "Format BUF using nixfmt."
   (with-current-buffer (get-buffer-create "*nixfmt*")
     (erase-buffer)
     (insert-buffer-substring buf)
     (if (zerop (call-process-region (point-min) (point-max) nixfmt-bin t t nil))
-        (progn
-          (if (not (string= (buffer-string) (with-current-buffer buf (buffer-string))))
-              (copy-to-buffer buf (point-min) (point-max)))
-          (kill-buffer))
+	(nix--replace-buffer-contents (current-buffer) buf)
       (error "Nixfmt failed, see *nixfmt* buffer for details"))))
 
 (defun nix--find-nixfmt ()
