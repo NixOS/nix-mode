@@ -38,5 +38,11 @@
   (nix--format-call (current-buffer) (nix--find-nixfmt))
   (message "Formatted buffer with nixfmt."))
 
+;;;###autoload
+(defun nix-format-before-save ()
+  "Add this to `before-save-hook' to run nixfmt when saving."
+  (when (derived-mode-p 'nix-mode)
+    (nix-format-buffer)))
+
 (provide 'nix-format)
 ;;; nix-format.el ends here
