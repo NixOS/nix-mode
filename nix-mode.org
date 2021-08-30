@@ -103,7 +103,7 @@ to set up just nix-mode without use-package:
 
 *** nix-mode
 
-This is a major mode for editing Nix expressons. It provides syntax
+This is a major mode for editing Nix expressions. It provides syntax
 highlighting, sane defaults, and experimental indentation support.
 
 You can set it up to handle .nix files with,
@@ -183,8 +183,8 @@ First, there are 3 commands that run Nix phases for you.
 - nix-shell-configure
 - nix-shell-build
 
-You can run any one of these to invode the correspond Nix phase. For
-instance to unpack the source for Emacs, let’s start from a dired
+You can run any one of these to invoke the corresponding Nix phase. For
+instance, to unpack the source for Emacs, let’s start from a dired
 buffer,
 
 #+BEGIN_SRC text
@@ -195,7 +195,7 @@ C-x C-f ~ RET
 M-x nix-shell-unpack RET emacs RET
 #+END_SRC
 
-This will unpack the Emacs soure code. It may take a minute or two to
+This will unpack the Emacs source code. It may take a minute or two to
 unpack. After that, we can enter the Emacs directory with find-file,
 
 #+BEGIN_SRC text
