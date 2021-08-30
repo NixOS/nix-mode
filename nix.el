@@ -18,7 +18,6 @@
 
 (require 'pcomplete)
 (require 'json)
-(require 'f)
 
 (defgroup nix nil
   "Nix-related customizations"
@@ -331,7 +330,9 @@ OPTIONS a list of options to accept."
     (let* ((tmpfile  (make-temp-file "nix--process-stderr"))
 	 (cleaned-args (seq-filter #'stringp args))
 	 (exitcode (apply #'call-process `(,nix-executable nil (t ,tmpfile) nil ,@cleaned-args )))
-	 (stderr (f-read-text tmpfile)))
+	 (stderr (with-temp-buffer
+		   (insert-file-contents tmpfile)
+		   (buffer-string))))
       (delete-file tmpfile)
       (list (buffer-string) stderr exitcode))))
 
