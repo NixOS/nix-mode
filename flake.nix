@@ -14,6 +14,7 @@
           company
           mmm-mode
           f
+          magit-section
         ]);
       in stdenvNoCC.mkDerivation {
         pname = "nix-mode";

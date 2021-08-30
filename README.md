@@ -72,6 +72,16 @@ open this with:
 
 M-x nix-repl<RET>
 
+### nix-store.el
+
+This file provides a command `M-x nix-store-show-path`. The command displays an
+overview of a store path. The information it shows is the realisation status,
+the hash and the size of the store path. Also it shows lists of derivers,
+references, referrers and requisites of the respective path.
+
+You can change the order in which that information is show. See the
+documentation of the function `nix-store-show-path` for more information.
+
 ### nix-prettify-mode.el
 
 When nix-prettify-mode is enabled, hash-parts of the Nix store file names are
