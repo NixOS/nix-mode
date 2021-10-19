@@ -186,10 +186,11 @@ OPTIONS a list of options to accept."
 
 (defun nix-is-24 ()
   "Whether Nix is a version with Flakes support."
-  ;; earlier versions reported as 3, now it’s just nix-2.4
   (let ((version (nix-version)))
-    (or (string-prefix-p "nix (Nix) 3" version)
-        (string-prefix-p "nix (Nix) 2.4" version))))
+    (save-match-data
+      (when (string-match (rx bol "nix (Nix) " (group (+ digit) (?  "." (+ digit))))
+                          version)
+        (version<= "2.4" (match-string 1 version))))))
 
 (defun nix-has-flakes ()
   "Whether Nix is a version with Flakes support."
