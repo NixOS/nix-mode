@@ -1,7 +1,7 @@
 {
   description = "An emacs major mode for editing Nix expressions";
 
-  inputs.nixpkgs.url = "nixpkgs/nixos-21.05-small";
+  inputs.nixpkgs.url = "nixpkgs/nixos-unstable";
 
   outputs = { self, nixpkgs }: let
     systems = [ "x86_64-linux" "i686-linux" "x86_64-darwin" "aarch64-linux" "aarch64-darwin" ];
