@@ -11,6 +11,32 @@
 (require 'nix)
 (require 'transient)
 
+;;;; Transient classes
+
+;;;;; flake-ref
+
+(defclass nix-flake-ref-variable (transient-variable)
+  ((variable :initarg :variable)
+   (constant-value :initarg :constant-value :initform nil)))
+
+(cl-defmethod transient-init-value ((obj nix-flake-ref-variable))
+  (unless (oref obj value)
+    (oset obj value (eval (oref obj variable)))))
+
+(cl-defmethod transient-infix-read ((obj nix-flake-ref-variable))
+  (if-let (value (oref obj constant-value))
+      (if (symbolp value)
+          (symbol-value value)
+        value)
+    (nix-flake--select-flake nil (oref obj value))))
+
+(cl-defmethod transient-infix-set ((obj nix-flake-ref-variable) value)
+  (oset obj value value)
+  (set (oref obj variable) value))
+
+(cl-defmethod transient-format-value ((obj nix-flake-ref-variable))
+  "")
+
 ;;;; Utility functions
 
 (defun nix-flake--to-list (x)
@@ -31,14 +57,17 @@
     (thread-last (nix--process-lines "registry" "list")
       (mapcar #'split-entry))))
 
-(defun nix-flake--select-flake ()
+;; This argument complies the standard reader interface of transient
+;; just in case, but it may not be necessary.
+(defun nix-flake--select-flake (&optional prompt initial-input history)
   "Select a flake from the registry."
-  (completing-read "Flake URL: "
-                   (thread-last (nix-flake--registry-list)
-                     (cl-remove-if-not (pcase-lambda (`(,type . ,_))
+  (completing-read (or prompt "Flake URL: ")
+		   (thread-last (nix-flake--registry-list)
+		     (cl-remove-if-not (pcase-lambda (`(,type . ,_))
 					 (member type '("user" "global"))))
-                     (mapcar (pcase-lambda (`(,_ ,_ ,ref))
-			       ref)))))
+		     (mapcar (pcase-lambda (`(,_ ,_ ,ref))
+			       ref)))
+		   nil nil nil history initial-input))
 
 ;;;; nix-flake command
 
@@ -306,8 +335,7 @@ whatever supported by Nix."
       (nix-flake--command '("flake" "lock") nil
                           (nix-flake--directory-ref dir))))
    (t
-    ;; TODO: Let the user run 'nix flake init' to create flake.nix
-    (user-error "The directory does not contain flake.nix"))))
+    (nix-flake-init-dispatch))))
 
 (defun nix-flake--directory-ref (dir)
   "Return the flake ref for a local DIR."
@@ -315,18 +343,26 @@ whatever supported by Nix."
 
 ;;;; nix flake init
 
+;;;;; Setting the template repository
+
 (defvar nix-flake-template-repository nil)
 
 (defun nix-flake--init-source ()
   "Describe the current template repository for init command."
   (format "Template repository: %s" nix-flake-template-repository))
 
-(defun nix-flake--templates (flake-ref)
-  "Return a list of templates in FLAKE-REF."
-  (thread-last (nix--process-json "flake" "show" "--json" flake-ref)
-    (alist-get 'templates)
-    (mapcar #'car)
-    (mapcar #'symbol-name)))
+(transient-define-infix nix-flake-init:from-registry ()
+  :class 'nix-flake-ref-variable
+  :variable 'nix-flake-template-repository
+  :description "Select from the registry")
+
+(transient-define-infix nix-flake-init:default-templates ()
+  :class 'nix-flake-ref-variable
+  :variable 'nix-flake-template-repository
+  :constant-value "flake:templates"
+  :description "Use the default template set")
+
+;;;;; Running the command
 
 (defun nix-flake--init (flake-ref template-name)
   "Initialize a flake from a template.
@@ -341,6 +377,15 @@ template, TEMPLATE-NAME is the name of the template."
                         ,(concat flake-ref "#" template-name))
 		      " ")))
 
+;;;;; Selecting a template
+
+(defun nix-flake--templates (flake-ref)
+  "Return a list of templates in FLAKE-REF."
+  (thread-last (nix--process-json "flake" "show" "--json" flake-ref)
+    (alist-get 'templates)
+    (mapcar #'car)
+    (mapcar #'symbol-name)))
+
 ;; It might be better to use `transient-define-suffix', but I don't know for
 ;; sure.
 (defun nix-flake-init-select-template ()
@@ -353,13 +398,16 @@ template, TEMPLATE-NAME is the name of the template."
                          (nix-flake--templates flake-ref))))
     (nix-flake--init flake-ref template-name)))
 
+;;;;; The transient interface
+
 ;;;###autoload (autoload 'nix-flake-init "nix-flake" nil t)
 (transient-define-prefix nix-flake-init-dispatch (&optional flake-ref)
   "Scaffold a project from a template."
   [:description "Initialize a flake"]
   [:description
    nix-flake--init-source
-   ("r" nix-flake-init--from-registry)]
+   ("r" nix-flake-init:from-registry)
+   ("d" nix-flake-init:default-templates)]
   ["Initialize a flake"
    ("t" "Select template" nix-flake-init-select-template)]
   (interactive (list nil))
@@ -371,8 +419,7 @@ template, TEMPLATE-NAME is the name of the template."
 (defun nix-flake-init ()
   "Run \"nix flake init\" command via a transient interface."
   (interactive)
-  (let* ((root (ignore-errors
-		 (vc-root-dir)))
+  (let* ((root (locate-dominating-file default-directory ".git"))
          (default-directory
            (if (and root
                     (not (file-equal-p root default-directory))
