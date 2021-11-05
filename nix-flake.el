@@ -355,10 +355,10 @@ For ARGS and FLAKE-REF, see the documentation of
    ("=r" nix-flake:from-registry)
    ("=d" nix-flake:flake-directory)]
   ["Arguments"
-   ("-m" "Allow access to mutable paths and repositories" "--impure")
-   ("-u" nix-flake-arg:update-input)
+   ("-i" "Allow access to mutable paths and repositories" "--impure")
+   ("-ui" nix-flake-arg:update-input)
    ("-nu" "Do not allow any updates to the flake's lock file" "--no-update-lock-file")
-   ("-c" "Commit changes to the flake's lock file" "--commit-lock-file")]
+   ("-cl" "Commit changes to the flake's lock file" "--commit-lock-file")]
   ["Installable commands"
    ("r" "Run attribute" nix-flake-run-attribute)
    ("R" "Run default" nix-flake-run-default :if nix-flake--default-run-p)
