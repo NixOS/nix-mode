@@ -39,7 +39,8 @@ already registered in either the user or the global registry."
 
 (defclass nix-flake-ref-variable (transient-variable)
   ((variable :initarg :variable)
-   (constant-value :initarg :constant-value :initform nil)))
+   (constant-value :initarg :constant-value :initform nil)
+   (reader :initarg :reader :initform nil)))
 
 (cl-defmethod transient-init-value ((obj nix-flake-ref-variable))
   (unless (oref obj value)
@@ -50,7 +51,9 @@ already registered in either the user or the global registry."
       (if (symbolp value)
           (symbol-value value)
         value)
-    (nix-flake--select-flake nil (oref obj value))))
+    (if-let (reader (oref obj reader))
+	(funcall reader "Flake directory: " (oref obj value))
+      (nix-flake--select-flake nil (oref obj value)))))
 
 (cl-defmethod transient-infix-set ((obj nix-flake-ref-variable) value)
   (oset obj value value)
@@ -79,20 +82,34 @@ already registered in either the user or the global registry."
     (thread-last (nix--process-lines "registry" "list")
       (mapcar #'split-entry))))
 
+(defun nix-flake--registry-refs ()
+  "Return a list of flake refs in the registry."
+  (thread-last (nix-flake--registry-list)
+    ;; I don't know if I should include flakes in the
+    ;; system registry. It's ugly to display full
+    ;; checksums, so I won't include them for now.
+    (cl-remove-if-not (pcase-lambda (`(,type . ,_))
+                        (member type '("user" "global"))))
+    (mapcar (lambda (cells)
+              (list (nth 1 cells)
+                    (nth 2 cells))))
+    (flatten-list)))
+
+(defun nix-flake--registry-add-1 (flake-ref)
+  "Add FLAKE-REF to the registry with a new name."
+  (let ((name (read-string (format-message "Enter the registry name for %s: "
+                                           flake-ref))))
+    (unless (or (not name)
+                (string-empty-p name))
+      (start-process "nix registry add" "*nix registry add*"
+                     nix-executable
+                     "registry" "add" name flake-ref))))
+
 ;; This argument complies the standard reader interface of transient
 ;; just in case, but it may not be necessary.
 (defun nix-flake--select-flake (&optional prompt initial-input history)
   "Select a flake from the registry."
-  (let* ((registered-flakes (thread-last (nix-flake--registry-list)
-			      ;; I don't know if I should include flakes in the
-			      ;; system registry. It's ugly to display full
-			      ;; checksums, so I won't include them for now.
-                              (cl-remove-if-not (pcase-lambda (`(,type . ,_))
-                                                  (member type '("user" "global"))))
-                              (mapcar (lambda (cells)
-					(list (nth 1 cells)
-                                              (nth 2 cells))))
-                              (flatten-list)))
+  (let* ((registered-flakes (nix-flake--registry-refs))
          (input (string-trim
                  (completing-read (or prompt "Flake URL: ")
 				  registered-flakes
@@ -100,19 +117,35 @@ already registered in either the user or the global registry."
     (prog1 input
       (when (and nix-flake-add-to-registry
                  (not (member input registered-flakes)))
-        (let ((name (read-string (format-message "Enter the registry name for %s: "
-                                                 input))))
-          (unless (or (not name)
-                      (string-empty-p name))
-            (start-process "nix registry add" "*nix registry add*"
-                           nix-executable
-                           "registry" "add" name input)))))))
+	(nix-flake--registry-add-1 input)))))
 
 ;;;; nix-flake command
 
 ;;;;; Variables
 
 (defvar nix-flake-ref nil)
+
+;;;;; Setting the flake
+(transient-define-infix nix-flake:from-registry ()
+  :class 'nix-flake-ref-variable
+  :variable 'nix-flake-ref
+  :description "Select a flake from the registry")
+
+(transient-define-infix nix-flake:flake-directory ()
+  :class 'nix-flake-ref-variable
+  :variable 'nix-flake-ref
+  :reader 'nix-flake--read-directory
+  :description "Select a directory")
+
+(defun nix-flake--read-directory (prompt &optional initial-input _history)
+  "Select a directory containing a flake."
+  (let ((input (read-directory-name prompt initial-input nil t)))
+    (prog1 (expand-file-name input)
+      (unless (file-exists-p (expand-file-name "flake.nix" input))
+        (user-error "The selected directory does not contain flake.nix"))
+      (when (and nix-flake-add-to-registry
+                 (not (member input (nix-flake--registry-refs))))
+        (nix-flake--registry-add-1 input)))))
 
 ;;;;; --update-input
 
@@ -317,8 +350,10 @@ For ARGS and FLAKE-REF, see the documentation of
 ;;;###autoload (autoload 'nix-flake-dispatch "nix-flake" nil t)
 (transient-define-prefix nix-flake-dispatch (flake-ref &optional remote)
   "Run a command on a Nix flake."
-  ;; TODO: Allow switching the flake
-  [:description nix-flake--description]
+  [:description
+   nix-flake--description
+   ("=r" nix-flake:from-registry)
+   ("=d" nix-flake:flake-directory)]
   ["Arguments"
    ("-m" "Allow access to mutable paths and repositories" "--impure")
    ("-u" nix-flake-arg:update-input)
