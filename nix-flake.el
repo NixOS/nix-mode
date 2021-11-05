@@ -11,6 +11,28 @@
 (require 'nix)
 (require 'transient)
 
+;;;; Custom variables
+
+(defcustom nix-flake-init-post-action 'open-flake
+  "Action to run after successfully initializing a flake.
+
+This action is run after a flake is successlly initialized by
+`nix-flake-init` (or generally `nix-flake-dispatch`).
+
+You can also specify a function, which should take no arguments.
+It is called in the directory of the flake."
+  :type '(choice (const :tag "Open flake.nix" open-flake-nix)
+		 (const :tag "Do nothing" nil)
+		 (function :tag "User-defined function")))
+
+(defcustom nix-flake-add-to-registry t
+  "Whether to add a new flake to registry.
+
+When this variable is non-nil, every flake reference from the
+interactive input is added to the flake registry, unless it is
+already registered in either the user or the global registry."
+  :type 'boolean)
+
 ;;;; Transient classes
 
 ;;;;; flake-ref
@@ -61,13 +83,30 @@
 ;; just in case, but it may not be necessary.
 (defun nix-flake--select-flake (&optional prompt initial-input history)
   "Select a flake from the registry."
-  (completing-read (or prompt "Flake URL: ")
-		   (thread-last (nix-flake--registry-list)
-		     (cl-remove-if-not (pcase-lambda (`(,type . ,_))
-					 (member type '("user" "global"))))
-		     (mapcar (pcase-lambda (`(,_ ,_ ,ref))
-			       ref)))
-		   nil nil nil history initial-input))
+  (let* ((registry-entries (thread-last (nix-flake--registry-list)
+                             (cl-remove-if-not (pcase-lambda (`(,type . ,_))
+                                                 (member type '("user" "global"))))))
+         (input (string-trim
+                 (completing-read (or prompt "Flake URL: ")
+                                  (thread-last registry-entries
+                                    (mapcar (pcase-lambda (`(,_ ,_ ,ref))
+					      ref)))
+                                  nil nil nil history initial-input))))
+    (prog1 input
+      (when (and nix-flake-add-to-registry
+                 (not (member input
+                              (thread-last registry-entries
+                                (mapcar (lambda (cells)
+                                          (list (nth 1 cells)
+                                                (nth 2 cells))))
+                                (flatten-list)))))
+        (let ((name (read-string (format-message "Enter the registry name for %s: "
+                                                 input))))
+          (unless (or (not name)
+                      (string-empty-p name))
+            (start-process "nix registry add" "*nix registry add*"
+                           nix-executable
+                           "registry" "add" name input)))))))
 
 ;;;; nix-flake command
 
@@ -345,7 +384,11 @@ whatever supported by Nix."
 
 ;;;;; Setting the template repository
 
-(defvar nix-flake-template-repository nil)
+(defvar nix-flake-template-repository nil
+  "Flake reference to the current template sets.")
+
+(defvar nix-flake-template-name nil
+  "Attribute name of the last used template.")
 
 (defun nix-flake--init-source ()
   "Describe the current template repository for init command."
@@ -369,13 +412,33 @@ whatever supported by Nix."
 
 FLAKE-REF must be a reference to a flake which contains the
 template, TEMPLATE-NAME is the name of the template."
-  (compile (mapconcat #'shell-quote-argument
-                      `(,nix-executable
-                        "flake"
-                        "init"
-                        "-t"
-                        ,(concat flake-ref "#" template-name))
-		      " ")))
+  ;; Save the selection state for later use.
+  (setq nix-flake-template-repository flake-ref
+        nix-flake-template-name template-name)
+  (let ((proc (start-process "nix flake init"
+                             "*nix flake init*"
+                             nix-executable
+                             "flake"
+                             "init"
+                             "-t"
+                             (concat flake-ref "#" template-name))))
+    (set-process-sentinel proc
+			  (lambda (process _event)
+			    (when (eq 'exit (process-status process))
+			      (if (= 0 (process-exit-status process))
+				  (nix-flake-init-post-action)
+				(message "Returned non-zero from nix flake init")))))
+    proc))
+
+(defun nix-flake-init-post-action ()
+  "Perform an post-process action depending on the configuration.
+
+See `nix-flake-init-post-action' variable for details."
+  (pcase nix-flake-init-post-action
+    ('open-flake-nix
+     (find-file "flake.nix"))
+    ((pred functionp)
+     (funcall nix-flake-init-post-action))))
 
 ;;;;; Selecting a template
 
