@@ -8,12 +8,45 @@
 
 ;;; Code:
 
-(require 'transient)
 (require 'nix)
+(require 'transient)
+
+;;;; Utility functions
+
+(defun nix-flake--to-list (x)
+  "If X is not a list, make a singleton list containing it."
+  (if (listp x)
+      x
+    (list x)))
+
+;;;; Registry
+;; Maybe we'll move these functions to a separate library named nix-registry.el.
+
+(defun nix-flake--registry-list ()
+  "Return a list of entries from the registry."
+  (cl-flet
+      ((split-entry
+        (s)
+        (split-string s "[[:space:]]+")))
+    (thread-last (nix--process-lines "registry" "list")
+      (mapcar #'split-entry))))
+
+(defun nix-flake--select-flake ()
+  "Select a flake from the registry."
+  (completing-read "Flake URL: "
+                   (thread-last (nix-flake--registry-list)
+                     (cl-remove-if-not (pcase-lambda (`(,type . ,_))
+					 (member type '("user" "global"))))
+                     (mapcar (pcase-lambda (`(,_ ,_ ,ref))
+			       ref)))))
+
+;;;; nix-flake command
+
+;;;;; Variables
 
 (defvar nix-flake-ref nil)
 
-(defvar nix-flake-outputs nil)
+;;;;; --update-input
 
 (defclass nix-flake:update-input (transient-option)
   ())
@@ -40,17 +73,6 @@
   (when-let ((value (oref obj value)))
     (list (oref obj argument) value)))
 
-(defun nix-flake-system-attribute-names (types)
-  "Return a list of output attributes of particular TYPES."
-  (let ((system (intern (nix-system))))
-    (thread-last nix-flake-outputs
-      (mapcar (pcase-lambda (`(,type . ,alist))
-		(when (memq type types)
-		  (mapcar #'car (alist-get system alist)))))
-      (apply #'append)
-      (cl-remove-duplicates)
-      (mapcar #'symbol-name))))
-
 (defun nix-flake--input-names ()
   "Return a list of inputs to the flake."
   (thread-last (nix--process-json "flake" "info" nix-flake-ref "--json")
@@ -67,9 +89,20 @@ FIXME: PROMPT INITIAL-INPUT"
   (completing-read prompt (nix-flake--input-names)
 		   nil nil initial-input))
 
-(defun nix-flake--args ()
-  "Return arguments for Nix command."
-  (flatten-list (transient-args 'nix-flake-dispatch)))
+;;;;; Attribute names
+
+(defvar nix-flake-outputs nil)
+
+(defun nix-flake-system-attribute-names (types)
+  "Return a list of output attributes of particular TYPES."
+  (let ((system (intern (nix-system))))
+    (thread-last nix-flake-outputs
+      (mapcar (pcase-lambda (`(,type . ,alist))
+		(when (memq type types)
+		  (mapcar #'car (alist-get system alist)))))
+      (apply #'append)
+      (cl-remove-duplicates)
+      (mapcar #'symbol-name))))
 
 (defun nix-flake--run-attribute-names ()
   "Return possible attribute names for run command."
@@ -87,11 +120,11 @@ FIXME: PROMPT INITIAL-INPUT"
   "Return non-nil if there is the default derivation for build command."
   (not (null (nix-flake-system-attribute-names '(defaultPackage)))))
 
-(defun nix-flake--to-list (x)
-  "If X is not a list, make a singleton list containing it."
-  (if (listp x)
-      x
-    (list x)))
+;;;;; Building command lines
+
+(defun nix-flake--args ()
+  "Return arguments for Nix command."
+  (flatten-list (transient-args 'nix-flake-dispatch)))
 
 (defun nix-flake--command (subcommand nix-args flake-ref &optional args)
   "Build a command line for a Nix subcommand.
@@ -139,6 +172,8 @@ not take the extra arguments."
           (if args
               (concat " -- " args)
             "")))
+
+;;;;; Individual subcommands
 
 (defun nix-flake-run-attribute (args flake-ref attribute command-args)
   "Run an app in the current flake.
@@ -211,10 +246,6 @@ For ARGS and FLAKE-REF, see the documentation of
   (interactive (list (nix-flake--args) nix-flake-ref))
   (compile (nix-flake--command '("flake" "update") args flake-ref)))
 
-(defun nix-flake--description ()
-  "Describe the current flake."
-  (concat "Flake: " nix-flake-ref))
-
 ;;;###autoload (autoload 'nix-flake-dispatch "nix-flake" nil t)
 (transient-define-prefix nix-flake-dispatch (flake-ref &optional remote)
   "Run a command on a Nix flake."
@@ -243,27 +274,9 @@ For ARGS and FLAKE-REF, see the documentation of
 	    (nix--process-json "flake" "show" "--json" "--no-update-lock-file"))))
   (transient-setup 'nix-flake-dispatch))
 
-(defun nix-flake--registry-list ()
-  "Return a list of entries from the registry."
-  (cl-flet
-      ((split-entry
-        (s)
-        (split-string s "[[:space:]]+")))
-    (thread-last (nix--process-lines "registry" "list")
-      (mapcar #'split-entry))))
-
-(defun nix-flake--select-flake ()
-  "Select a flake from the registry."
-  (completing-read "Flake URL: "
-                   (thread-last (nix-flake--registry-list)
-                     (cl-remove-if-not (pcase-lambda (`(,type . ,_))
-					 (member type '("user" "global"))))
-                     (mapcar (pcase-lambda (`(,_ ,_ ,ref))
-			       ref)))))
-
-(defun nix-flake--directory-ref (dir)
-  "Return the flake ref for a local DIR."
-  (expand-file-name dir))
+(defun nix-flake--description ()
+  "Describe the current flake."
+  (concat "Flake: " nix-flake-ref))
 
 ;; A wrapper function for ensuring existence of flake.nix and flake.lock
 ;; in the project directory.
@@ -295,6 +308,10 @@ whatever supported by Nix."
    (t
     ;; TODO: Let the user run 'nix flake init' to create flake.nix
     (user-error "The directory does not contain flake.nix"))))
+
+(defun nix-flake--directory-ref (dir)
+  "Return the flake ref for a local DIR."
+  (expand-file-name dir))
 
 ;;;; nix flake init
 
