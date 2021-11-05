@@ -83,23 +83,23 @@ already registered in either the user or the global registry."
 ;; just in case, but it may not be necessary.
 (defun nix-flake--select-flake (&optional prompt initial-input history)
   "Select a flake from the registry."
-  (let* ((registry-entries (thread-last (nix-flake--registry-list)
-                             (cl-remove-if-not (pcase-lambda (`(,type . ,_))
-                                                 (member type '("user" "global"))))))
+  (let* ((registered-flakes (thread-last (nix-flake--registry-list)
+			      ;; I don't know if I should include flakes in the
+			      ;; system registry. It's ugly to display full
+			      ;; checksums, so I won't include them for now.
+                              (cl-remove-if-not (pcase-lambda (`(,type . ,_))
+                                                  (member type '("user" "global"))))
+                              (mapcar (lambda (cells)
+					(list (nth 1 cells)
+                                              (nth 2 cells))))
+                              (flatten-list)))
          (input (string-trim
                  (completing-read (or prompt "Flake URL: ")
-                                  (thread-last registry-entries
-                                    (mapcar (pcase-lambda (`(,_ ,_ ,ref))
-					      ref)))
+				  registered-flakes
                                   nil nil nil history initial-input))))
     (prog1 input
       (when (and nix-flake-add-to-registry
-                 (not (member input
-                              (thread-last registry-entries
-                                (mapcar (lambda (cells)
-                                          (list (nth 1 cells)
-                                                (nth 2 cells))))
-                                (flatten-list)))))
+                 (not (member input registered-flakes)))
         (let ((name (read-string (format-message "Enter the registry name for %s: "
                                                  input))))
           (unless (or (not name)
