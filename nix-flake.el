@@ -1,15 +1,22 @@
 ;;; nix-flake.el --- Transient interface to Nix flake commands -*- lexical-binding: t -*-
 
+;; Keywords: nix, languages, tools, unix
+;; Package-Requires: ((emacs "25.1") (transient "0.3"))
+
 ;;; Commentary:
 
-;; This library provides a transient interface to flake commands.
-
-;; This is experimental.
+;; This library provides transient interface to experimental commands in Nix.
+;; See the Nix manual for more information available at
+;; https://nixos.org/manual/nix/unstable/command-ref/experimental-commands.html
 
 ;;; Code:
 
 (require 'nix)
 (require 'transient)
+
+(defgroup nix-flake nil
+  "Nix flake commands"
+  :group 'nix)
 
 ;;;; Custom variables
 
@@ -43,23 +50,28 @@ already registered in either the user or the global registry."
    (reader :initarg :reader :initform nil)))
 
 (cl-defmethod transient-init-value ((obj nix-flake-ref-variable))
+  "Set the initial value of the object OBJ."
   (unless (oref obj value)
     (oset obj value (eval (oref obj variable)))))
 
 (cl-defmethod transient-infix-read ((obj nix-flake-ref-variable))
+  "Determine the new value of the infix object OBJ."
   (if-let (value (oref obj constant-value))
       (if (symbolp value)
           (symbol-value value)
         value)
     (if-let (reader (oref obj reader))
 	(funcall reader "Flake directory: " (oref obj value))
-      (nix-flake--select-flake nil (oref obj value)))))
+      (nix-flake--read-flake-ref nil (oref obj value)))))
 
 (cl-defmethod transient-infix-set ((obj nix-flake-ref-variable) value)
+  "Set the value of infix object OBJ to VALUE."
   (oset obj value value)
   (set (oref obj variable) value))
 
-(cl-defmethod transient-format-value ((obj nix-flake-ref-variable))
+(cl-defmethod transient-format-value ((_obj nix-flake-ref-variable))
+  "Format the object's value for display and return the result."
+  ;; Don't show the value
   "")
 
 ;;;; Utility functions
@@ -107,8 +119,11 @@ already registered in either the user or the global registry."
 
 ;; This argument complies the standard reader interface of transient
 ;; just in case, but it may not be necessary.
-(defun nix-flake--select-flake (&optional prompt initial-input history)
-  "Select a flake from the registry."
+(defun nix-flake--read-flake-ref (&optional prompt initial-input history)
+  "Select a flake from the registry.
+
+For PROMPT, INITIAL-INPUT, and HISTORY, see the documentation of
+readers in transient.el."
   (let* ((registered-flakes (nix-flake--registry-refs))
          (input (string-trim
                  (completing-read (or prompt "Flake URL: ")
@@ -138,7 +153,9 @@ already registered in either the user or the global registry."
   :description "Select a directory")
 
 (defun nix-flake--read-directory (prompt &optional initial-input _history)
-  "Select a directory containing a flake."
+  "Select a directory containing a flake.
+
+For PROMPT and INITIAL-INPUT, see the documentation of transient.el."
   (let ((input (read-directory-name prompt initial-input nil t)))
     (prog1 (expand-file-name input)
       (unless (file-exists-p (expand-file-name "flake.nix" input))
@@ -149,17 +166,17 @@ already registered in either the user or the global registry."
 
 ;;;;; --update-input
 
-(defclass nix-flake:update-input (transient-option)
+(defclass nix-flake--update-input-class (transient-option)
   ())
 
 (transient-define-infix nix-flake-arg:update-input ()
-  :class 'nix-flake:update-input
+  :class 'nix-flake--update-input-class
   :argument "--update-input"
   :reader 'nix-flake--read-input-path
   :prompt "Input: "
   :description "Update a specific flake path")
 
-(cl-defmethod transient-format-value ((obj nix-flake:update-input))
+(cl-defmethod transient-format-value ((obj nix-flake--update-input-class))
   "Format --update-input arguments from OBJ."
   (let ((value (oref obj value)))
     (propertize (concat (oref obj argument)
@@ -169,7 +186,7 @@ already registered in either the user or the global registry."
                           'transient-value
                         'transient-inactive-value))))
 
-(cl-defmethod transient-infix-value ((obj nix-flake:update-input))
+(cl-defmethod transient-infix-value ((obj nix-flake--update-input-class))
   "Return the value of the suffix object OBJ."
   (when-let ((value (oref obj value)))
     (list (oref obj argument) value)))
@@ -186,7 +203,8 @@ already registered in either the user or the global registry."
 (defun nix-flake--read-input-path (prompt initial-input _history)
   "Read an input name of a flake from the user.
 
-FIXME: PROMPT INITIAL-INPUT"
+For PROMPT and INITIAL-INPUT, see the documentation of :reader in
+transient.el."
   (completing-read prompt (nix-flake--input-names)
 		   nil nil initial-input))
 
@@ -383,6 +401,7 @@ For ARGS and FLAKE-REF, see the documentation of
 
 ;; A wrapper function for ensuring existence of flake.nix and flake.lock
 ;; in the project directory.
+;;;###autoload
 (cl-defun nix-flake (dir &key flake-ref)
   "Dispatch a transient interface for Nix commands.
 
@@ -392,7 +411,7 @@ Alternatively, you can specify FLAKE-REF which follows the syntax
 of flake-url. It can refer to a remote url, a local file path, or
 whatever supported by Nix."
   (interactive (pcase current-prefix-arg
-                 ('(4) (list nil :flake-ref (nix-flake--select-flake)))
+                 ('(4) (list nil :flake-ref (nix-flake--read-flake-ref)))
 		 ('(16) (if nix-flake-ref
 			    (list nil :flake-ref nix-flake-ref)
 			  (user-error "Last flake is unavailable")))
@@ -493,7 +512,7 @@ See `nix-flake-init-post-action' variable for details."
   "Select a template and initialize a flake."
   (interactive)
   (let* ((flake-ref (or nix-flake-template-repository
-                        (nix-flake--select-flake)))
+                        (nix-flake--read-flake-ref)))
          (template-name (completing-read
                          (format-message "Select a template from %s: " flake-ref)
                          (nix-flake--templates flake-ref))))
@@ -530,7 +549,7 @@ See `nix-flake-init-post-action' variable for details."
                root
              default-directory)))
     (if (file-exists-p "flake.nix")
-        (user-error "This directory already contains a flake")
+        (user-error "The directory already contains a flake")
       (nix-flake-init-dispatch))))
 
 (provide 'nix-flake)
