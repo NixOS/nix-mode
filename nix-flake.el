@@ -296,5 +296,77 @@ whatever supported by Nix."
     ;; TODO: Let the user run 'nix flake init' to create flake.nix
     (user-error "The directory does not contain flake.nix"))))
 
+;;;; nix flake init
+
+(defvar nix-flake-template-repository nil)
+
+(defun nix-flake--init-source ()
+  "Describe the current template repository for init command."
+  (format "Template repository: %s" nix-flake-template-repository))
+
+(defun nix-flake--templates (flake-ref)
+  "Return a list of templates in FLAKE-REF."
+  (thread-last (nix--process-json "flake" "show" "--json" flake-ref)
+    (alist-get 'templates)
+    (mapcar #'car)
+    (mapcar #'symbol-name)))
+
+(defun nix-flake--init (flake-ref template-name)
+  "Initialize a flake from a template.
+
+FLAKE-REF must be a reference to a flake which contains the
+template, TEMPLATE-NAME is the name of the template."
+  (compile (mapconcat #'shell-quote-argument
+                      `(,nix-executable
+                        "flake"
+                        "init"
+                        "-t"
+                        ,(concat flake-ref "#" template-name))
+		      " ")))
+
+;; It might be better to use `transient-define-suffix', but I don't know for
+;; sure.
+(defun nix-flake-init-select-template ()
+  "Select a template and initialize a flake."
+  (interactive)
+  (let* ((flake-ref (or nix-flake-template-repository
+                        (nix-flake--select-flake)))
+         (template-name (completing-read
+                         (format-message "Select a template from %s: " flake-ref)
+                         (nix-flake--templates flake-ref))))
+    (nix-flake--init flake-ref template-name)))
+
+;;;###autoload (autoload 'nix-flake-init "nix-flake" nil t)
+(transient-define-prefix nix-flake-init-dispatch (&optional flake-ref)
+  "Scaffold a project from a template."
+  [:description "Initialize a flake"]
+  [:description
+   nix-flake--init-source
+   ("r" nix-flake-init--from-registry)]
+  ["Initialize a flake"
+   ("t" "Select template" nix-flake-init-select-template)]
+  (interactive (list nil))
+  (when flake-ref
+    (setq nix-flake-template-repository flake-ref))
+  (transient-setup 'nix-flake-init-dispatch))
+
+;;;###autoload
+(defun nix-flake-init ()
+  "Run \"nix flake init\" command via a transient interface."
+  (interactive)
+  (let* ((root (ignore-errors
+		 (vc-root-dir)))
+         (default-directory
+           (if (and root
+                    (not (file-equal-p root default-directory))
+                    (yes-or-no-p (format-message
+                                  "The directory %s is not the repository root. Change to %s?"
+                                  default-directory root)))
+               root
+             default-directory)))
+    (if (file-exists-p "flake.nix")
+        (user-error "This directory already contains a flake")
+      (nix-flake-init-dispatch))))
+
 (provide 'nix-flake)
 ;;; nix-flake.el ends here
