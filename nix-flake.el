@@ -391,9 +391,12 @@ DIR is a directory on the file system in which flake.nix resides.
 Alternatively, you can specify FLAKE-REF which follows the syntax
 of flake-url. It can refer to a remote url, a local file path, or
 whatever supported by Nix."
-  (interactive (if (consp current-prefix-arg)
-                   (list nil :flake-ref (nix-flake--select-flake))
-                 (list default-directory)))
+  (interactive (pcase current-prefix-arg
+                 ('(4) (list nil :flake-ref (nix-flake--select-flake)))
+		 ('(16) (if nix-flake-ref
+			    (list nil :flake-ref nix-flake-ref)
+			  (user-error "Last flake is unavailable")))
+                 (_ (list default-directory))))
   (cl-assert (or (file-directory-p dir)
                  flake-ref)
              nil
