@@ -105,7 +105,8 @@ already registered in either the user or the global registry."
     (mapcar (lambda (cells)
               (list (nth 1 cells)
                     (nth 2 cells))))
-    (flatten-list)))
+    ;; You could use `flatten-tree' in Emacs 27.1.
+    (apply #'append)))
 
 (defun nix-flake--registry-add-1 (flake-ref)
   "Add FLAKE-REF to the registry with a new name."
@@ -243,7 +244,8 @@ transient.el."
 
 (defun nix-flake--args ()
   "Return arguments for Nix command."
-  (flatten-list (transient-args 'nix-flake-dispatch)))
+  ;; You could use `flatten-tree' in Emacs 27.1.
+  (apply #'append (transient-args 'nix-flake-dispatch)))
 
 (defun nix-flake--command (subcommand nix-args flake-ref &optional args)
   "Build a command line for a Nix subcommand.
