@@ -13,7 +13,7 @@
 
 ;;;; Custom variables
 
-(defcustom nix-flake-init-post-action 'open-flake
+(defcustom nix-flake-init-post-action 'open-flake-nix
   "Action to run after successfully initializing a flake.
 
 This action is run after a flake is successlly initialized by
