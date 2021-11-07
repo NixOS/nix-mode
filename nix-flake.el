@@ -528,8 +528,8 @@ See `nix-flake-init-post-action' variable for details."
   [:description "Initialize a flake"]
   [:description
    nix-flake--init-source
-   ("r" nix-flake-init:from-registry)
-   ("d" nix-flake-init:default-templates)]
+   ("=r" nix-flake-init:from-registry)
+   ("=d" nix-flake-init:default-templates)]
   ["Initialize a flake"
    ("t" "Select template" nix-flake-init-select-template)]
   (interactive (list nil))
