@@ -61,6 +61,20 @@ Other useful functions for Lisp scripts are provided:
 
 - nix-system - Get the current system, detected by Nix
 
+### nix-flake.el
+
+nix-flake.el provides support for flake commands.
+These commands are experimental as of Nix 2.4.
+
+It uses transient.el to provide a magit-like interface.
+To run a command on the current flake, type:
+
+M-x nix-flake<RET>
+
+You can also initialize a flake from a template:
+
+M-x nix-flake-init<RET>
+
 ### nix-repl.el
 
 nix-repl.el has two purposes.
