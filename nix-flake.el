@@ -242,130 +242,130 @@ transient.el."
 
 ;;;;; Building command lines
 
-(defun nix-flake--args ()
-  "Return arguments for Nix command."
+(defun nix-flake--options ()
+  "Return a list of options for `nix-flake-dispatch'."
   ;; You could use `flatten-tree' in Emacs 27.1.
   (apply #'append (transient-args 'nix-flake-dispatch)))
 
-(defun nix-flake--command (subcommand nix-args flake-ref &optional args)
+(defun nix-flake--command (subcommand options flake-ref)
   "Build a command line for a Nix subcommand.
 
 SUBCOMMAND is a string or a list of strings which is a subcommand of Nix.
 
-NIX-ARGS is a list of string passed directly after the
-subcommand, before FLAKE-REF. ARGS is extra arguments to the
+OPTIONS is a list of options appended after FLAKE-REF.
+
+COMMAND-ARGUMENTS is extra arguments to the
 command after the flake reference."
   (concat nix-executable
-	  " "
+          " "
           (mapconcat #'shell-quote-argument
                      `(,@(nix-flake--to-list subcommand)
-		       ,@nix-args
-		       ,flake-ref)
-                     " ")
-          (if args
-              (concat " -- " args)
-            "")))
+                       ,flake-ref
+		       ,@options)
+                     " ")))
 
-(defun nix-flake--installable-command (subcommand nix-args flake-ref attribute
-						  &optional args)
+(defun nix-flake--installable-command (subcommand options flake-ref attribute
+						  &optional extra-arguments)
   "Build a command line for a Nix subcommand.
 
 This is like `nix-flake--command', but for a subcommand which
 takes an installable as an argument. See the user manual of Nix
 for what installable means.
 
-SUBCOMMAND, NIX-ARGS, and FLAKE-REF are the same as in the
+SUBCOMMAND, OPTIONS, and FLAKE-REF are the same as in the
 function. ATTRIBUTE is the name of a package, app, or anything
 that refers to a derivation in the flake. It must be a string
 that is concatenated with the sharp symbol in the installable
-reference. ARGS is a list of strings passed to the Nix command
+reference.
+
+EXTRA-ARGUMENTS is a list of strings passed to the Nix command
 after \"--\". Note that some commands such as \"nix build\" do
 not take the extra arguments."
   (concat nix-executable
 	  " "
           (mapconcat #'shell-quote-argument
                      `(,@(nix-flake--to-list subcommand)
-		       ,@nix-args
 		       ,(if attribute
 			    (concat flake-ref "#" attribute)
-			  flake-ref))
+			  flake-ref)
+		       ,@options)
                      " ")
-          (if args
-              (concat " -- " args)
+          (if extra-arguments
+              (concat " -- " extra-arguments)
             "")))
 
 ;;;;; Individual subcommands
 
-(defun nix-flake-run-attribute (args flake-ref attribute command-args)
+(defun nix-flake-run-attribute (options flake-ref attribute command-args)
   "Run an app in the current flake.
 
-ARGS and FLAKE-REF are the same as in other Nix commands.
+OPTIONS and FLAKE-REF are the same as in other Nix commands.
 ATTRIBUTE is the name of a package or app in the flake, and
 COMMAND-ARGS is an optional list of strings passed to the
 application."
-  (interactive (list (nix-flake--args)
+  (interactive (list (nix-flake--options)
                      nix-flake-ref
                      (completing-read "Nix app/package: "
                                       (nix-flake--run-attribute-names))
                      nil))
-  (compile (nix-flake--installable-command "run" args flake-ref attribute
+  (compile (nix-flake--installable-command "run" options flake-ref attribute
                                            command-args)))
 
-(defun nix-flake-run-default (args flake-ref command-args)
+(defun nix-flake-run-default (options flake-ref command-args)
   "Run the default app or package in the current flake.
 
-For ARGS, FLAKE-REF, and COMMAND-ARGS, see the documentation of
+For OPTIONS, FLAKE-REF, and COMMAND-ARGS, see the documentation of
 `nix-flake-run-attribute'."
-  (interactive (list (nix-flake--args)
+  (interactive (list (nix-flake--options)
                      nix-flake-ref
                      nil))
-  (compile (nix-flake--installable-command "run" args flake-ref nil
+  (compile (nix-flake--installable-command "run" options flake-ref nil
                                            command-args)))
 
-(defun nix-flake-build-attribute (args flake-ref attribute)
+(defun nix-flake-build-attribute (options flake-ref attribute)
   "Build a derivation in the current flake.
 
-For ARGS, FLAKE-REF, and ATTRIBUTE, see the documentation of
+For OPTIONS, FLAKE-REF, and ATTRIBUTE, see the documentation of
 `nix-flake-run-attribute'."
-  (interactive (list (nix-flake--args)
+  (interactive (list (nix-flake--options)
                      nix-flake-ref
                      (completing-read "Nix package: "
                                       (nix-flake--build-attribute-names))))
-  (compile (nix-flake--installable-command "build" args flake-ref attribute)))
+  (compile (nix-flake--installable-command "build" options flake-ref attribute)))
 
-(defun nix-flake-build-default (args flake-ref)
+(defun nix-flake-build-default (options flake-ref)
   "Build the default package in the current flake.
 
 
-For ARGS and FLAKE-REF, see the documentation of
+For OPTIONS and FLAKE-REF, see the documentation of
 `nix-flake-run-attribute'."
-  (interactive (list (nix-flake--args)
+  (interactive (list (nix-flake--options)
                      nix-flake-ref))
-  (compile (nix-flake--installable-command "build" args flake-ref nil)))
+  (compile (nix-flake--installable-command "build" options flake-ref nil)))
 
-(defun nix-flake-check (args flake-ref)
+(defun nix-flake-check (options flake-ref)
   "Check the flake.
 
-For ARGS and FLAKE-REF, see the documentation of
+For OPTIONS and FLAKE-REF, see the documentation of
 `nix-flake-run-attribute'."
-  (interactive (list (nix-flake--args) nix-flake-ref))
-  (compile (nix-flake--command '("flake" "check") args flake-ref)))
+  (interactive (list (nix-flake--options) nix-flake-ref))
+  (compile (nix-flake--command '("flake" "check") options flake-ref)))
 
-(defun nix-flake-lock (args flake-ref)
+(defun nix-flake-lock (options flake-ref)
   "Create missing lock file entries.
 
-For ARGS and FLAKE-REF, see the documentation of
+For OPTIONS and FLAKE-REF, see the documentation of
 `nix-flake-run-attribute'."
-  (interactive (list (nix-flake--args) nix-flake-ref))
-  (compile (nix-flake--command '("flake" "lock") args flake-ref)))
+  (interactive (list (nix-flake--options) nix-flake-ref))
+  (compile (nix-flake--command '("flake" "lock") options flake-ref)))
 
-(defun nix-flake-update (args flake-ref)
+(defun nix-flake-update (options flake-ref)
   "Update the lock file.
 
-For ARGS and FLAKE-REF, see the documentation of
+For OPTIONS and FLAKE-REF, see the documentation of
 `nix-flake-run-attribute'."
-  (interactive (list (nix-flake--args) nix-flake-ref))
-  (compile (nix-flake--command '("flake" "update") args flake-ref)))
+  (interactive (list (nix-flake--options) nix-flake-ref))
+  (compile (nix-flake--command '("flake" "update") options flake-ref)))
 
 ;;;###autoload (autoload 'nix-flake-dispatch "nix-flake" nil t)
 (transient-define-prefix nix-flake-dispatch (flake-ref &optional remote)
