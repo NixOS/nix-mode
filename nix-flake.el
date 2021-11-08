@@ -1,7 +1,7 @@
 ;;; nix-flake.el --- Transient interface to Nix flake commands -*- lexical-binding: t -*-
 
 ;; Keywords: nix, languages, tools, unix
-;; Package-Requires: ((emacs "25.1") (transient "0.3"))
+;; Package-Requires: ((emacs "27.1") (transient "0.3"))
 
 ;;; Commentary:
 
@@ -105,8 +105,7 @@ already registered in either the user or the global registry."
     (mapcar (lambda (cells)
               (list (nth 1 cells)
                     (nth 2 cells))))
-    ;; You could use `flatten-tree' in Emacs 27.1.
-    (apply #'append)))
+    (flatten-list)))
 
 (defun nix-flake--registry-add-1 (flake-ref)
   "Add FLAKE-REF to the registry with a new name."
@@ -244,8 +243,7 @@ transient.el."
 
 (defun nix-flake--options ()
   "Return a list of options for `nix-flake-dispatch'."
-  ;; You could use `flatten-tree' in Emacs 27.1.
-  (apply #'append (transient-args 'nix-flake-dispatch)))
+  (flatten-list (transient-args 'nix-flake-dispatch)))
 
 (defun nix-flake--command (subcommand options flake-ref)
   "Build a command line for a Nix subcommand.
