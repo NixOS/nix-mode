@@ -514,7 +514,7 @@ See `nix-flake-init-post-action' variable for details."
   "Select a template and initialize a flake."
   (interactive)
   (let* ((flake-ref (or nix-flake-template-repository
-                        (nix-flake--read-flake-ref)))
+                        (nix-flake--read-flake-ref "Template repository: ")))
          (template-name (completing-read
                          (format-message "Select a template from %s: " flake-ref)
                          (nix-flake--templates flake-ref))))
