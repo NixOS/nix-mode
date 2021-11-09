@@ -392,7 +392,7 @@ For OPTIONS and FLAKE-REF, see the documentation of
         (if remote
             (nix--process-json "flake" "show" "--json" nix-flake-ref)
           (let ((default-directory flake-ref))
-	    (nix--process-json "flake" "show" "--json" "--no-update-lock-file"))))
+	    (nix--process-json "flake" "show" "--json"))))
   (transient-setup 'nix-flake-dispatch))
 
 (defun nix-flake--description ()
