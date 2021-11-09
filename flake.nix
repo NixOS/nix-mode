@@ -15,6 +15,7 @@
           mmm-mode
           f
           magit-section
+          transient
         ]);
       in stdenvNoCC.mkDerivation {
         pname = "nix-mode";
