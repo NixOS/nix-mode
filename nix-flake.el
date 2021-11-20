@@ -45,14 +45,12 @@ already registered in either the user or the global registry."
 ;;;;; flake-ref
 
 (defclass nix-flake-ref-variable (transient-variable)
-  ((variable :initarg :variable)
-   (constant-value :initarg :constant-value :initform nil)
+  ((constant-value :initarg :constant-value :initform nil)
+   (on-change :initarg :on-change)
    (reader :initarg :reader :initform nil)))
 
-(cl-defmethod transient-init-value ((obj nix-flake-ref-variable))
-  "Set the initial value of the object OBJ."
-  (unless (oref obj value)
-    (oset obj value (eval (oref obj variable)))))
+(cl-defmethod transient-init-value ((_obj nix-flake-ref-variable))
+  "Set the initial value of the object.")
 
 (cl-defmethod transient-infix-read ((obj nix-flake-ref-variable))
   "Determine the new value of the infix object OBJ."
@@ -67,7 +65,8 @@ already registered in either the user or the global registry."
 (cl-defmethod transient-infix-set ((obj nix-flake-ref-variable) value)
   "Set the value of infix object OBJ to VALUE."
   (oset obj value value)
-  (set (oref obj variable) value))
+  (when-let (func (oref obj on-change))
+    (funcall func value)))
 
 (cl-defmethod transient-format-value ((_obj nix-flake-ref-variable))
   "Format the object's value for display and return the result."
@@ -103,6 +102,10 @@ already registered in either the user or the global registry."
     (cl-remove-if-not (pcase-lambda (`(,type . ,_))
                         (member type '("user" "global"))))
     (mapcar (lambda (cells)
+	      ;; Both references and referees are included in the output.
+	      ;; It may be better to pick only one and show others as
+	      ;; decoration, e.g. using marginalia, but it is not supported
+	      ;; for now.
               (list (nth 1 cells)
                     (nth 2 cells))))
     (flatten-list)))
@@ -143,25 +146,32 @@ readers in transient.el."
 ;;;;; Setting the flake
 (transient-define-infix nix-flake:from-registry ()
   :class 'nix-flake-ref-variable
-  :variable 'nix-flake-ref
+  :on-change
+  (lambda (flake-ref)
+    (nix-flake--set-flake flake-ref :remote t)
+    (transient-update))
   :description "Select a flake from the registry")
 
 (transient-define-infix nix-flake:flake-directory ()
   :class 'nix-flake-ref-variable
-  :variable 'nix-flake-ref
   :reader 'nix-flake--read-directory
+  :on-change
+  (lambda (flake-ref)
+    (nix-flake--set-flake flake-ref)
+    (transient-update))
   :description "Select a directory")
 
 (defun nix-flake--read-directory (prompt &optional initial-input _history)
   "Select a directory containing a flake.
 
 For PROMPT and INITIAL-INPUT, see the documentation of transient.el."
-  (let ((input (read-directory-name prompt initial-input nil t)))
+  (let ((input (string-remove-suffix "/" (read-directory-name prompt initial-input nil t))))
     (prog1 (expand-file-name input)
       (unless (file-exists-p (expand-file-name "flake.nix" input))
         (user-error "The selected directory does not contain flake.nix"))
       (when (and nix-flake-add-to-registry
-                 (not (member input (nix-flake--registry-refs))))
+                 (not (member (concat "path:" input)
+			      (nix-flake--registry-refs))))
         (nix-flake--registry-add-1 input)))))
 
 ;;;;; --update-input
@@ -387,13 +397,19 @@ For OPTIONS and FLAKE-REF, see the documentation of
    ("l" "flake lock" nix-flake-lock)
    ("u" "flake update" nix-flake-update)]
   (interactive (list (convert-standard-filename default-directory)))
+  (nix-flake--set-flake flake-ref :remote remote)
+  (transient-setup 'nix-flake-dispatch))
+
+(cl-defun nix-flake--set-flake (flake-ref &key remote)
+  "Set the flake of the transient interface.
+
+FLAKE-REF and REMOTE should be passed down from `nix-flake-dispatch'."
   (setq nix-flake-ref flake-ref)
   (setq nix-flake-outputs
         (if remote
-            (nix--process-json "flake" "show" "--json" nix-flake-ref)
-          (let ((default-directory flake-ref))
-	    (nix--process-json "flake" "show" "--json"))))
-  (transient-setup 'nix-flake-dispatch))
+	    (nix--process-json "flake" "show" "--json" nix-flake-ref)
+	  (let ((default-directory flake-ref))
+            (nix--process-json "flake" "show" "--json")))))
 
 (defun nix-flake--description ()
   "Describe the current flake."
@@ -416,7 +432,7 @@ whatever supported by Nix."
 			    (list nil :flake-ref nix-flake-ref)
 			  (user-error "Last flake is unavailable")))
                  (_ (list default-directory))))
-  (cl-assert (or (file-directory-p dir)
+  (cl-assert (or (and (stringp dir) (file-directory-p dir))
                  flake-ref)
              nil
              "DIR or FLAKE-REF must be specified")
