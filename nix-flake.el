@@ -416,7 +416,7 @@ whatever supported by Nix."
 			    (list nil :flake-ref nix-flake-ref)
 			  (user-error "Last flake is unavailable")))
                  (_ (list default-directory))))
-  (cl-assert (or (file-directory-p dir)
+  (cl-assert (or (and (stringp dir) (file-directory-p dir))
                  flake-ref)
              nil
              "DIR or FLAKE-REF must be specified")
