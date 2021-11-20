@@ -102,6 +102,10 @@ already registered in either the user or the global registry."
     (cl-remove-if-not (pcase-lambda (`(,type . ,_))
                         (member type '("user" "global"))))
     (mapcar (lambda (cells)
+	      ;; Both references and referees are included in the output.
+	      ;; It may be better to pick only one and show others as
+	      ;; decoration, e.g. using marginalia, but it is not supported
+	      ;; for now.
               (list (nth 1 cells)
                     (nth 2 cells))))
     (flatten-list)))
