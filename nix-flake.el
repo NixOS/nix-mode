@@ -156,12 +156,13 @@ readers in transient.el."
   "Select a directory containing a flake.
 
 For PROMPT and INITIAL-INPUT, see the documentation of transient.el."
-  (let ((input (read-directory-name prompt initial-input nil t)))
+  (let ((input (string-remove-suffix "/" (read-directory-name prompt initial-input nil t))))
     (prog1 (expand-file-name input)
       (unless (file-exists-p (expand-file-name "flake.nix" input))
         (user-error "The selected directory does not contain flake.nix"))
       (when (and nix-flake-add-to-registry
-                 (not (member input (nix-flake--registry-refs))))
+                 (not (member (concat "path:" input)
+			      (nix-flake--registry-refs))))
         (nix-flake--registry-add-1 input)))))
 
 ;;;;; --update-input
