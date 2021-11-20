@@ -16,6 +16,7 @@
  "nix-drv-mode.el"
  "nix-search.el"
  "nix-shebang.el"
+ "nix-flake.el
  "nix.el"
  "nix-shell-haskell.el"
  )
