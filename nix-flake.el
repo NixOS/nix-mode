@@ -378,6 +378,7 @@ For OPTIONS and FLAKE-REF, see the documentation of
 ;;;###autoload (autoload 'nix-flake-dispatch "nix-flake" nil t)
 (transient-define-prefix nix-flake-dispatch (flake-ref &optional remote)
   "Run a command on a Nix flake."
+  :value '("--print-build-logs")
   [:description
    nix-flake--description
    ("=r" nix-flake:from-registry)
@@ -386,7 +387,8 @@ For OPTIONS and FLAKE-REF, see the documentation of
    ("-i" "Allow access to mutable paths and repositories" "--impure")
    ("-ui" nix-flake-arg:update-input)
    ("-nu" "Do not allow any updates to the flake's lock file" "--no-update-lock-file")
-   ("-cl" "Commit changes to the flake's lock file" "--commit-lock-file")]
+   ("-cl" "Commit changes to the flake's lock file" "--commit-lock-file")
+   ("-L" "Print build logs" "--print-build-logs")]
   ["Installable commands"
    ("r" "Run attribute" nix-flake-run-attribute)
    ("R" "Run default" nix-flake-run-default :if nix-flake--default-run-p)
