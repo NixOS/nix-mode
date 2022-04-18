@@ -81,6 +81,20 @@ very large Nix files (all-packages.nix)."
   "Face used to highlight Nix antiquotes."
   :group 'nix-faces)
 
+(defface nix-store-path-face nil
+  "Face used to highlight Nix store paths."
+  :group 'nix-faces)
+
+(defface nix-store-path-realised-face
+  '((t :inherit 'nix-store-path-face))
+  "Face used to highlight realised Nix store paths."
+  :group 'nix-faces)
+
+(defface nix-store-path-unrealised-face
+  '((t :inherit 'nix-store-path-face))
+  "Face used to highlight unrealised Nix store paths."
+  :group 'nix-faces)
+
 ;;; Constants
 
 (defconst nix-system-types
