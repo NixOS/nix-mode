@@ -75,6 +75,7 @@
   "Major mode for showing Nix search results.
 
 \\{nix-search-mode-map}"
+  :interactive nil
   :group 'nix-mode
 
   (easy-menu-add nix-search-mode-menu)
