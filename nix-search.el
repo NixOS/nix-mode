@@ -19,8 +19,8 @@
 ;;;###autoload
 (defun nix-search--search (search file &optional no-cache use-flakes)
   (nix--process-json-nocheck "search" "--json"
-    (if use-flakes "" "--file") file
-    (if no-cache  "--no-cache" "")
+    (unless use-flakes "--file") file
+    (when no-cache "--no-cache")
     search))
 
 (defface nix-search-pname
