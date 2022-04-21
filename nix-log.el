@@ -15,6 +15,7 @@
 (require 'nix-search)
 (require 'nix-instantiate)
 
+;;;###autoload
 (defun nix-log (file attr)
   "Open the nix log.
 FILE nix file to parse.

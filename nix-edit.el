@@ -14,6 +14,7 @@
 (require 'nix)
 (require 'nix-search)
 
+;;;###autoload
 (defun nix-edit (&optional file attr)
   "Open the nix log.
 FILE the nix file to load from.
