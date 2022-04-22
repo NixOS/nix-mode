@@ -19,7 +19,7 @@
 
 (defcustom nix-repl-executable-args '("repl")
   "Arguments to provide to nix-repl."
-  :type 'list)
+  :type '(repeat string))
 
 (defvar nix-repl-completion-redirect-buffer
   " *nix-repl completions redirect*"
