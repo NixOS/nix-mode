@@ -43,6 +43,7 @@
 
 (define-derived-mode nix-repl-mode comint-mode "Nix-REPL"
   "Interactive prompt for Nix."
+  :interactive nil
   (setq-local comint-prompt-regexp nix-prompt-regexp)
   (setq-local comint-prompt-read-only t)
   (let* ((is-remote (file-remote-p default-directory))
