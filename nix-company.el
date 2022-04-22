@@ -1,8 +1,10 @@
 ;;; nix-company.el --- Company support for Nix -*- lexical-binding: t -*-
 
-;; This file is NOT part of GNU Emacs.
-
+;; Homepage: https://github.com/NixOS/nix-mode
 ;; Version: 1.4.0
+;; Package-Requires: ((emacs "24.3"))
+
+;; This file is NOT part of GNU Emacs.
 
 ;;; Commentary:
 

@@ -1,8 +1,10 @@
-;;; nix-log.el -- run nix commands in Emacs -*- lexical-binding: t -*-
+;;; nix-log.el --- Run nix commands -*- lexical-binding: t -*-
 
 ;; Author: Matthew Bauer <mjbauer95@gmail.com>
 ;; Homepage: https://github.com/NixOS/nix-mode
+;; Package-Requires: ((emacs "24.1"))
 ;; Keywords: nix
+
 ;; Version: 1.4.0
 
 ;; This file is NOT part of GNU Emacs.

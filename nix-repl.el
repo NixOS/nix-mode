@@ -2,7 +2,11 @@
 
 ;; This file is NOT part of GNU Emacs.
 
+;; Homepage: https://github.com/NixOS/nix-mode
 ;; Version: 1.4.5
+;; Package-Requires: ((emacs "24.4"))
+
+;; This file is NOT part of GNU Emacs.
 
 ;;; Commentary:
 
@@ -14,7 +18,7 @@
 (require 'nix)
 
 (defgroup nix-repl nil
-  "nix-repl customizations"
+  "Nix-repl customizations."
   :group 'nix)
 
 (defcustom nix-repl-executable-args '("repl")

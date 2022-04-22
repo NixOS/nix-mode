@@ -1,4 +1,4 @@
-;;; nix-prettify.el -- Prettify Nix store file names  -*- lexical-binding: t -*-
+;;; nix-prettify-mode.el --- Prettify Nix store file names  -*- lexical-binding: t -*-
 
 ;; Copyright © 2014, 2015 Alex Kost <alezost@gmail.com>
 ;; Modified by Matthew Bauer for use in nix-mode
@@ -8,6 +8,8 @@
 ;; Homepage: https://github.com/NixOS/nix-mode
 ;; Version: 1.1
 ;; Keywords: nix
+;; Package-Requires: ((emacs "24.3"))
+
 
 ;; This file is NOT part of GNU Emacs.
 

@@ -2,6 +2,8 @@
 
 ;; This file is NOT part of GNU Emacs.
 
+;; Homepage: https://github.com/NixOS/nix-mode
+;; Package-Requires: ((emacs "24.1"))
 ;; Version: 1.4.0
 
 ;;; Commentary:

@@ -1,8 +1,9 @@
-;;; nix-edit.el -- run nix commands in Emacs -*- lexical-binding: t -*-
+;;; nix-edit.el --- Run nix commands -*- lexical-binding: t -*-
 
 ;; Author: Matthew Bauer <mjbauer95@gmail.com>
 ;; Homepage: https://github.com/NixOS/nix-mode
 ;; Keywords: nix
+;; Package-Requires: ((emacs "24.3"))
 ;; Version: 1.4.0
 
 ;; This file is NOT part of GNU Emacs.
