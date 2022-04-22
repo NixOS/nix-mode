@@ -198,8 +198,10 @@ OPTIONS a list of options to accept."
   "Whether Nix is a version with Flakes support."
   ;; earlier versions reported as 3, now it’s just nix-2.4
   (and (nix-is-24)
-    (let-alist (nix-show-config)
-      (seq-contains-p .experimental-features.value "flakes"))))
+       (let-alist (nix-show-config)
+	 (or
+	  (seq-contains-p .experimental-features.value 1)
+	  (seq-contains-p .experimental-features.value "flakes")))))
 
 ;;;###autoload
 (defun pcomplete/nix ()
