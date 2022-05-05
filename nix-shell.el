@@ -1,9 +1,10 @@
-;;; nix-shell.el -- run nix commands in Emacs -*- lexical-binding: t -*-
+;;; nix-shell.el --- Run nix commands -*- lexical-binding: t -*-
 
 ;; Author: Matthew Bauer <mjbauer95@gmail.com>
 ;; Homepage: https://github.com/NixOS/nix-mode
-;; Keywords: nix
+;; Keywords: nix, processes
 ;; Version: 1.4.0
+;; Package-Requires: ((emacs "25.1"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -201,8 +202,7 @@ The DRV file to use."
 		       (format "-I%s" include)))))
 
       (when (bound-and-true-p flycheck-mode)
-	(flycheck-buffer))
-      )))
+	(flycheck-buffer)))))
 
 (defun nix-shell-with-packages (packages &optional pkgs-file)
   "Create a nix shell environment from the listed package.
@@ -210,8 +210,7 @@ PACKAGES a list of packages to use.
 PKGS-FILE the Nix file to get the packages from."
   (nix-instantiate-async (apply-partially 'nix-shell--callback
 					  (current-buffer))
-			 (nix-shell--with-packages-file packages pkgs-file)
-			 ))
+			 (nix-shell--with-packages-file packages pkgs-file)))
 
 (defun nix-shell--with-packages-file (packages &optional pkgs-file)
   "Get a .nix file from the packages list.

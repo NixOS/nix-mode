@@ -1,8 +1,9 @@
-;;; nix-store.el -- run nix commands in Emacs -*- lexical-binding: t -*-
+;;; nix-store.el --- Run nix commands -*- lexical-binding: t -*-
 
 ;; Author: Matthew Bauer <mjbauer95@gmail.com>
 ;; Homepage: https://github.com/NixOS/nix-mode
 ;; Keywords: nix
+;; Package-Requires: ((emacs "25.1") (magit-section "3.3.0"))
 ;; Version: 1.4.0
 
 ;; This file is NOT part of GNU Emacs.
@@ -14,7 +15,8 @@
 (require 'eieio)
 (require 'nix)
 (require 'magit-section)
-(require 'cl-lib)
+(eval-when-compile
+  (require 'cl-lib))
 
 (defgroup nix-store nil
   "Nix-store customizations."
@@ -45,7 +47,7 @@ PATH the path within /nix/store to realise"
 is displayed")
 
 (cl-defmethod nix-store-fill-data ((object nix-store-path))
-  "Query the nix store store via `nix-store-executable' and save that data into OBJECT."
+  "Query the nix store via `nix-store-executable' and save that data into OBJECT."
   (oset object :size (nix-store--query 'size (nix-store-path-path object)))
   (oset object :hash (nix-store--query 'hash (nix-store-path-path object)))
   (oset object :derivers (nix-store--query 'deriver (nix-store-path-path object)))

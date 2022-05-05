@@ -22,7 +22,7 @@
   (require 'let-alist))
 
 (defgroup nix nil
-  "Nix-related customizations"
+  "Nix-related customizations."
   :group 'languages)
 
 (defcustom nix-executable "nix"
@@ -70,7 +70,7 @@
 
 (defvar nix-version nil)
 (defun nix-version ()
-  "Get the version of Nix"
+  "Get the version of Nix."
   (or nix-version (nix--process-string "--version")))
 
 (defun nix-show-config ()

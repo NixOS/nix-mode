@@ -13,6 +13,7 @@
 (require 'nix)
 (require 'nix-search)
 
+;;;###autoload
 (defun nix-build (&optional file attr)
   "Run nix-build in a compilation buffer.
 FILE the file to parse.

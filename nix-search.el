@@ -1,9 +1,10 @@
-;;; nix-search.el -- run nix commands in Emacs -*- lexical-binding: t -*-
+;;; nix-search.el --- Run nix commands -*- lexical-binding: t -*-
 
 ;; Author: Matthew Bauer <mjbauer95@gmail.com>
 ;; Homepage: https://github.com/NixOS/nix-mode
 ;; Keywords: nix
 ;; Version: 1.4.0
+;; Package-Requires: ((emacs "25.1"))
 
 ;; This file is NOT part of GNU Emacs.
 
