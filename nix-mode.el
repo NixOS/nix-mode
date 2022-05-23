@@ -247,7 +247,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
           (cond
            ((member str-peek '("${" "\\n" "\\r" "\\t"))
             (goto-char (+ 2 end)))
-           ((equal (substring str-peek 0 1) "$")
+           ((string-prefix-p "$" str-peek)
             (goto-char (+ 1 end)))
            (t
             (nix--mark-string (1- end) ?\'))))))))
