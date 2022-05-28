@@ -248,7 +248,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
            ((member str-peek '("${" "\\n" "\\r" "\\t"))
             (goto-char (+ 2 end)))
            ((string-prefix-p "$" str-peek)
-            (goto-char (+ 1 end)))
+            (goto-char (1+ end)))
            (t
             (nix--mark-string (1- end) ?\'))))))))
 
