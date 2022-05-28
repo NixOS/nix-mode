@@ -253,7 +253,7 @@ STRING-TYPE type of string based off of Emacs syntax table types"
             (nix--mark-string (1- end) ?\'))))))))
 
 (defun nix--escaped-dollar-sign-antiquote-sq-style ()
-  "Hande Nix antiquote sq style."
+  "Hande Nix escaped dollar sign antiquote sq style."
   (let* ((start (match-beginning 0))
          (ps (nix--get-parse-state start))
 	 (string-type (nix--get-string-type ps)))
