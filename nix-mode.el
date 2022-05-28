@@ -252,6 +252,14 @@ STRING-TYPE type of string based off of Emacs syntax table types"
            (t
             (nix--mark-string (1- end) ?\'))))))))
 
+(defun nix--antiquote-sq-style ()
+  "Hande Nix antiquote sq style."
+  (let* ((start (match-beginning 0))
+         (ps (nix--get-parse-state start))
+	 (string-type (nix--get-string-type ps)))
+    (when (equal string-type ?\")
+      (nix--antiquote-open-at (+ start 2) ?\"))))
+
 (defun nix--escaped-antiquote-dq-style ()
   "Handle Nix escaped antiquote dq style."
   (let* ((start (match-beginning 0))
@@ -348,6 +356,10 @@ STRING-TYPE type of string based off of Emacs syntax table types"
      (0 nil))
     ("\\\\\""
      (0 nil))
+    ("\\$\\$"
+     (0 nil))
+    ("\\\\\\$\\${"
+     (0 (ignore (nix--\$${))))
     ("\\\\\\${"
      (0 (ignore (nix--escaped-antiquote-dq-style))))
     ("'\\{2,\\}"
