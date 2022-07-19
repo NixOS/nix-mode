@@ -244,9 +244,21 @@ STRING-TYPE type of string based off of Emacs syntax table types"
         (setq start (+ 2 start)))
       (when (equal (mod (- end start) 3) 2)
         (let ((str-peek (buffer-substring end (min (point-max) (+ 2 end)))))
-          (if (member str-peek '("${" "\\n" "\\r" "\\t"))
-              (goto-char (+ 2 end))
-            (nix--mark-string (1- end) ?\')))))))
+          (cond
+           ((member str-peek '("${" "\\n" "\\r" "\\t"))
+            (goto-char (+ 2 end)))
+           ((string-prefix-p "$" str-peek)
+            (goto-char (1+ end)))
+           (t
+            (nix--mark-string (1- end) ?\'))))))))
+
+(defun nix--escaped-dollar-sign-antiquote-sq-style ()
+  "Hande Nix escaped dollar sign antiquote sq style."
+  (let* ((start (match-beginning 0))
+         (ps (nix--get-parse-state start))
+	 (string-type (nix--get-string-type ps)))
+    (when (equal string-type ?\")
+      (nix--antiquote-open-at (+ start 2) ?\"))))
 
 (defun nix--escaped-antiquote-dq-style ()
   "Handle Nix escaped antiquote dq style."
@@ -344,6 +356,10 @@ STRING-TYPE type of string based off of Emacs syntax table types"
      (0 nil))
     ("\\\\\""
      (0 nil))
+    ("\\$\\$"
+     (0 nil))
+    ("\\\\\\$\\${"
+     (0 (ignore (nix--escaped-dollar-sign-antiquote-sq-style))))
     ("\\\\\\${"
      (0 (ignore (nix--escaped-antiquote-dq-style))))
     ("'\\{2,\\}"
