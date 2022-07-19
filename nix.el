@@ -200,7 +200,7 @@ OPTIONS a list of options to accept."
   (and (nix-is-24)
        (let-alist (nix-show-config)
 	 (or
-	  (seq-contains-p .experimental-features.value 1)
+	  (seq-contains-p .experimental-features.value 2)
 	  (seq-contains-p .experimental-features.value "flakes")))))
 
 ;;;###autoload
