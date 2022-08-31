@@ -2,6 +2,8 @@
 
 ;; Keywords: nix, languages, tools, unix
 ;; Package-Requires: ((emacs "27.1") (transient "0.3"))
+;; Homepage: https://github.com/NixOS/nix-mode
+;; Version: 1.4.4
 
 ;;; Commentary:
 
@@ -15,7 +17,7 @@
 (require 'transient)
 
 (defgroup nix-flake nil
-  "Nix flake commands"
+  "Nix flake commands."
   :group 'nix)
 
 ;;;; Custom variables
@@ -23,7 +25,7 @@
 (defcustom nix-flake-init-post-action 'open-flake-nix
   "Action to run after successfully initializing a flake.
 
-This action is run after a flake is successlly initialized by
+This action is run after a flake is successfully initialized by
 `nix-flake-init` (or generally `nix-flake-dispatch`).
 
 You can also specify a function, which should take no arguments.
