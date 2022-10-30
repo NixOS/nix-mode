@@ -218,6 +218,7 @@ It uses \\[nix-store-show-path] to display the store path."
 (defvar nix-store-path-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "RET") 'nix-store-show-path-at-point)
+    (define-key map (kbd "l") 'nix-store-show-log)
     map))
 
 (defun nix-store--revert-buffer-function (&rest _ignore)
