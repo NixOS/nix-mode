@@ -45,7 +45,7 @@
     (read-only-mode nil)))
 
 ;;;###autoload
-(add-to-list 'auto-mode-alist '("\\`/nix/store/.+\\.drv\\'". nix-drv-mode))
+(add-to-list 'auto-mode-alist '("^/nix/store/.+\\.drv\\'" . nix-drv-mode))
 
 (provide 'nix-drv-mode)
 ;;; nix-drv-mode.el ends here
