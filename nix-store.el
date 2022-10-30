@@ -206,6 +206,23 @@ It uses \\[nix-store-show-path] to display the store path."
   (interactive)
   (nix-store-show-path (nix-store-path-at-point)))
 
+(defun nix-store-show-log ()
+  "Opens the log file for the derivation of the nix-store path."
+  (interactive)
+  (let ((drv-name (when-let*
+		      ((drv-name (nix-store-path-derivers nix-buffer-store-path))
+		       (drv-name (car drv-name)))
+		    (file-relative-name drv-name nix-store-dir))))
+    (if (not drv-name)
+	(message "This store path has no associated derivation.")
+      (let ((log-file (format "%s/log/nix/drvs/%s/%s.bz2"
+                              nix-state-dir
+                              (substring drv-name 0 2)
+			      (substring drv-name 2))))
+	(if (file-exists-p log-file)
+            (find-file log-file)
+	  (error "No log is available for derivation"))))))
+
 (defvar nix-store-path-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "RET") 'nix-store-show-path-at-point)
