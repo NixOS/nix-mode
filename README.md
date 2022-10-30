@@ -93,8 +93,11 @@ overview of a store path. The information it shows is the realisation status,
 the hash and the size of the store path. Also it shows lists of derivers,
 references, referrers and requisites of the respective path.
 
-You can change the order in which that information is show. See the
+You can change the order in which that information is shown. See the
 documentation of the function `nix-store-show-path` for more information.
+
+When viewing a store buffer, the command `M-x nix-store-show-log`
+opens a local log file associated with a derivation.
 
 ### nix-prettify-mode.el
 
