@@ -14,7 +14,6 @@
 ;;; Code:
 
 (require 'nix)
-(require 'nix-search)
 (require 'nix-instantiate)
 (require 'files)
 
