@@ -193,7 +193,7 @@ implement your own ones) you can customize the variable
     (magit-insert-section (store-path)
       (magit-insert-headers 'nix-store-path-headers-hook)
       (magit-run-section-hook 'nix-store-path-sections-hook))
-    (setf (point) (point-min))))
+    (goto-char (point-min))))
 
 (defun nix-store-path-at-point ()
   "Return the nix-store path at point."
