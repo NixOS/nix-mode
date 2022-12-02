@@ -1,8 +1,12 @@
 # Changelog
 
-## Unreleased
+## 1.5.0
 
 * Removed json-mode dependency, using js instead.
+* Compatibility with Emacs 28+.
+* Add nix-flake commands, based on magit-session.
+* Add nix-store-show-log command.
+* Other various fixes.
 
 ## 1.4.5
 

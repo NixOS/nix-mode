@@ -3,7 +3,7 @@
 ;; This file is NOT part of GNU Emacs.
 
 ;; Homepage: https://github.com/NixOS/nix-mode
-;; Version: 1.4.5
+;; Version: 1.5.0
 ;; Package-Requires: ((emacs "24.4"))
 
 ;; This file is NOT part of GNU Emacs.

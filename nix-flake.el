@@ -3,7 +3,7 @@
 ;; Keywords: nix, languages, tools, unix
 ;; Package-Requires: ((emacs "27.1") (transient "0.3"))
 ;; Homepage: https://github.com/NixOS/nix-mode
-;; Version: 1.4.4
+;; Version: 1.5.0
 
 ;;; Commentary:
 

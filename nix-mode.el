@@ -2,7 +2,7 @@
 
 ;; Maintainer: Matthew Bauer <mjbauer95@gmail.com>
 ;; Homepage: https://github.com/NixOS/nix-mode
-;; Version: 1.4.4
+;; Version: 1.5.0
 ;; Keywords: nix, languages, tools, unix
 ;; Package-Requires: ((emacs "25.1") magit-section (transient "0.3"))
 
