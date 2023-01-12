@@ -3,54 +3,29 @@
 ;; This file is NOT part of GNU Emacs.
 
 ;; Homepage: https://github.com/NixOS/nix-mode
-;; Package-Requires: ((emacs "24.1"))
+;; Package-Requires: ((emacs "24.1") (reformatter "0.6"))
 ;; Version: 1.5.0
 
 ;;; Commentary:
 
 ;;; Code:
+(require 'reformatter)
 
 (defcustom nix-nixfmt-bin "nixfmt"
   "Path to nixfmt executable."
   :group 'nix
   :type 'string)
 
-(if (fboundp 'replace-buffer-contents)
-    (defun nix--replace-buffer-contents (src dst)
-      (with-current-buffer dst (replace-buffer-contents src)))
-  (defun nix--replace-buffer-contents (src dst)
-    (if (not (string= (with-current-buffer src (buffer-string))
-		      (with-current-buffer dst (buffer-string))))
-	(with-current-buffer src
-	  (copy-to-buffer dst (point-min) (point-max))))))
-
-(defun nix--format-call (buf nixfmt-bin)
-  "Format BUF using nixfmt."
-  (with-current-buffer (get-buffer-create "*nixfmt*")
-    (erase-buffer)
-    (insert-buffer-substring buf)
-    (if (zerop (call-process-region (point-min) (point-max) nixfmt-bin t t nil))
-	(nix--replace-buffer-contents (current-buffer) buf)
-      (error "Nixfmt failed, see *nixfmt* buffer for details"))))
-
-(defun nix--find-nixfmt ()
-  "Find the nixfmt binary, or error if it's missing."
-  (let ((nixfmt-bin (executable-find nix-nixfmt-bin)))
-    (unless nixfmt-bin
-      (error "Could not locate executable %S" nix-nixfmt-bin))
-    nixfmt-bin))
-
-(defun nix-format-buffer ()
-  "Format the current buffer using nixfmt."
-  (interactive)
-  (nix--format-call (current-buffer) (nix--find-nixfmt))
-  (message "Formatted buffer with nixfmt."))
-
-;;;###autoload
-(defun nix-format-before-save ()
-  "Add this to `before-save-hook' to run nixfmt when saving."
-  (when (derived-mode-p 'nix-mode)
-    (nix-format-buffer)))
+;;;###autoload (autoload 'nixfmt-buffer "nix-format")
+;;;###autoload (autoload 'nixfmt-region "nix-format")
+;;;###autoload (autoload 'nixfmt-on-save-mode "nix-format")
+(reformatter-define nixfmt
+  :program nix-nixfmt-bin
+  :args (list input-file)
+  :stdin nil
+  :stdout nil
+  :input-file (reformatter-temp-file-in-current-directory)
+  :group 'nix)
 
 (provide 'nix-format)
 ;;; nix-format.el ends here
