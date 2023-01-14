@@ -4,7 +4,6 @@
 ;; Homepage: https://github.com/NixOS/nix-mode
 ;; Version: 1.2.1
 ;; Keywords: nix, languages, tools, unix
-;; Package-Requires: ((emacs "24.3"))
 
 ;; This file is NOT part of GNU Emacs.
 

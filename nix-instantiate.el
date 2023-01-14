@@ -2,7 +2,6 @@
 
 ;; Author: Matthew Bauer <mjbauer95@gmail.com>
 ;; Homepage: https://github.com/NixOS/nix-mode
-;; Package-Requires: ((emacs "25.1"))
 ;; Keywords: nix
 ;; Version: 1.5.0
 

@@ -8,7 +8,6 @@
 ;; Homepage: https://github.com/NixOS/nix-mode
 ;; Version: 1.1
 ;; Keywords: nix
-;; Package-Requires: ((emacs "24.3"))
 
 
 ;; This file is NOT part of GNU Emacs.
