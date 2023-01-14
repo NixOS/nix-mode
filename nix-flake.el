@@ -2,7 +2,6 @@
 
 ;; Keywords: nix, languages, tools, unix
 ;; Homepage: https://github.com/NixOS/nix-mode
-;; Version: 1.5.0
 
 ;;; Commentary:
 
