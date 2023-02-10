@@ -4,7 +4,7 @@
 ;; Homepage: https://github.com/NixOS/nix-mode
 ;; Version: 1.5.0
 ;; Keywords: nix, languages, tools, unix
-;; Package-Requires: ((emacs "25.1") magit-section (transient "0.3") (reformatter "0.6"))
+;; Package-Requires: ((emacs "25.1") magit-section (transient "0.3"))
 
 ;; This file is NOT part of GNU Emacs.
 

@@ -16,7 +16,6 @@
           f
           magit-section
           transient
-          reformatter
         ]);
       in stdenvNoCC.mkDerivation {
         pname = "nix-mode";
