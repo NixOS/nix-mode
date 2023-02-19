@@ -124,11 +124,10 @@ respectively. The LABEL is the text displayed."
 	 (magit-insert-heading ,label)
 	 (cl-loop for x in value
 		  for exists = (file-exists-p x)
+		  for face = (if exists 'nix-store-path-realised-face 'nix-store-path-unrealised-face)
 		  do
 		  (magit-insert-section (store-path x)
-		    (insert
-		     (propertize x 'face (if exists 'nix-store-path-realised-face 'nix-store-path-unrealised-face))
-		     ?\n)))
+		    (insert (propertize x 'face face) ?\n)))
 	 (insert ?\n)
 	 (magit-insert-child-count (magit-current-section))))))
 
@@ -161,6 +160,7 @@ respectively. The LABEL is the text displayed."
 A list of function that each take one argument, the store path object."
   :group 'nix-store
   :type 'hook
+  :package-version '(nix-mode . "1.5.0")
   :options '(nix-store-path-insert-path
 	     nix-store-path-insert-status
 	     nix-store-path-insert-hash
@@ -175,7 +175,8 @@ A list of function that each take one argument, the store path object."
   "Hook run to insert sections into a nix-store buffer.
 A list of function that each take one argument, the store path object."
   :group 'nix-store
-  :type 'hook)
+  :type 'hook
+  :package-version '(nix-mode . "1.5.0"))
 
 (defun nix-store-show-path (path)
   "Show a nix-store PATH.
@@ -214,10 +215,9 @@ It uses \\[nix-store-show-path] to display the store path."
 (defun nix-store-show-log ()
   "Opens the log file for the derivation of the nix-store path."
   (interactive)
-  (let ((drv-path (car (nix-store-path-derivers nix-buffer-store-path))))
-    (if (not drv-path)
-	(message "This store path has no associated derivation.")
-      (find-file (nix-log-path drv-path)))))
+  (if-let ((drv-path (car (nix-store-path-derivers nix-buffer-store-path))))
+      (find-file (nix-log-path drv-path))
+    (user-error "This store path has no associated derivation.")))
 
 (defvar nix-store-path-mode-map
   (let ((map (make-sparse-keymap)))
@@ -230,6 +230,7 @@ It uses \\[nix-store-show-path] to display the store path."
   (nix-store-show-path (nix-store-path-path nix-buffer-store-path)))
 
 (define-derived-mode nix-store-path-mode magit-section-mode "Nix Store Path"
+  :group 'nix-store
   (setq-local revert-buffer-function #'nix-store--revert-buffer-function)
   (read-only-mode 1))
 
