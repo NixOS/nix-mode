@@ -1,4 +1,4 @@
-;;; nix-drv-mode.el --- Major mode for viewing .drv files
+;;; nix-drv-mode.el --- Major mode for viewing .drv files -*- lexical-binding: t -*-
 
 ;; Maintainer: Matthew Bauer <mjbauer95@gmail.com>
 ;; Homepage: https://github.com/NixOS/nix-mode
