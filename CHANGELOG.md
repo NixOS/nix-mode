@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased (1.6.0)
+
+* Introduce nix-store-path-omit-self customization option.
+
 ## 1.5.0
 
 * Removed json-mode dependency, using js instead.

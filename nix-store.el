@@ -21,6 +21,10 @@
   "Nix-store customizations."
   :group 'nix)
 
+(defcustom nix-store-path-omit-self t
+  "Do not list the current entry itself within sections of nix-store-path-mode."
+  :package-version '(nix-mode . "1.6.0"))
+
 (defun nix-store-realise (path)
   "Realise a path asynchronously.
 PATH the path within /nix/store to realise"
@@ -112,7 +116,9 @@ information."
   "Helper macro for inserting a list as a magit-section.
 TYPE and VALUE will be used as the type and value of the section
 respectively. The LABEL is the text displayed."
-  `(let ((value ,value))
+  `(let ((value (cl-remove
+		 (and nix-store-path-omit-self (nix-store-path-path nix-buffer-store-path))
+		 ,value :test #'equal)))
      (when (and (listp value) (> (length value) 0))
        (magit-insert-section (,type value)
 	 (magit-insert-heading ,label)
