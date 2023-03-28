@@ -22,8 +22,9 @@
   :group 'nix)
 
 (defcustom nix-store-path-omit-self t
-  "Do not list the current entry itself within sections of nix-store-path-mode."
-  :package-version '(nix-mode . "1.6.0"))
+  "Do not list the current entry itself within sections of `nix-store-path-mode'."
+  :package-version '(nix-mode . "1.6.0")
+  :type 'boolean)
 
 (defun nix-store-realise (path)
   "Realise a path asynchronously.

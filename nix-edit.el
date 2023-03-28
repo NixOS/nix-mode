@@ -27,7 +27,7 @@ ATTR the attribute to find in nix expressions."
     (call-process nix-executable nil (list stdout nil) nil
 		  "edit" "-f" file attr)
     (with-current-buffer stdout
-      (when (eq (buffer-size) 0)
+      (when (zerop (buffer-size))
 	(error
 	 "Error: nix edit failed to produce any output"))
       (setq result (substring (buffer-string) 0 (- (buffer-size) 1))))

@@ -1,10 +1,12 @@
 .PHONY: test clean install run
 
-ELS  =  nix.el nix-company.el nix-drv-mode.el nix-format.el \
+ELS  =  nix.el nix-company.el nix-drv-mode.el nix-flake.el nix-format.el \
 	nix-instantiate.el nix-mode.el nix-mode-mmm.el \
 	nix-prettify-mode.el nix-repl.el nix-search.el nix-shebang.el \
 	nix-shell.el nix-store.el
 ELCS = $(ELS:.el=.elc)
+
+DOCS = nix-mode.pdf nix-mode.html nix-mode.info
 
 TESTS = tests/nix-mode-tests.el tests/nix-font-lock-tests.el
 

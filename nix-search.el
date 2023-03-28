@@ -20,7 +20,7 @@
   (nix--process-json-nocheck "search" "--json"
 			     (unless use-flakes "--file") file
 			     (when no-cache "--no-cache")
-			     (unless (string= "" search) search)))
+			     (unless (string-empty-p search) search)))
 
 (defface nix-search-pname
   '((t :height 1.5
