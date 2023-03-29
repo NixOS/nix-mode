@@ -13,14 +13,13 @@
   :group 'nix
   :type 'string)
 
-(if (fboundp 'replace-buffer-contents)
-    (defun nix--replace-buffer-contents (src dst)
-      (with-current-buffer dst (replace-buffer-contents src)))
-  (defun nix--replace-buffer-contents (src dst)
-    (if (not (string= (with-current-buffer src (buffer-string))
-		      (with-current-buffer dst (buffer-string))))
-	(with-current-buffer src
-	  (copy-to-buffer dst (point-min) (point-max))))))
+(defun nix--replace-buffer-contents (src dst)
+  (if (fboundp 'replace-buffer-contents)
+      (with-current-buffer dst (replace-buffer-contents src))
+    (unless  (string= (with-current-buffer src (buffer-string))
+		      (with-current-buffer dst (buffer-string)))
+      (with-current-buffer src
+	(copy-to-buffer dst (point-min) (point-max))))))
 
 (defun nix--format-call (buf nixfmt-bin)
   "Format BUF using nixfmt."

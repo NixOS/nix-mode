@@ -8,16 +8,15 @@
     forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f system);
   in {
     packages = forAllSystems (system: with (import nixpkgs { inherit system; }); {
-      nix-mode = let
+      default = let
         emacs = emacsWithPackages (epkgs: with epkgs; [
-          org-plus-contrib
+          org-contrib
           company
           mmm-mode
-          f
           magit-section
           transient
         ]);
-      in stdenvNoCC.mkDerivation {
+      in stdenv.mkDerivation {
         pname = "nix-mode";
         version = "1.5.0";
         src = self;
@@ -31,12 +30,10 @@
       };
     });
 
-    defaultPackage = forAllSystems (system: self.packages.${system}.nix-mode);
-
     # checks are run in ‘make check’ right now we should probably move
     # these to its own derivation
     checks = forAllSystems (system: {
-      inherit (self.packages.${system}) nix-mode;
+      inherit (self.packages.${system}) default;
     });
   };
 }
