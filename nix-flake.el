@@ -570,5 +570,8 @@ See `nix-flake-init-post-action' variable for details."
         (user-error "The directory already contains a flake")
       (nix-flake-init-dispatch))))
 
+;;;###autoload
+(add-to-list 'auto-mode-alist '("\\flake.lock\\'" . js-mode))
+
 (provide 'nix-flake)
 ;;; nix-flake.el ends here
