@@ -216,7 +216,10 @@ It uses \\[nix-store-show-path] to display the store path."
 (defun nix-store-show-log ()
   "Opens the log file for the derivation of the nix-store path."
   (interactive)
-  (if-let ((drv-path (car (nix-store-path-derivers nix-buffer-store-path))))
+  (if-let ((drv-path
+	    (if (string-suffix-p ".drv" (nix-store-path-path nix-buffer-store-path))
+		(nix-store-path-path nix-buffer-store-path)
+	      (car (nix-store-path-derivers nix-buffer-store-path)))))
       (find-file (nix-log-path drv-path))
     (user-error "This store path has no associated derivation.")))
 
