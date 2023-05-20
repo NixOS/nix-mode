@@ -3,6 +3,7 @@
 ;; Author: Matthew Bauer <mjbauer95@gmail.com>
 ;; Homepage: https://github.com/NixOS/nix-mode
 ;; Keywords: nix
+;; Package-Requires: ((magit-section "3.0.0"))
 
 ;; This file is NOT part of GNU Emacs.
 
