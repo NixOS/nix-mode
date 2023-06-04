@@ -388,6 +388,8 @@ For OPTIONS and FLAKE-REF, see the documentation of
    ("-ui" nix-flake-arg:update-input)
    ("-nu" "Do not allow any updates to the flake's lock file" "--no-update-lock-file")
    ("-cl" "Commit changes to the flake's lock file" "--commit-lock-file")
+   ("-tf" "Trace function calls" "--trace-function-calls")
+   ("-tv" "Trace verbosely" "--trace-verbose")
    ("-L" "Print build logs" "--print-build-logs")]
   ["Installable commands"
    ("r" "Run attribute" nix-flake-run-attribute)
