@@ -359,6 +359,15 @@ For OPTIONS and FLAKE-REF, see the documentation of
   (interactive (list (nix-flake--options) nix-flake-ref))
   (compile (nix-flake--command '("flake" "check") options flake-ref)))
 
+(defun nix-flake-format (options flake-ref)
+    "Format the flake.
+
+For OPTIONS and FLAKE-REF, see the documentation of
+`nix-flake-run-attribute'."
+    (interactive (list (nix-flake--options) nix-flake-ref))
+    (let ((default-directory flake-ref))
+      (compile (nix-flake--command '("fmt") options flake-ref))))
+
 (defun nix-flake-lock (options flake-ref)
   "Create missing lock file entries.
 
