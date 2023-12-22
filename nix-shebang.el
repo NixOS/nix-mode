@@ -11,6 +11,9 @@
 ;; This detects file headers that look like:
 ;; #!/usr/bin/env nix-shell
 ;; #!nix-shell -i bash
+;; As well as:
+;; #!/usr/bin/env nix
+;; #! nix shell nixpkgs#bash nixpkgs#hello nixpkgs#cowsay --command bash
 
 ;; and correctly detects their file modes.
 
@@ -20,14 +23,19 @@
 
 (defvar nix-shebang-interpreter-regexp "#!\s*nix-shell -i \\([^ \t\n]+\\)"
   "Regexp for nix-shell -i header.")
+(defvar nix-shebang-flake-interpreter-regexp "^#!\s*nix .*--command \\(.*\\)"
+  "Regexp for nix shell script using flakes.")
 
 (defun nix-shebang-get-interpreter ()
-  "Get interpreter string from nix-shell -i file."
+  "Get interpreter string"
   (save-excursion
     (goto-char (point-min))
-    (forward-line 1)
-    (when (looking-at nix-shebang-interpreter-regexp)
-      (match-string 1))))
+	(forward-line 1)
+    (if (looking-at nix-shebang-interpreter-regexp)
+		(match-string 1)
+	  (if (and (re-search-forward nix-shebang-flake-interpreter-regexp nil t)
+			   (looking-back nix-shebang-flake-interpreter-regexp))
+          (match-string 1)))))
 
 (defun nix-shebang-mode ()
   "Detect and run file’s interpreter mode."
