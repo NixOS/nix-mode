@@ -850,52 +850,32 @@ not to any other arguments."
 (defun nix-indent-line ()
   "Indent current line in a Nix expression."
   (interactive)
-  (let ((end-of-indentation
-         (save-excursion
-           (cond
-            ;; Indent first line of file to 0
-            ((= (line-number-at-pos) 1)
-             (indent-line-to 0))
-
-            ;; comment
-            ((save-excursion
-               (beginning-of-line)
-               (nix-is-comment-p))
-             (indent-line-to (nix-indent-prev-level)))
-
-            ;; string
-            ((save-excursion
-               (beginning-of-line)
-               (nth 3 (syntax-ppss)))
-             (indent-line-to (+ (nix-indent-prev-level)
-                                (* tab-width
-                                   (+ (if (save-excursion
-                                            (forward-line -1)
-                                            (end-of-line)
-                                            (skip-chars-backward "[:space:]")
-                                            (looking-back "''" 0)) 1 0)
-                                      (if (save-excursion
-                                            (beginning-of-line)
-                                            (skip-chars-forward
-                                             "[:space:]")
-                                            (looking-at "''")
-                                            ) -1 0)
-                                      )))))
-
-            ;; dedent '}', ']', ')' 'in'
-            ((nix-indent-to-backward-match))
-
-            ;; indent line after 'let', 'import', '[', '=', '(', '{'
-            ((nix-indent-first-line-in-block))
-
-            ;; indent between = and ; + 2, or to 2
-            ((nix-indent-expression-start))
-
-            ;; else
-            (t
-             (indent-line-to (nix-indent-prev-level))))
-           (point))))
-    (when (> end-of-indentation (point)) (goto-char end-of-indentation))))
+  (when-let ((*point*
+              (save-excursion
+                (cond
+                 ((save-excursion       ; Multiline string?
+                    (beginning-of-line)
+                    (nth 3 (syntax-ppss)))
+                  (indent-line-to (+ (nix-indent-prev-level)
+                                     (* tab-width
+                                        (+ (if (save-excursion
+                                                 (forward-line -1)
+                                                 (end-of-line)
+                                                 (skip-chars-backward "[:space:]")
+                                                 (looking-back "''" 0))
+                                               1
+                                             0)
+                                           (if (save-excursion
+                                                 (beginning-of-line)
+                                                 (skip-chars-forward "[:space:]")
+                                                 (looking-at "''"))
+                                               -1
+                                             0))))))
+                 (t                     ; Default to smie
+                  (smie-indent-line)))
+                (point)))
+             ((> *point* (point))))
+    (goto-char *point*)))
 
 (defun nix-is-comment-p ()
   "Whether we are in a comment."
