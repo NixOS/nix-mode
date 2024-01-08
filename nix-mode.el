@@ -499,12 +499,8 @@ STRING-TYPE type of string based off of Emacs syntax table types"
     (`(:after . ":")
      (or (nix-smie--indent-args-line)
          (nix-smie--indent-anchor)))
-    (`(:after . ",")
-     (smie-rule-parent tab-width))
-    (`(:before . ",")
-     ;; The parent is either the enclosing "{" or some previous ",".
-     ;; In both cases this is what we want to align to.
-     (smie-rule-parent))
+    (`(,_ . ",")
+     (smie-rule-separator kind))
     (`(:before . "if")
      (let ((bol (line-beginning-position)))
        (save-excursion
