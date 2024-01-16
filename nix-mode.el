@@ -28,16 +28,12 @@
   "Nix mode customizations."
   :group 'nix)
 
-(defcustom nix-indent-function 'smie-indent-line
-  "The function to use to indent.
-
-Valid functions for this are:
-
-- ‘indent-relative’
-- ‘nix-indent-line' (buggy)
-- `smie-indent-line' (‘nix-mode-use-smie’ must be enabled)"
+(defcustom nix-indent-function 'nix-indent-line
+  "The function to use to indent."
   :group 'nix-mode
   :type 'function)
+(make-obsolete 'nix-indent-function "This value is a no-op now, \
+and is only here for backwards compatibility." "1.6.0")
 
 (defcustom nix-mode-use-smie t
   "Whether to use SMIE when editing Nix files.
@@ -45,6 +41,7 @@ This is enabled by default, but can take a while to load with
 very large Nix files (all-packages.nix)."
   :group 'nix-mode
   :type 'boolean)
+(make-obsolete 'nix-mode-use-smie "SMIE is required for nix-mode to work correctly." "1.6.0")
 
 (defgroup nix-faces nil
   "Nix faces."
@@ -908,7 +905,7 @@ END where to end the region."
                           (nix-is-comment-p)))))
                  ;; Don't mess with strings.
                  (nix-is-string-p))
-            (funcall nix-indent-function)))
+            (nix-indent-line)))
       (forward-line 1))))
 
 ;;;###autoload
@@ -994,19 +991,14 @@ The hook `nix-mode-hook' is run when Nix mode is started.
     (let ((nix-smie-indent-functions
            ;; Replace the smie-indent-* equivalents with nix-mode's.
            (mapcar (lambda (fun) (pcase fun
-                                   ('smie-indent-exps  'nix-smie--indent-exps)
-                                   ('smie-indent-close 'nix-smie--indent-close)
-                                   (_ fun)))
+                              ('smie-indent-exps  'nix-smie--indent-exps)
+                              ('smie-indent-close 'nix-smie--indent-close)
+                              (_ fun)))
                    smie-indent-functions)))
       (setq-local smie-indent-functions nix-smie-indent-functions)))
 
   ;; Automatic indentation [C-j]
-  (setq-local indent-line-function
-              (lambda ()
-                (if (and (not nix-mode-use-smie)
-                         (eq nix-indent-function 'smie-indent-line))
-                    (indent-relative)
-                  (funcall nix-indent-function))))
+  (setq-local indent-line-function #'nix-indent-line)
 
   ;; Indenting of comments
   (setq-local comment-start "# ")
