@@ -21,13 +21,13 @@
 (define-derived-mode nix-drv-mode js-mode "Nix-Derivation"
   "Pretty print Nix’s .drv files."
   (let ((inhibit-read-only t))
-    (erase-buffer)
-    (insert (shell-command-to-string
-             (format "%s show-derivation \"%s\""
-		     nix-executable
-		     (buffer-file-name))))
-    (set-buffer-modified-p nil)
-    (read-only-mode 1))
+    (when (buffer-file-name)
+      (erase-buffer)
+      (call-process nix-executable nil (current-buffer) nil
+                    "--extra-experimental-features" "nix-command flakes"
+                    "derivation""show" "--pretty" )
+      (set-buffer-modified-p nil)
+      (read-only-mode 1)))
 
   (add-hook 'change-major-mode-hook #'nix-drv-mode-dejsonify-buffer nil t))
 
