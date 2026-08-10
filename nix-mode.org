@@ -113,24 +113,6 @@ You can set it up to handle .nix files with,
     :mode ("\\.nix\\'" "\\.nix.in\\'"))
 #+END_SRC
 
-To turn on the experimental “electric” style Nix indent, you have to
-set the custom variable, nix-indent-function. This can be set by
-typing,
-
-#+BEGIN_SRC text
-M-x customize-variable RET nix-indent-function RET
-#+END_SRC
-
-There are three possible values for nix-mode. They are:
-
-- indent-relative
-- smie-indent-line (default)
-- nix-indent-line
-
-Starting in version 1.4.0, SMIE is the default and it works very well
-(kudos to @j-piecuch on GitHub). You can restore the old behavior by
-setting =nix-indent-function= to =indent-relative=.
-
 *** nix-drv-mode
 
 nix-drv-mode is a simple major mode for viewing Nix’s .drv files. If
@@ -209,7 +191,7 @@ scripts. This is as simple as,
 M-x nix-shell-configure RET <nixpkgs> RET emacs RET
 #+END_SRC
 
-This, again, will take a few minutes. After that, though, we can build 
+This, again, will take a few minutes. After that, though, we can build
 
 #+BEGIN_SRC text
 M-x nix-shell-build RET <nixpkgs> RET emacs RET
