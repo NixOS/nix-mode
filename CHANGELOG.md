@@ -3,6 +3,7 @@
 ## Unreleased (1.6.0)
 
 * Introduce nix-store-path-omit-self customization option.
+* Build logs can now be viewed from `.drv` store buffers as well.
 
 ## 1.5.0
 
