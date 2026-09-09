@@ -26,7 +26,7 @@
   (with-current-buffer (get-buffer-create "*nixfmt*")
     (erase-buffer)
     (insert-buffer-substring buf)
-    (if (zerop (call-process-region (point-min) (point-max) nixfmt-bin t t nil))
+    (if (zerop (call-process-region (point-min) (point-max) nixfmt-bin t t nil "-"))
 	(nix--replace-buffer-contents (current-buffer) buf)
       (error "Nixfmt failed, see *nixfmt* buffer for details"))))
 
